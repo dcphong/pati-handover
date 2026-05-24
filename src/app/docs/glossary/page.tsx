@@ -1,0 +1,76 @@
+import { PageHeader } from "@/components/docs/page-header";
+import { PageNav } from "@/components/docs/page-nav";
+
+export const metadata = { title: "Glossary — PATI Handover" };
+
+const terms: { term: string; def: string }[] = [
+  { term: "AOV", def: "Average Order Value." },
+  { term: "Bitable", def: "Lark/Feishu's spreadsheet-database hybrid (Lark Base tables)." },
+  { term: "Bulk Update", def: "Flask backend service xử lý mass fulfillment qua /api/bulk/* proxy." },
+  { term: "CDP", def: "Chrome DevTools Protocol — Playwright/Puppeteer-style remote browser control. Used cho ChargeFlow sync." },
+  { term: "ChargeFlow", def: "Third-party dispute management SaaS. Sync via Mac mini Chrome CDP." },
+  { term: "Cloudflared", def: "Cloudflare Tunnel daemon. Exposes Mac mini Supabase to internet without public IP." },
+  { term: "Colima", def: "Container runtime (Docker VM) cho macOS. Replaces Docker Desktop on Mac mini." },
+  { term: "COGS", def: "Cost of Goods Sold. PATI's authoritative source is Lark Base, not Shopify." },
+  { term: "Custom App", def: "Shopify app installed per-store (one-tenant). Lark Integration is the main one." },
+  { term: "EDC", def: "Second store onboarded (placeholder; not active production yet)." },
+  { term: "FO", def: "Fulfillment Order. Shopify can split 1 order → N FOs across locations." },
+  { term: "Fluid Compute", def: "Vercel's fluid serverless model. Default for new functions; reuses instances across requests." },
+  { term: "Flexport", def: "Logistics partner. NS3 warehouse uses Flexport Logistics API." },
+  { term: "Gorgias", def: "Legacy CS platform. Rebuild = /cs-dashboard." },
+  { term: "Klaviyo", def: "Email/SMS marketing platform. Drives Email Sent / Click / Attributed cards." },
+  { term: "Lark", def: "Feishu Singapore version. PATI's collaboration platform — Base, Mail, Bot, OAuth." },
+  { term: "Mac mini", def: "M4/16GB at Phong's home. Hosts Supabase Docker + Chrome CDP + cron jobs." },
+  { term: "master_app", def: "Postgres schema where all PATI tables live (renamed from 'public' on 2026-05-14)." },
+  { term: "Matview", def: "Materialised view. v_stvf, mv_summary_daily, etc. Refreshed nightly." },
+  { term: "Mer", def: "Marketing Efficiency Ratio = Total Sales / Total Ad Spend." },
+  { term: "Meta Ads", def: "Facebook + Instagram. Hourly sync via meta_ads_hourly.yml." },
+  { term: "NCPA", def: "New Customer Profit / Acquisition. North-star revenue metric." },
+  { term: "NS1 / NS2 / NS3", def: "North Stars: Processing time, OTIF (On-Time-In-Full), Stock Cover." },
+  { term: "OAuth", def: "Shopify Public App OAuth (scaffolded but not yet live). Lark OAuth is live." },
+  { term: "OTIF", def: "On-Time-In-Full. NS2." },
+  { term: "Parity", def: "Card-by-card match between PATI dashboard and TripleWhale dashboard." },
+  { term: "PATI", def: "Holding company. Multiple Shopify stores (WN, EDC, ...) under one org." },
+  { term: "PostgREST", def: "Postgres → REST auto-API. Part of Supabase stack. Has schema cache lag (~10 min)." },
+  { term: "RDP", def: "Remote Desktop Protocol. Not used here — read Chrome DevTools Protocol (CDP)." },
+  { term: "Recharge", def: "Subscription billing SaaS for Shopify. Authoritative source for subscription metrics." },
+  { term: "RLS", def: "Postgres Row-Level Security. Self-host tables have RLS=ON, no policies = anon returns []." },
+  { term: "RPC", def: "Postgres function callable via PostgREST or supabase-js .rpc(). Returns JSON." },
+  { term: "Schema", def: "Postgres namespace. master_app vs public." },
+  { term: "Service-role key", def: "Supabase JWT that bypasses RLS. Server-only — never expose client-side." },
+  { term: "shop_id", def: "myshopify.com domain used as primary multi-store discriminator." },
+  { term: "Sidecar", def: "Sidekick term for an auxiliary process (e.g., Flask bulk-update server next to Next.js)." },
+  { term: "SoT", def: "Source of Truth. Shopify = SoT for orders. Lark = SoT for COGS." },
+  { term: "Supabase", def: "Self-hosted Postgres + REST + Auth + Realtime + Storage stack on Mac mini." },
+  { term: "Tailscale", def: "Mesh VPN. Used for intra-team SSH + WireGuard private IPs (100.94.x.x)." },
+  { term: "TimCook", def: "Mac mini SSH username (joke). Has admin sudo." },
+  { term: "TripleWhale (TW)", def: "Legacy P&L SaaS. Being replaced by PATI's clone with first-party data." },
+  { term: "VNH", def: "Việt Nam Hà Nội warehouse." },
+  { term: "v_stvf", def: "Single-Table View Function. Core matview for TW parity calculations." },
+  { term: "WN", def: "WellnessNest — primary store. Domain: e49d78-3.myshopify.com." },
+];
+
+export default function Page() {
+  return (
+    <>
+      <PageHeader eyebrow="Reference" title="Glossary" description="Vocab & acronyms team PATI dùng." />
+      <table>
+        <thead>
+          <tr>
+            <th style={{ width: "22%" }}>Term</th>
+            <th>Definition</th>
+          </tr>
+        </thead>
+        <tbody>
+          {terms.map((t) => (
+            <tr key={t.term}>
+              <td className="font-medium font-mono text-[13px]">{t.term}</td>
+              <td className="text-[14px]">{t.def}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <PageNav href="/docs/glossary" />
+    </>
+  );
+}
