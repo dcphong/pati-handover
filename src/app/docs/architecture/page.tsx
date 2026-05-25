@@ -1,9 +1,152 @@
+import {
+  Boxes,
+  Cable,
+  Cloud,
+  Code2,
+  Cog,
+  Database,
+  Globe,
+  Network,
+  ShoppingBag,
+  Truck,
+  Workflow,
+  Zap,
+} from "lucide-react";
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
-import { CodeBlock } from "@/components/docs/code-block";
+import {
+  FlowNode,
+  FlowRow,
+  LayerStack,
+  Terminal,
+  type LayerItem,
+} from "@/components/docs/visuals";
 
 export const metadata = { title: "System Overview — PATI Handover" };
+
+const layers: LayerItem[] = [
+  {
+    name: "Upstream sources",
+    description: "External APIs trả raw data — không control được, chỉ pull",
+    icon: Globe,
+    tone: "sky",
+    host: "internet",
+    items: [
+      "Shopify (orders, products)",
+      "Flexport NS3",
+      "Lark Base (42 tables)",
+      "PayPal / Recharge",
+      "Meta / Google / Klaviyo",
+    ],
+  },
+  {
+    name: "Python sync workers",
+    description: "Read upstream → clean → batch upsert vào Supabase. WRITE-only.",
+    icon: Workflow,
+    tone: "emerald",
+    host: "Mac mini cron + GitHub Actions",
+    items: [
+      "sync/run.py",
+      "modules/pipeline.py",
+      "modules/supabase_pusher.py",
+      "report_sync/pipeline.py",
+      "custom_table_syncer.py",
+    ],
+  },
+  {
+    name: "Supabase (Postgres)",
+    description: "Source of truth — schema master_app trên Mac mini Docker stack",
+    icon: Database,
+    tone: "pink",
+    host: "Mac mini · self-host",
+    items: [
+      "shopify_orders (SoT)",
+      "raw_orders / raw_refunds / raw_ad_spend",
+      "v_stvf · mv_summary_daily",
+      "cogs_full_catalog",
+      "75 actions / 9 policies (IAM)",
+    ],
+  },
+  {
+    name: "Next.js dashboard + API",
+    description: "Web UI + /api/* — read DB, ghi mutation, gọi workflow_dispatch",
+    icon: Code2,
+    tone: "violet",
+    host: "Vercel · Fluid Compute · Node 24",
+    items: [
+      "App Router (src/app)",
+      "/api/* ≈ 80 routes",
+      "React Query + shadcn",
+      "Bulk-update proxy → Flask",
+    ],
+  },
+  {
+    name: "Orchestration",
+    description: "Lịch trình + trigger cho mọi pipeline",
+    icon: Zap,
+    tone: "orange",
+    host: "Mac mini · GitHub Actions · Vercel HTTP cron",
+    items: [
+      "16 Mac mini cron jobs",
+      "13 GH Actions workflows",
+      "ChargeFlow Chrome CDP",
+      "Cloudflared tunnel",
+    ],
+  },
+];
+
+const frontendClusters = [
+  { name: "App", count: 21, purpose: "Next.js App Router pages + root layout" },
+  { name: "Components", count: 24, purpose: "AppLayout, ImportMappingModal, SortableColumnList…" },
+  { name: "Orders", count: 15, purpose: "Order listing + CSV import" },
+  { name: "Sync", count: 11, purpose: "Sync trigger, preview, status" },
+  { name: "Users / IAM", count: 10, purpose: "User CRUD, role/policy assignment" },
+  { name: "Custom [slug]", count: 6, purpose: "Dynamic custom-table viewer" },
+  { name: "Bulk [...path]", count: 7, purpose: "Proxy routes → Python Flask server" },
+];
+
+const backendModules: { path: string; purpose: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { path: "sync/run.py", purpose: "Main entry point cho daily sync", icon: Workflow },
+  { path: "sync/cron_sync.py", purpose: "Scheduler wrapper (multi-pipeline)", icon: Cog },
+  { path: "modules/pipeline.py", purpose: "Shopify order sync pipeline", icon: ShoppingBag },
+  { path: "modules/shopify_fetcher.py", purpose: "Shopify REST pagination + rate limit", icon: ShoppingBag },
+  { path: "modules/supabase_pusher.py", purpose: "Batch upsert (hot path)", icon: Database },
+  { path: "modules/lark_pusher.py", purpose: "Lark bitable writer", icon: Cable },
+  { path: "modules/custom_table_syncer.py", purpose: "Sync custom tables (API + Playwright)", icon: Boxes },
+  { path: "modules/credential_manager.py", purpose: "Fernet encrypt/decrypt", icon: Cloud },
+  { path: "modules/data_cleaner.py", purpose: "Dedup + null-key filter", icon: Cog },
+  { path: "report_sync/pipeline.py", purpose: "Flexport shipment sync", icon: Truck },
+  { path: "bulk_update/server.py", purpose: "Flask HTTP server (fulfillment)", icon: Network },
+];
+
+const flows = [
+  {
+    title: "Shopify Order Sync → Supabase",
+    chain: ["run", "push_shopify_orders", "_batch_upsert", "_get_client"],
+    where: "sync/run.py → supabase_pusher.py",
+  },
+  {
+    title: "Flexport Report Sync → Supabase",
+    chain: ["main", "run", "push_flexport_shipments", "_batch_upsert"],
+    where: "sync/run.py → report_sync/pipeline.py",
+  },
+  {
+    title: "Custom Table — API path",
+    chain: ["sync_custom_table", "sync_via_api", "_resolve_auth_header", "decrypt"],
+    where: "custom_table_syncer.py → credential_manager.py",
+  },
+  {
+    title: "Custom Table — Playwright fallback",
+    chain: ["sync_custom_table", "sync_via_playwright", "_download_and_parse", "_parse_excel_file"],
+    where: "custom_table_syncer.py",
+  },
+  {
+    title: "Bulk Fulfillment",
+    chain: ["run_fulfill", "fulfill_order", "lookup_order", "_shopify_request"],
+    where: "bulk_update/modules/fulfill_pipeline.py",
+  },
+];
 
 export default function Page() {
   return (
@@ -11,151 +154,204 @@ export default function Page() {
       <PageHeader
         eyebrow="Architecture"
         title="System Overview"
-        description="Hai layer (Next.js + Python), năm flow chính, mỗi layer chạy ở đâu."
+        description="Toàn hệ thống 5 layer. Đọc từ trên xuống — đi theo data: từ source ngoài, vào Python worker, lưu Postgres, được dashboard đọc."
       />
 
-      <h2 id="two-layers">Two layers, one database</h2>
-      <p>
-        Dashboard (Next.js) và sync workers (Python) là 2 binary tách rời, share state qua
-        Supabase Postgres. Không có shared library, không có direct HTTP call giữa hai layer
-        — Python WRITE only, Next.js READ/WRITE. Cron orchestration nằm ngoài (Mac mini
-        + GitHub Actions).
-      </p>
+      <h2 id="layers">5 layer — Data đi từ trên xuống dưới</h2>
+      <LayerStack layers={layers} />
 
-      <h2 id="diagram">High-level diagram</h2>
-      <CodeBlock language="text" filename="data-flow.txt">
-{`+-----------+    +-----------+    +-----------+    +-----------+
-| Shopify   |    | Flexport  |    | Lark Base |    | PayPal /  |
-| (orders,  |    | (NS3)     |    | (42 tbls) |    | Recharge /|
-|  products)|    |           |    |           |    | Meta/Goog |
-+-----+-----+    +-----+-----+    +-----+-----+    +-----+-----+
-      |                |                |                |
-      |    REST API    |    REST API    |    Bitable     |
-      v                v                v                v
-+----------------------------------------------------------+
-|              Python Sync Workers (/sync)                 |
-|  pipeline.py · report_sync · custom_table_syncer.py      |
-|  Scheduled by Mac mini cron + GitHub Actions             |
-+----------------------------+-----------------------------+
-                             |
-                  batch upsert via REST
-                             v
-+----------------------------------------------------------+
-|         Supabase (Postgres) — Mac mini self-host         |
-|         schema: master_app                               |
-|   Tables · Views · Materialised views · RPCs · Triggers  |
-+----------------------------+-----------------------------+
-                             ^
-              service-role   |   anon (RLS)
-                             |
-+----------------------------+-----------------------------+
-|         Next.js Dashboard (src/) — Vercel                |
-|  /api/* REST routes · React 19 · shadcn/ui · TanStack    |
-|  ChargeFlow UI sync · Lark Mail · CS Dashboard           |
-+-----+---------------------+--------------------------+---+
-      |                     |                          |
-      |       /api/bulk     |  Vercel Cron (HTTP)      |
-      v                     v                          v
-+-----------+    +---------------------+    +-------------------+
-| Bulk-     |    | GitHub Actions      |    | Mac mini cron     |
-| update    |    | workflow_dispatch   |    | (16 jobs)         |
-| Flask     |    | (Python sync)       |    |                   |
-+-----------+    +---------------------+    +-------------------+`}
-      </CodeBlock>
-
-      <h2 id="frontend">Frontend cluster map</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Cluster</th>
-            <th>Symbols</th>
-            <th>Purpose</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>App</td><td>21</td><td>Next.js App Router pages + root layout</td></tr>
-          <tr><td>Components</td><td>24</td><td>AppLayout, ImportMappingModal, SortableColumnList…</td></tr>
-          <tr><td>Orders</td><td>15</td><td>Order listing + CSV import</td></tr>
-          <tr><td>Sync</td><td>11</td><td>Sync trigger, preview, status</td></tr>
-          <tr><td>Users / IAM</td><td>10+</td><td>User CRUD, role/policy assignment</td></tr>
-          <tr><td>Custom [slug]</td><td>6</td><td>Dynamic custom-table viewer /custom/[slug]</td></tr>
-          <tr><td>Bulk [...path]</td><td>7</td><td>Proxy routes → Python Flask server</td></tr>
-        </tbody>
-      </table>
-
-      <h2 id="backend">Backend cluster map</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Module</th>
-            <th>Purpose</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td><code>sync/run.py</code></td><td>Main entry point cho daily sync</td></tr>
-          <tr><td><code>sync/cron_sync.py</code></td><td>Scheduler wrapper (multi-pipeline)</td></tr>
-          <tr><td><code>modules/pipeline.py</code></td><td>Shopify order sync pipeline</td></tr>
-          <tr><td><code>modules/shopify_fetcher.py</code></td><td>Shopify REST API pagination</td></tr>
-          <tr><td><code>modules/supabase_pusher.py</code></td><td>Batch upsert (the hot path)</td></tr>
-          <tr><td><code>modules/lark_pusher.py</code></td><td>Lark bitable writer</td></tr>
-          <tr><td><code>modules/custom_table_syncer.py</code></td><td>Sync custom tables (API + Playwright)</td></tr>
-          <tr><td><code>modules/credential_manager.py</code></td><td>Fernet encrypt/decrypt</td></tr>
-          <tr><td><code>modules/data_cleaner.py</code></td><td>Dedup + null-key filter</td></tr>
-          <tr><td><code>report_sync/pipeline.py</code></td><td>Flexport shipment sync</td></tr>
-          <tr><td><code>bulk_update/server.py</code></td><td>Flask HTTP server (fulfillment)</td></tr>
-        </tbody>
-      </table>
-
-      <h2 id="five-flows">Five canonical execution flows</h2>
-      <h3 id="flow-1">1. Shopify Order Sync → Supabase</h3>
-      <CodeBlock language="text">
-{`run (sync/run.py)
-  └─ push_shopify_orders (supabase_pusher.py)
-       └─ _batch_upsert
-            └─ _get_client`}
-      </CodeBlock>
-
-      <h3 id="flow-2">2. Flexport Report Sync → Supabase</h3>
-      <CodeBlock language="text">
-{`main (sync/run.py)
-  └─ run (report_sync/pipeline.py)
-       └─ push_flexport_shipments (supabase_pusher.py)
-            └─ _batch_upsert`}
-      </CodeBlock>
-
-      <h3 id="flow-3">3. Custom Table Sync — API path</h3>
-      <CodeBlock language="text">
-{`sync_custom_table (custom_table_syncer.py)
-  └─ sync_via_api
-       └─ _resolve_auth_header
-            └─ decrypt (credential_manager.py)
-                 └─ _get_fernet`}
-      </CodeBlock>
-
-      <h3 id="flow-4">4. Custom Table Sync — Playwright fallback</h3>
-      <CodeBlock language="text">
-{`sync_custom_table (custom_table_syncer.py)
-  └─ sync_via_playwright
-       └─ _download_and_parse
-            └─ _parse_excel_file / _parse_csv_file`}
-      </CodeBlock>
-
-      <h3 id="flow-5">5. Shopify Order Fulfillment (Bulk Update)</h3>
-      <CodeBlock language="text">
-{`run_fulfill (bulk_update/modules/fulfill_pipeline.py)
-  └─ fulfill_order (shopify_fulfiller.py)
-       └─ lookup_order
-            └─ _shopify_request`}
-      </CodeBlock>
-
-      <Callout variant="tip" title="GitNexus is your friend">
-        Project được index bằng <a href="https://github.com/Anthropic" target="_blank" rel="noreferrer">GitNexus</a>. Mở terminal trong repo cũ và chạy
-        {" "}
-        <code>npx gitnexus query &quot;your concept&quot;</code> để get process-grouped results.
-        CLAUDE.md đã hướng dẫn dùng nó cho impact analysis trước khi sửa.
+      <Callout variant="info" title="Quy tắc bóc tách">
+        Python <strong>WRITE-only</strong>, Next.js <strong>READ/WRITE</strong>. KHÔNG có
+        shared library, KHÔNG có HTTP call trực tiếp giữa Python ↔ Next.js. Mọi giao tiếp đi
+        qua Postgres. Cron orchestration nằm ngoài cả 2 layer (Mac mini + GitHub Actions).
       </Callout>
+
+      <h2 id="two-binaries">Hai binary, một database</h2>
+      <div className="not-prose my-6 grid sm:grid-cols-2 gap-3">
+        <div className="rounded-xl border-2 border-violet-500/40 bg-violet-500/[0.04] p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Code2 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            <div className="text-[11px] uppercase tracking-widest font-semibold text-violet-700 dark:text-violet-300">
+              Web binary
+            </div>
+          </div>
+          <div className="font-mono text-[12.5px] text-foreground/85 space-y-1.5">
+            <div>
+              <span className="text-muted-foreground">Path:</span>{" "}
+              <code className="text-[12px]">src/</code>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Runtime:</span> Next.js 16 · Node 24
+            </div>
+            <div>
+              <span className="text-muted-foreground">Host:</span> Vercel (Fluid Compute)
+            </div>
+            <div>
+              <span className="text-muted-foreground">Build:</span>{" "}
+              <code className="text-[12px]">bun run build</code>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.04] p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Workflow className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="text-[11px] uppercase tracking-widest font-semibold text-emerald-700 dark:text-emerald-300">
+              Worker binary
+            </div>
+          </div>
+          <div className="font-mono text-[12.5px] text-foreground/85 space-y-1.5">
+            <div>
+              <span className="text-muted-foreground">Path:</span>{" "}
+              <code className="text-[12px]">sync/</code>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Runtime:</span> Python 3.12 · venv
+            </div>
+            <div>
+              <span className="text-muted-foreground">Host:</span> Mac mini cron + GH Actions
+            </div>
+            <div>
+              <span className="text-muted-foreground">Run:</span>{" "}
+              <code className="text-[12px]">python sync/run.py</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="frontend">Frontend — 7 cluster</h2>
+      <div className="not-prose my-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {frontendClusters.map((c) => (
+          <div key={c.name} className="rounded-lg border bg-card p-3.5">
+            <div className="flex items-baseline justify-between mb-1">
+              <div className="font-semibold text-[14px]">{c.name}</div>
+              <div className="text-[11px] font-mono text-muted-foreground">
+                {c.count}+ symbols
+              </div>
+            </div>
+            <div className="text-[12.5px] text-muted-foreground leading-5">{c.purpose}</div>
+          </div>
+        ))}
+      </div>
+
+      <h2 id="backend">Backend — modules Python</h2>
+      <div className="not-prose my-5 rounded-xl border bg-card overflow-hidden">
+        {backendModules.map((m, i) => (
+          <div
+            key={m.path}
+            className={`flex items-start gap-3 px-4 py-2.5 ${i > 0 ? "border-t" : ""}`}
+          >
+            <div className="h-7 w-7 rounded-md bg-muted grid place-items-center shrink-0 mt-0.5">
+              <m.icon className="h-3.5 w-3.5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <code className="font-mono text-[12.5px] font-semibold text-foreground/90 break-all">
+                {m.path}
+              </code>
+              <div className="text-[12.5px] text-muted-foreground mt-0.5 leading-5">
+                {m.purpose}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h2 id="five-flows">5 execution flow chính</h2>
+      <p>
+        Đây là 5 path chính bạn sẽ debug 90% thời gian. Đọc theo thứ tự call chain → biết file
+        nào edit.
+      </p>
+      <div className="not-prose my-6 space-y-4">
+        {flows.map((f, i) => (
+          <div key={f.title} className="rounded-xl border bg-card overflow-hidden">
+            <div className="px-4 py-2.5 border-b bg-muted/30 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="grid place-items-center h-6 w-6 rounded-full bg-foreground text-background text-[11px] font-bold tabular-nums">
+                  {i + 1}
+                </span>
+                <div className="font-semibold text-[14px]">{f.title}</div>
+              </div>
+              <div className="text-[11px] font-mono text-muted-foreground hidden sm:block">
+                {f.where}
+              </div>
+            </div>
+            <div className="px-4 py-3">
+              <FlowRow arrows="right">
+                {f.chain.map((c, j) => (
+                  <FlowNode
+                    key={j}
+                    label={c}
+                    tone={j === 0 ? "violet" : j === f.chain.length - 1 ? "emerald" : "neutral"}
+                  />
+                ))}
+              </FlowRow>
+              <div className="text-[11px] font-mono text-muted-foreground sm:hidden mt-2">
+                {f.where}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Callout variant="tip" title="GitNexus — search call chains">
+        Repo cũ shopify-lark-sync đã được index bằng{" "}
+        <a href="https://github.com/Anthropic" target="_blank" rel="noreferrer">
+          GitNexus
+        </a>
+        . Mở terminal trong repo đó và chạy:
+        <Terminal
+          host="you@laptop"
+          cwd="~/Coding/shopify-lark-sync"
+          lines={[
+            { prompt: "$", cmd: "npx gitnexus query \"shopify refund timezone\"" },
+            { divider: true, label: "output" },
+            { out: "→ process-grouped results", tone: "ok" },
+            { out: "→ dẫn về đúng module liên quan", tone: "ok" },
+          ]}
+        />
+        <strong>Dùng nó trước khi sửa</strong> để impact-analysis những module liên quan.
+      </Callout>
+
+      <h2 id="invariants">Invariants — nguyên tắc bất biến</h2>
+      <div className="not-prose my-5 space-y-2">
+        <Invariant
+          rule="Shopify là source-of-truth cho shopify_orders"
+          why="Backfill TZ đã chạy 1 lần 2026-05-07. Re-run sẽ override với data sai."
+        />
+        <Invariant
+          rule="Lark là source-of-truth cho COGS per-PO"
+          why="Bảng master_app.cogs_full_catalog. Đừng dùng raw_variants.cost (Shopify variant cost) cho analytics."
+        />
+        <Invariant
+          rule="Mỗi supabase-js client phải set db.schema = master_app"
+          why="Default Accept-Profile: public → đọc empty schema → trả [] giống empty thật."
+        />
+        <Invariant
+          rule="PostgREST cap 1000 rows — dùng pageAll() khi aggregate"
+          why="Bare .select() silent-truncate. Đã từng làm refund-rate hiển thị sai 6× (34% vs 5.5%)."
+        />
+        <Invariant
+          rule="NEXT_PUBLIC_* phải redeploy sau khi env add"
+          why="Inline vào client bundle ở build time."
+        />
+      </div>
 
       <PageNav href="/docs/architecture" />
     </>
+  );
+}
+
+function Invariant({ rule, why }: { rule: string; why: string }) {
+  return (
+    <div className="rounded-lg border bg-card px-4 py-3 flex items-start gap-3">
+      <div className="text-[10px] uppercase tracking-widest font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/15 border border-amber-500/30 rounded-md px-1.5 py-0.5 shrink-0">
+        rule
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold text-[14px] leading-snug">{rule}</div>
+        <div className="text-[12.5px] text-muted-foreground mt-1 leading-5">
+          <span className="font-medium text-foreground/70">Tại sao:</span> {why}
+        </div>
+      </div>
+    </div>
   );
 }

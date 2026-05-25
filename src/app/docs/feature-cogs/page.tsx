@@ -1,9 +1,31 @@
+import {
+  Cable,
+  Database,
+  DollarSign,
+  Package,
+  ShoppingBag,
+} from "lucide-react";
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import { CodeBlock } from "@/components/docs/code-block";
+import {
+  FlowNode,
+  FlowRow,
+  Terminal,
+  TerminalInline,
+} from "@/components/docs/visuals";
 
 export const metadata = { title: "COGS Catalog — PATI Handover" };
+
+const breakdownChips = [
+  { label: "Production unit", desc: "Cost từ supplier" },
+  { label: "Barcode", desc: "Phí gắn mã" },
+  { label: "Lab fee", desc: "Test mẫu / chứng nhận" },
+  { label: "Transport", desc: "Vận chuyển PO → kho" },
+  { label: "Designer", desc: "Phí thiết kế / artwork" },
+  { label: "Fulfillment", desc: "Phí pick/pack" },
+];
 
 export default function Page() {
   return (
@@ -11,34 +33,70 @@ export default function Page() {
       <PageHeader
         eyebrow="Operations"
         title="COGS Catalog"
-        description="Two tables. Lark per-PO is authoritative. Analytics MUST join it."
+        description="2 source COGS — Lark per-PO authoritative. Analytics MUST join nó, không phải raw_variants.cost."
       />
 
-      <h2 id="two-sources">Two COGS sources</h2>
-      <table>
-        <thead><tr><th>Source</th><th>Table</th><th>Authority</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>Shopify Admin variants.inventory_item.cost</td>
-            <td><code>raw_variants.cost</code></td>
-            <td>Partial — production only</td>
-          </tr>
-          <tr>
-            <td>Lark Base per-PO breakdown</td>
-            <td><code>cogs_full_catalog</code></td>
-            <td><strong>AUTHORITATIVE</strong></td>
-          </tr>
-        </tbody>
-      </table>
+      <h2 id="two-sources">2 source COGS — biết chọn cái nào</h2>
+      <div className="not-prose my-6 grid sm:grid-cols-2 gap-3">
+        <div className="rounded-xl border bg-card p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+            <div className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">
+              Shopify Admin
+            </div>
+          </div>
+          <code className="block font-mono text-[12.5px] font-semibold mb-2">
+            raw_variants.cost
+          </code>
+          <div className="text-[13px] text-foreground/85 leading-6">
+            Field <TerminalInline>variants.inventory_item.cost</TerminalInline> từ Shopify.{" "}
+            <strong>Partial coverage</strong> — bỏ qua mọi chi phí ngoài production unit.
+          </div>
+          <div className="mt-2 inline-block text-[10px] uppercase tracking-wider font-semibold rounded border border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-300 px-1.5 py-0.5">
+            ĐỪNG dùng cho analytics
+          </div>
+        </div>
+        <div className="rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.04] p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Cable className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="text-[11px] uppercase tracking-widest text-emerald-700 dark:text-emerald-300 font-semibold">
+              Lark Base per-PO
+            </div>
+          </div>
+          <code className="block font-mono text-[12.5px] font-semibold mb-2 text-emerald-700 dark:text-emerald-300">
+            master_app.cogs_full_catalog
+          </code>
+          <div className="text-[13px] text-foreground/85 leading-6">
+            Per-PO breakdown 6 chi phí. Sync từ Lark Base table &quot;COGS rollup&quot;.
+          </div>
+          <div className="mt-2 inline-block text-[10px] uppercase tracking-wider font-semibold rounded border border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5">
+            Source of Truth
+          </div>
+        </div>
+      </div>
 
-      <Callout variant="danger" title="Join Lark, not Shopify">
-        Analytics queries MUST join <code>cogs_full_catalog</code>. Nếu chỉ join{" "}
-        <code>raw_variants.cost</code> → undercount ~70% vì Shopify cost field bỏ qua: barcode
-        fees, lab fees, transport, designer fees, fulfillment fees. Memo:{" "}
-        <code>project_cogs_catalog_pipeline</code>.
+      <Callout variant="danger" title="Bỏ qua Lark = undercount ~70%">
+        Analytics queries MUST join{" "}
+        <TerminalInline>cogs_full_catalog</TerminalInline>. Nếu chỉ join{" "}
+        <TerminalInline>raw_variants.cost</TerminalInline> → undercount ~70% vì Shopify cost
+        field bỏ qua: barcode, lab, transport, designer, fulfillment. Memo:{" "}
+        <TerminalInline>project_cogs_catalog_pipeline</TerminalInline>.
       </Callout>
 
-      <h2 id="schema">cogs_full_catalog schema</h2>
+      <h2 id="breakdown">6 chi phí trong cogs_full_catalog</h2>
+      <div className="not-prose my-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {breakdownChips.map((c) => (
+          <div key={c.label} className="rounded-lg border bg-card p-3">
+            <div className="flex items-center gap-1.5 mb-1">
+              <DollarSign className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+              <div className="font-semibold text-[13px]">{c.label}</div>
+            </div>
+            <div className="text-[12px] text-muted-foreground leading-5">{c.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      <h2 id="schema">Schema</h2>
       <CodeBlock language="sql">
 {`master_app.cogs_full_catalog (
   variant_sku       TEXT,
@@ -56,9 +114,49 @@ export default function Page() {
 )`}
       </CodeBlock>
 
-      <h2 id="join">Correct join</h2>
+      <h2 id="pipeline">Sync pipeline</h2>
+      <div className="not-prose my-6 rounded-xl border bg-card p-4 sm:p-5">
+        <FlowRow arrows="right">
+          {[
+            <FlowNode
+              key="lark"
+              icon={Cable}
+              label="Lark Base"
+              sub="PO Management → COGS rollup"
+              tone="violet"
+            />,
+            <FlowNode
+              key="reader"
+              icon={Cable}
+              label="lark_reader.py"
+              sub="daily cron"
+              tone="sky"
+            />,
+            <FlowNode
+              key="script"
+              icon={Package}
+              label="cogs-full-catalog-sync.py"
+              sub="upsert + effective_from logic"
+              tone="amber"
+            />,
+            <FlowNode
+              key="db"
+              icon={Database}
+              label="cogs_full_catalog"
+              sub="master_app schema"
+              tone="emerald"
+            />,
+          ]}
+        </FlowRow>
+        <div className="text-[12px] text-muted-foreground mt-3 leading-5">
+          Khi ops update Lark Base row, next daily sync (≤ 24h) sẽ pickup. Cần ngay → manual
+          refresh bên dưới.
+        </div>
+      </div>
+
+      <h2 id="join">Cách join đúng (LATERAL với effective date)</h2>
       <CodeBlock language="sql">
-{`-- Join orders → effective COGS at order date
+{`-- Join orders → effective COGS tại order date
 SELECT
   o.id,
   o.variant_sku,
@@ -77,27 +175,27 @@ LEFT JOIN LATERAL (
 WHERE o.shop_id = 'e49d78-3.myshopify.com';`}
       </CodeBlock>
 
-      <h2 id="sync">Sync</h2>
+      <h2 id="manual">Manual refresh sau khi ops update Lark</h2>
+      <Terminal
+        host="you@laptop"
+        cwd="~/Coding/shopify-lark-sync"
+        lines={[
+          { prompt: "$", cmd: "bun run cogs:sync" },
+          { divider: true, label: "hoặc trực tiếp" },
+          { prompt: "$", cmd: "python sync/scripts/cogs_full_catalog_sync.py \\" },
+          { prompt: "", cmd: "  --shop-id e49d78-3.myshopify.com" },
+          { divider: true, label: "expected" },
+          { out: "→ Read 247 rows from Lark Base", tone: "muted" },
+          { out: "→ Upsert into master_app.cogs_full_catalog", tone: "muted" },
+          { out: "✓ 247 rows processed, 12 new, 235 updated", tone: "ok" },
+        ]}
+      />
+
+      <h2 id="ui">UI — /portfolio/cogs</h2>
       <p>
-        Daily cron pulls Lark Base table (PO Management → COGS rollup) qua{" "}
-        <code>lark_reader.py</code>, upsert qua <code>scripts/cogs-full-catalog-sync.py</code>.
-        Khi sếp / ops update Lark Base row, next sync (≤ 24h) pickup.
-      </p>
-
-      <h2 id="manual">Manual refresh sau khi ops update</h2>
-      <CodeBlock language="bash">
-{`# From repo root
-bun run cogs:sync
-
-# Or directly
-python sync/scripts/cogs_full_catalog_sync.py --shop-id e49d78-3.myshopify.com`}
-      </CodeBlock>
-
-      <h2 id="ui">UI</h2>
-      <p>
-        <code>/portfolio/cogs</code> shows per-variant unified view với breakdown chips
-        (Production / Barcode / Lab / Transport / Designer / Fulfillment). Sort + filter by SKU,
-        PO, date range.
+        Trang <TerminalInline>/portfolio/cogs</TerminalInline> hiển thị per-variant unified
+        view với breakdown chips (Production / Barcode / Lab / Transport / Designer /
+        Fulfillment). Sort + filter theo SKU, PO, date range.
       </p>
 
       <PageNav href="/docs/feature-cogs" />

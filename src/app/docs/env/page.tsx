@@ -1,109 +1,390 @@
+import {
+  Activity,
+  BarChart3,
+  Cable,
+  Database,
+  KeyRound,
+  Mail,
+  Repeat,
+  Shield,
+  ShoppingBag,
+  Truck,
+  Webhook,
+} from "lucide-react";
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
-import { CodeBlock } from "@/components/docs/code-block";
+import {
+  EnvCategory,
+  EnvCategoryCard,
+  EnvLegend,
+  Terminal,
+  TerminalInline,
+} from "@/components/docs/visuals";
 
 export const metadata = { title: "Environment Variables — PATI Handover" };
 
-const groups = [
+const categories: EnvCategory[] = [
   {
     title: "Shopify",
+    icon: ShoppingBag,
+    description: "Custom-app credentials (KHÔNG public app). Webhook HMAC dùng API_SECRET.",
     rows: [
-      ["SHOPIFY_DOMAIN", "Required", "Primary store domain. Production = e49d78-3.myshopify.com (WellnessNest)."],
-      ["SHOPIFY_API_VERSION", "Required", "Pin to 2025-01."],
-      ["SHOPIFY_ACCESS_TOKEN", "Required", "Custom-app token (Lark Integration app)."],
-      ["SHOPIFY_API_KEY", "Required", "Public key cho Lark Integration custom app."],
-      ["SHOPIFY_API_SECRET", "Required", "Webhook HMAC secret. Phải match Lark Integration app's secret hiển thị 1 lần ở Develop apps → API credentials → Reveal."],
+      {
+        name: "SHOPIFY_DOMAIN",
+        status: "required",
+        desc: (
+          <>
+            Primary store domain. Production ={" "}
+            <TerminalInline>e49d78-3.myshopify.com</TerminalInline> (WellnessNest).
+          </>
+        ),
+      },
+      {
+        name: "SHOPIFY_API_VERSION",
+        status: "required",
+        desc: (
+          <>
+            Pin <TerminalInline>2025-01</TerminalInline>.
+          </>
+        ),
+      },
+      {
+        name: "SHOPIFY_ACCESS_TOKEN",
+        status: "required",
+        desc: "Custom-app token (Lark Integration app — không phải public).",
+      },
+      {
+        name: "SHOPIFY_API_KEY",
+        status: "required",
+        desc: "Public key cho Lark Integration custom app.",
+      },
+      {
+        name: "SHOPIFY_API_SECRET",
+        status: "required",
+        desc: (
+          <>
+            Webhook HMAC secret. <strong>Phải</strong> match Lark Integration app&apos;s secret
+            hiển thị 1 lần ở <em>Develop apps → API credentials → Reveal</em>.
+          </>
+        ),
+      },
     ],
   },
   {
     title: "Supabase (self-host)",
+    icon: Database,
+    description: "Self-host Mac mini, expose qua Cloudflared. Schema master_app.",
     rows: [
-      ["NEXT_PUBLIC_SUPABASE_URL", "Required", "https://supabase.patiagency.com (Cloudflared tunnel → Mac mini)."],
-      ["NEXT_PUBLIC_SUPABASE_ANON_KEY", "Required", "Public anon role JWT."],
-      ["SUPABASE_URL", "Required", "Same as NEXT_PUBLIC_SUPABASE_URL but for server-side."],
-      ["SUPABASE_SERVICE_KEY", "Required", "service_role JWT — bypass RLS. Never expose to client."],
+      {
+        name: "NEXT_PUBLIC_SUPABASE_URL",
+        status: "required",
+        desc: "https://supabase.patiagency.com (Cloudflared tunnel → Mac mini).",
+      },
+      {
+        name: "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        status: "required",
+        desc: "Public anon role JWT.",
+      },
+      {
+        name: "SUPABASE_URL",
+        status: "required",
+        desc: "Cùng giá trị NEXT_PUBLIC_SUPABASE_URL, dùng server-side.",
+      },
+      {
+        name: "SUPABASE_SERVICE_KEY",
+        status: "required",
+        desc: (
+          <>
+            service_role JWT — <strong>bypass RLS</strong>. Tuyệt đối không expose client.
+          </>
+        ),
+      },
     ],
   },
   {
     title: "Lark / Feishu",
+    icon: Cable,
+    description: "PATI Sync Hub Lark custom app. Domain SG/Intl (KHÔNG feishu.cn).",
     rows: [
-      ["LARK_APP_ID", "Required", "PATI Sync Hub Lark custom app ID."],
-      ["LARK_APP_SECRET", "Required", "Lark app secret."],
-      ["LARK_DOMAIN", "Required", "open.larksuite.com (SG/Intl) — không phải feishu.cn."],
-      ["LARK_MAIL_APP_ID", "Optional", "Separate Lark app dành riêng cho mail API (nếu tách)."],
-      ["LARK_MAIL_APP_SECRET", "Optional", "Same."],
-      ["LARK_MAIL_TARGET_USER", "Optional", "Email user dùng để query Lark Mail."],
-      ["LARK_OAUTH_REDIRECT_URI", "Optional", "Lark OAuth callback (cho Sign-in-with-Lark)."],
+      { name: "LARK_APP_ID", status: "required", desc: "PATI Sync Hub Lark custom app ID." },
+      { name: "LARK_APP_SECRET", status: "required", desc: "Lark app secret." },
+      {
+        name: "LARK_DOMAIN",
+        status: "required",
+        desc: (
+          <>
+            <TerminalInline>open.larksuite.com</TerminalInline> — không phải feishu.cn.
+          </>
+        ),
+      },
+      {
+        name: "LARK_MAIL_APP_ID",
+        status: "optional",
+        desc: "Separate Lark app dành riêng cho Mail API (nếu tách).",
+      },
+      { name: "LARK_MAIL_APP_SECRET", status: "optional", desc: "Same." },
+      {
+        name: "LARK_MAIL_TARGET_USER",
+        status: "optional",
+        desc: "Email user dùng để query Lark Mail.",
+      },
+      {
+        name: "LARK_OAUTH_REDIRECT_URI",
+        status: "optional",
+        desc: "Lark OAuth callback (cho Sign-in-with-Lark).",
+      },
     ],
   },
   {
     title: "Flexport",
+    icon: Truck,
+    description: "Logistics API (NS3). Legacy scraper vẫn fallback.",
     rows: [
-      ["FLEXPORT_API_TOKEN", "Required (NS3)", "Logistics API token (shltm_...). Single token, per-warehouse stock via POST /products/warehouse."],
-      ["FLEXPORT_EMAIL / FLEXPORT_PASSWORD", "Legacy", "Login cho Playwright scraper. Replaced by API 2026-05-20, kept as fallback."],
+      {
+        name: "FLEXPORT_API_TOKEN",
+        status: "required",
+        desc: (
+          <>
+            Logistics API token (<TerminalInline>shltm_...</TerminalInline>). Single token,
+            per-warehouse stock via <TerminalInline>POST /products/warehouse</TerminalInline>.
+          </>
+        ),
+      },
+      {
+        name: "FLEXPORT_EMAIL / FLEXPORT_PASSWORD",
+        status: "legacy",
+        desc: "Login cho Playwright scraper. Replaced by API 2026-05-20, vẫn giữ làm fallback.",
+      },
     ],
   },
   {
     title: "Auth & runtime",
+    icon: KeyRound,
+    description: "JWT custom + cookie. Cron secret cho Mac mini gọi vào Vercel.",
     rows: [
-      ["JWT_SECRET", "Required", "256-bit random. Used to sign session cookies."],
-      ["APP_BASE_URL", "Required", "https://pnl.patigroup.com — used in webhook URLs, redirects."],
-      ["CRON_SECRET", "Required", "Bearer token Mac mini cron uses to call Vercel /api/cron/*."],
-      ["MIGRATION_SECRET", "One-off", "Required cho /api/auth/migrate-passwords."],
-      ["ADMIN_SECRET", "Optional", "Một số admin-only endpoint."],
-      ["SYNC_ENCRYPTION_KEY", "Required", "Fernet base64 — encrypt credentials lưu trong custom_table_sync_credentials."],
+      {
+        name: "JWT_SECRET",
+        status: "required",
+        desc: "256-bit random. Sign session cookie.",
+      },
+      {
+        name: "APP_BASE_URL",
+        status: "required",
+        desc: (
+          <>
+            <TerminalInline>https://pnl.patigroup.com</TerminalInline> — dùng trong webhook URL,
+            redirect.
+          </>
+        ),
+      },
+      {
+        name: "CRON_SECRET",
+        status: "required",
+        desc: (
+          <>
+            Bearer token Mac mini cron dùng để call Vercel{" "}
+            <TerminalInline>/api/cron/*</TerminalInline>.
+          </>
+        ),
+      },
+      {
+        name: "MIGRATION_SECRET",
+        status: "one-off",
+        desc: (
+          <>
+            Required cho <TerminalInline>/api/auth/migrate-passwords</TerminalInline>.
+          </>
+        ),
+      },
+      {
+        name: "ADMIN_SECRET",
+        status: "optional",
+        desc: "Một số admin-only endpoint.",
+      },
+      {
+        name: "SYNC_ENCRYPTION_KEY",
+        status: "required",
+        desc: (
+          <>
+            Fernet base64 — encrypt credentials lưu trong{" "}
+            <TerminalInline>custom_table_sync_credentials</TerminalInline>.
+          </>
+        ),
+      },
     ],
   },
   {
     title: "Analytics providers",
+    icon: BarChart3,
+    description: "Mỗi provider 1-2 token. PayPal Transaction Search scope enabled 2026-05-21.",
     rows: [
-      ["PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET", "Required (analytics)", "PayPal app. Transaction Search scope enabled 2026-05-21."],
-      ["PAYPAL_MODE", "Required (analytics)", "live | sandbox."],
-      ["RECHARGE_STOREFONT_TOKEN", "Required (recharge)", "sk_2x2_... cho WN."],
-      ["RECHARGE_TIMCOOK_TOKEN", "Optional", "Recharge token cho store thứ 2."],
-      ["GOOGLE_ADS_DEVELOPER_TOKEN", "Required (google)", "Dev token approved 2026-05-19."],
-      ["GG_ADS_CUSTOMER_ID", "Required (google)", "Account ID. Manager ID = 944-854-0582."],
-      ["MICROSOFT_ADS_DEVELOPER_TOKEN", "Optional", "Bing Ads if onboarded."],
+      {
+        name: "PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET",
+        status: "required",
+        desc: "PayPal app credentials (analytics).",
+      },
+      {
+        name: "PAYPAL_MODE",
+        status: "required",
+        desc: (
+          <>
+            <TerminalInline>live</TerminalInline> | <TerminalInline>sandbox</TerminalInline>.
+          </>
+        ),
+      },
+      {
+        name: "RECHARGE_STOREFONT_TOKEN",
+        status: "required",
+        desc: (
+          <>
+            <TerminalInline>sk_2x2_...</TerminalInline> cho WellnessNest store.
+          </>
+        ),
+      },
+      {
+        name: "RECHARGE_TIMCOOK_TOKEN",
+        status: "optional",
+        desc: "Recharge token cho store thứ 2.",
+      },
+      {
+        name: "GOOGLE_ADS_DEVELOPER_TOKEN",
+        status: "required",
+        desc: "Dev token approved 2026-05-19.",
+      },
+      {
+        name: "GG_ADS_CUSTOMER_ID",
+        status: "required",
+        desc: (
+          <>
+            Account ID. Manager ID = <TerminalInline>944-854-0582</TerminalInline>.
+          </>
+        ),
+      },
+      {
+        name: "MICROSOFT_ADS_DEVELOPER_TOKEN",
+        status: "optional",
+        desc: "Bing Ads — chỉ cần nếu onboarded.",
+      },
     ],
   },
   {
     title: "ChargeFlow",
+    icon: Shield,
+    description: "Cookie-based UI sync chính. HMAC fallback.",
     rows: [
-      ["CHARGEFLOW_ACCESS_KEY / CHARGEFLOW_SECRET_KEY", "Required", "Public API fallback."],
-      ["CHARGEFLOW_USE_HMAC", "Optional", "Default false. UI-API path uses cookie."],
-      ["CHARGEFLOW_UI_COOKIE", "Required (prod)", "Set on Vercel from Mac mini Chrome CDP. Source-of-truth dispute sync."],
-      ["CHARGEFLOW_UI_STATUS_PARAM", "Optional", "URL query for status filter."],
+      {
+        name: "CHARGEFLOW_ACCESS_KEY / CHARGEFLOW_SECRET_KEY",
+        status: "required",
+        desc: "Public API fallback path.",
+      },
+      {
+        name: "CHARGEFLOW_USE_HMAC",
+        status: "optional",
+        desc: (
+          <>
+            Default <TerminalInline>false</TerminalInline>. UI-API path dùng cookie.
+          </>
+        ),
+      },
+      {
+        name: "CHARGEFLOW_UI_COOKIE",
+        status: "prod-only",
+        desc: "Set trên Vercel từ Mac mini Chrome CDP. Source-of-truth dispute sync.",
+      },
+      {
+        name: "CHARGEFLOW_UI_STATUS_PARAM",
+        status: "optional",
+        desc: "URL query cho status filter.",
+      },
     ],
   },
   {
-    title: "CJ / Dispute Providers",
+    title: "CJ / Dispute providers",
+    icon: Webhook,
+    description: "CJ Dropshipping webhook secret + Stripe read-only.",
     rows: [
-      ["CJ_QPS", "Optional", "Rate limit cho CJ Dropshipping."],
-      ["CJ_WEBHOOK_SECRET", "Required (CJ)", "Verify CJ webhook signature."],
-      ["STRIPE_RESTRICTED_API_KEY", "Optional", "Read-only Stripe key cho dispute provider."],
+      { name: "CJ_QPS", status: "optional", desc: "Rate limit cho CJ Dropshipping." },
+      {
+        name: "CJ_WEBHOOK_SECRET",
+        status: "required",
+        desc: "Verify CJ webhook signature.",
+      },
+      {
+        name: "STRIPE_RESTRICTED_API_KEY",
+        status: "optional",
+        desc: "Read-only Stripe key cho dispute provider.",
+      },
     ],
   },
   {
-    title: "Lark Mail / CS",
+    title: "Lark Mail / CS Dashboard",
+    icon: Mail,
+    description: "IMAP fallback nếu Lark Mail API down. Gmail app password legacy.",
     rows: [
-      ["LARK_MAIL_USER / LARK_MAIL_APP_PASSWORD", "Optional", "IMAP fallback nếu Lark Mail API down."],
-      ["WELLNEST_HELLO_IMAP_USER / _PASSWORD", "Optional", "hello@wellnestness.co IMAP."],
-      ["GMAIL_APP_PASSWORD_WELLNESSNEST", "Optional", "Gmail app password (legacy)."],
-      ["CS_DASHBOARD_LARK_START_DATE", "Optional", "Override 'today' anchor cho CS Dashboard testing."],
+      {
+        name: "LARK_MAIL_USER / LARK_MAIL_APP_PASSWORD",
+        status: "optional",
+        desc: "IMAP fallback nếu Lark Mail API down.",
+      },
+      {
+        name: "WELLNEST_HELLO_IMAP_USER / _PASSWORD",
+        status: "optional",
+        desc: (
+          <>
+            <TerminalInline>hello@wellnestness.co</TerminalInline> IMAP.
+          </>
+        ),
+      },
+      {
+        name: "GMAIL_APP_PASSWORD_WELLNESSNEST",
+        status: "legacy",
+        desc: "Gmail app password (legacy fallback).",
+      },
+      {
+        name: "CS_DASHBOARD_LARK_START_DATE",
+        status: "optional",
+        desc: 'Override "today" anchor cho CS Dashboard testing.',
+      },
     ],
   },
   {
     title: "GitHub Actions",
+    icon: Webhook,
+    description: "PAT để workflow_dispatch sang sync workflows.",
     rows: [
-      ["GITHUB_TOKEN", "Required", "PAT to trigger workflow_dispatch from Vercel."],
-      ["GITHUB_REPO", "Required", "Hoaibaodata/shopify-lark-sync."],
+      {
+        name: "GITHUB_TOKEN",
+        status: "required",
+        desc: "PAT để trigger workflow_dispatch từ Vercel.",
+      },
+      {
+        name: "GITHUB_REPO",
+        status: "required",
+        desc: (
+          <>
+            <TerminalInline>Hoaibaodata/shopify-lark-sync</TerminalInline>.
+          </>
+        ),
+      },
     ],
   },
   {
-    title: "Recharge bucketing",
+    title: "Recharge bucketing — special",
+    icon: Repeat,
+    description: "Fix bug Node parse naive ISO thành local-PDT làm subs undercount.",
     rows: [
-      ["RECHARGE_BUCKET_TZ", "Required (analytics parity)", "Phải là \"+00:00\". Lý do: Recharge naive ISO parsed as local-PDT by Node → shifted by shop tz → cancelled_subs undercounted. Xem reference."],
+      {
+        name: "RECHARGE_BUCKET_TZ",
+        status: "required",
+        desc: (
+          <>
+            <strong>Phải là</strong> <TerminalInline>&quot;+00:00&quot;</TerminalInline>. Lý do: Recharge
+            trả naive ISO, Node parse thành local-PDT → shifted theo shop tz →
+            cancelled_subs undercount. Memo: <TerminalInline>reference_recharge_tz_bug</TerminalInline>.
+          </>
+        ),
+      },
     ],
   },
 ];
@@ -114,63 +395,84 @@ export default function Page() {
       <PageHeader
         eyebrow="Getting Started"
         title="Environment Variables"
-        description="Full catalog of every env var the app and workers expect."
+        description="Full catalog mọi env vars app và workers cần. Nhóm theo provider, có status badge."
       />
 
       <Callout variant="warning" title="Never commit .env">
-        File <code>.env</code> đã có trong <code>.gitignore</code>. Tất cả secrets dùng cho
-        production phải set qua{" "}
-        <code>vercel env add</code>. Xem <a href="/docs/deploy-vercel">Deploy</a>.
+        File <TerminalInline>.env</TerminalInline> đã có trong{" "}
+        <TerminalInline>.gitignore</TerminalInline>. Tất cả secret production set qua{" "}
+        <TerminalInline>vercel env add</TerminalInline>. Xem{" "}
+        <a href="/docs/deploy-vercel" className="underline">
+          Deploy
+        </a>{" "}
+        cho cách add chuẩn (dùng <TerminalInline>{`< file`}</TerminalInline> redirect, không
+        echo|pipe).
       </Callout>
 
-      {groups.map((g) => (
-        <section key={g.title}>
-          <h2 id={g.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}>{g.title}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th style={{ width: "30%" }}>Variable</th>
-                <th style={{ width: "15%" }}>Status</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {g.rows.map((r) => (
-                <tr key={r[0]}>
-                  <td>
-                    <code className="text-[12px]">{r[0]}</code>
-                  </td>
-                  <td className="text-muted-foreground text-[13px]">{r[1]}</td>
-                  <td className="text-[14px]">{r[2]}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+      <h2 id="legend">Status legend</h2>
+      <EnvLegend />
+      <div className="not-prose my-3 text-[12.5px] text-muted-foreground space-y-1">
+        <div><strong>Bắt buộc</strong>: thiếu là crash app khi start.</div>
+        <div><strong>Tuỳ chọn</strong>: feature liên quan sẽ disable nếu thiếu.</div>
+        <div><strong>Legacy</strong>: dùng cho fallback, có cái mới thay thế.</div>
+        <div><strong>1-lần</strong>: chỉ dùng cho migration/backfill, có thể xoá sau.</div>
+        <div><strong>Prod-only</strong>: chỉ set ở Vercel production, không cần cho dev.</div>
+      </div>
+
+      <h2 id="catalog">Catalog — phân theo provider</h2>
+      {categories.map((cat) => (
+        <EnvCategoryCard key={cat.title} cat={cat} />
       ))}
 
-      <h2 id="vercel-pull">Pull env vars from Vercel</h2>
-      <p>Sau khi link Vercel project, kéo env vars về máy local:</p>
-      <CodeBlock language="bash">{`vercel link  # one-time
-vercel env pull .env.local`}</CodeBlock>
-      <Callout variant="warning" title="vercel env pull doesn't decrypt secrets">
-        Các encrypted vars sẽ show <code>NAME=&quot;&quot;</code> bất kể giá trị thực. Bạn vẫn
-        phải nhập tay những giá trị nhạy cảm — pull chỉ giúp đồng bộ <em>tên</em> biến.
+      <h2 id="vercel-pull">Đồng bộ env từ Vercel về local</h2>
+      <p>Sau khi link Vercel project:</p>
+      <Terminal
+        host="you@laptop"
+        cwd="~/Coding/shopify-lark-sync"
+        lines={[
+          { prompt: "$", cmd: "vercel link             # one-time" },
+          { prompt: "$", cmd: "vercel env pull .env.local" },
+          { divider: true, label: "kết quả" },
+          { out: "✓ Created .env.local", tone: "ok" },
+        ]}
+      />
+      <Callout variant="warning" title="Pull không decrypt secret">
+        Encrypted vars sẽ show <TerminalInline>NAME=&quot;&quot;</TerminalInline> bất kể giá
+        trị thực. Bạn vẫn phải nhập tay những giá trị nhạy cảm — pull chỉ giúp đồng bộ{" "}
+        <em>tên</em> biến.
       </Callout>
 
-      <h2 id="next-public-redeploy">NEXT_PUBLIC_* requires redeploy</h2>
-      <p>
-        Vars bắt đầu bằng <code>NEXT_PUBLIC_</code> được inline vào client bundle ở build time.
-        <code> vercel env add NEXT_PUBLIC_X</code> alone won't propagate — phải{" "}
-        <code>vercel --prod</code> after.
-      </p>
-
-      <h2 id="env-add-stdin-trap">Stdin trap khi add env</h2>
-      <p>
-        <code>echo &quot;v&quot; | vercel env add NAME prod</code> lưu EMPTY string. Phải dùng
-        redirect:
-      </p>
-      <CodeBlock language="bash">{`vercel env add MY_SECRET production < my-secret.txt`}</CodeBlock>
+      <h2 id="gotchas">2 gotcha thường gặp</h2>
+      <div className="not-prose my-5 grid sm:grid-cols-2 gap-3">
+        <div className="rounded-xl border-2 border-amber-500/40 bg-amber-500/[0.04] p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Activity className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <div className="font-semibold text-[14px]">NEXT_PUBLIC_* phải redeploy</div>
+          </div>
+          <div className="text-[13px] leading-6 text-foreground/85">
+            Vars có prefix <TerminalInline>NEXT_PUBLIC_</TerminalInline> được inline vào client
+            bundle ở build time. <TerminalInline>vercel env add</TerminalInline> alone won&apos;t
+            propagate — phải <TerminalInline>vercel --prod</TerminalInline> sau.
+          </div>
+        </div>
+        <div className="rounded-xl border-2 border-red-500/40 bg-red-500/[0.04] p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Activity className="h-4 w-4 text-red-600 dark:text-red-400" />
+            <div className="font-semibold text-[14px]">echo|pipe lưu empty</div>
+          </div>
+          <div className="text-[13px] leading-6 text-foreground/85">
+            <TerminalInline>echo &quot;v&quot; | vercel env add NAME prod</TerminalInline> đôi
+            khi silent-stores empty. Dùng redirect file thay vào:
+            <Terminal
+              host="you@laptop"
+              cwd="~"
+              lines={[
+                { prompt: "$", cmd: "vercel env add MY_SECRET production < secret.txt" },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
 
       <PageNav href="/docs/env" />
     </>

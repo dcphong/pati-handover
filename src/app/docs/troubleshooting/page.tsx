@@ -1,102 +1,17 @@
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
-import { Callout } from "@/components/docs/callout";
-import { CodeBlock } from "@/components/docs/code-block";
+import {
+  DecisionBranch,
+  DecisionStart,
+  FixStep,
+  FixSuccess,
+  ProbeFirst,
+  Terminal,
+  TerminalInline,
+  HealthCheckGrid,
+} from "@/components/docs/visuals";
 
 export const metadata = { title: "Troubleshooting — PATI Handover" };
-
-const items = [
-  {
-    title: "Dashboard cards show $0 / blank sections",
-    cause: "99% chance là Cloudflared tunnel down (home ISP NAT timeout) hoặc Colima Docker VM chưa start sau reboot.",
-    fix: `1. curl -I https://supabase.patiagency.com/rest/v1/ → nếu 502, tunnel down.
-2. SSH timcook@100.94.220.128
-3. colima start  (nếu Docker chưa chạy)
-4. pkill cloudflared && cloudflared tunnel run pati-supabase &
-5. Verify config có edge-ip-version: "4" + tcpKeepAlive: 30s + retries: 10`,
-  },
-  {
-    title: "Cards show stale numbers, refresh doesn't help",
-    cause: "PostgREST schema cache lag (self-host can take 6-15+ min sau column/constraint adds). Hoặc RQ stale-time chưa expire.",
-    fix: `1. docker restart supabase-rest trên Mac mini.
-2. Hoặc fallback gọi RPC trực tiếp (e.g., upsert_ad_spend_batch).
-3. React Query: invalidate query key thủ công.`,
-  },
-  {
-    title: "supabase-js returns [] giống empty table",
-    cause: "Quên pass db: { schema: 'master_app' }. supabase-js default Accept-Profile: public → đọc placeholder schema. OR table có RLS=ON, không có policy → anon reads return [].",
-    fix: `1. Verify createClient có db.schema set.
-2. Test bằng service-role key — nếu vẫn [] thì là data thật. Nếu có data thì là RLS trap.
-3. Add policy: CREATE POLICY ... ON master_app.table FOR SELECT TO anon USING (true);`,
-  },
-  {
-    title: "Refund-rate hoặc bất kỳ aggregate nào bất thường (e.g., 34% vs 5%)",
-    cause: "PostgREST silent 1000-row cap (PGRST_DB_MAX_ROWS=1000). Bare .select() truncates without warning.",
-    fix: `Dùng pageAll() helper trong /src/lib/supabase.ts. Hoặc add .range(0, 9999).`,
-  },
-  {
-    title: "Shopify webhook 401 / HMAC fail",
-    cause: "SHOPIFY_API_SECRET không match Lark Integration app's secret (NOT public app).",
-    fix: `Shopify Admin → Develop apps → Lark Integration → API credentials → Reveal token once → copy → vercel env add SHOPIFY_API_SECRET production.`,
-  },
-  {
-    title: "Vercel build fail / 404 sau khi push",
-    cause: "Working tree drift — M (modified-but-untracked) files referenced bởi HEAD code.",
-    fix: `1. git status --porcelain — verify clean.
-2. bun run typecheck local.
-3. Re-deploy explicit: vercel --prod --yes.`,
-  },
-  {
-    title: ".vercelignore drop routes",
-    cause: "Recursive glob silently match nhiều hơn intended.",
-    fix: `Đừng dùng catch-all glob. Mỗi line phải narrow + verify bằng vercel build local sau khi đổi.`,
-  },
-  {
-    title: "NEXT_PUBLIC_X không update sau khi add env",
-    cause: "Build-time inline. vercel env add không trigger redeploy.",
-    fix: `vercel --prod --yes sau khi add NEXT_PUBLIC_*. Server-side vars hot reload bình thường.`,
-  },
-  {
-    title: "vercel env add nhận empty string",
-    cause: "echo \"v\" | vercel env add sometimes stores empty.",
-    fix: `Dùng < file.txt redirect: vercel env add MY_SECRET production < secret.txt.`,
-  },
-  {
-    title: "Calendar onChange picks wrong day",
-    cause: "toISOString().slice(0,10) shifts UTC. Click 18 ở UTC+7 stores 17.",
-    fix: `Replace với format(d, 'yyyy-MM-dd') từ date-fns.`,
-  },
-  {
-    title: "Recharge subscription metrics off by a few",
-    cause: "Recharge naive ISO timestamps parsed as local-PDT by Node → shifted by shop tz.",
-    fix: `Set RECHARGE_BUCKET_TZ="+00:00" cho all Recharge handler bucketing.`,
-  },
-  {
-    title: "Analytics card $0 cho Recharge / PG / COGS / Shipping",
-    cause: "Stale tw-dump/live-audit/<today>_*.json captured pre-dawn override live data via setAuditedMetric.",
-    fix: `Check readTwAuditMetricSums returns null nếu no non-zero buckets. Commit 978e02b đã fix.`,
-  },
-  {
-    title: "Refund amount = 0 cho restock refunds (drift 0.5-2%)",
-    cause: "Bulk-parse path overwrote correct values. Restock refunds amount=0 (~52% of 30-day).",
-    fix: `DB trigger preserving non-zero amount + backfill script. Đừng blame "FX noise" trước khi check raw_refunds amount=0 count.`,
-  },
-  {
-    title: "Auto-deploy GitHub→Vercel không trigger",
-    cause: "Webhook lúc bị miss.",
-    fix: `vercel --prod --yes thủ công sau push quan trọng.`,
-  },
-  {
-    title: "ChargeFlow sync bắt đầu 401",
-    cause: "Session cookie expired (~30 ngày).",
-    fix: `Mac mini Chrome → manual login → copy __session cookie → vercel env rm + add CHARGEFLOW_UI_COOKIE → vercel --prod.`,
-  },
-  {
-    title: "Mac mini reboot rồi không sync nữa",
-    cause: "Colima Docker VM không auto-start.",
-    fix: `ssh timcook@... && colima start. Hardening (launchd plist) đang pending.`,
-  },
-];
 
 export default function Page() {
   return (
@@ -104,44 +19,475 @@ export default function Page() {
       <PageHeader
         eyebrow="Reference"
         title="Troubleshooting"
-        description="Common issues, root causes, and the exact fix Phong used."
+        description="Triệu chứng bạn thấy → nguyên nhân → 1-2-3 cách fix. Đi từ trên xuống."
       />
 
-      <Callout variant="tip" title="Probe tunnel FIRST">
-        Khi gặp bug ở dashboard, luôn run <code>curl -I https://supabase.patiagency.com/rest/v1/</code>{" "}
-        TRƯỚC. 502 = tunnel down, fix điều đó trước khi đi đào schema/auth/RLS.
-      </Callout>
+      <ProbeFirst>
+        Khi dashboard hỏng / cards $0 / API trả lỗi, <strong>luôn luôn</strong> chạy lệnh
+        sau ĐẦU TIÊN. Nếu trả 502, tunnel Mac mini down — fix tunnel xong mọi thứ khác
+        sẽ tự ổn:
+        <Terminal
+          host="you@laptop"
+          cwd="~"
+          lines={[
+            { prompt: "$", cmd: "curl -I https://supabase.patiagency.com/rest/v1/" },
+            { divider: true, label: "diễn giải" },
+            { out: "HTTP/2 200  →  Tunnel OK, đào tiếp", tone: "ok" },
+            { out: "HTTP/2 401  →  Tunnel OK, đào tiếp (401 do thiếu key, không lỗi)", tone: "ok" },
+            { out: "HTTP/2 502  →  Tunnel DOWN, đọc nhánh đầu bên dưới", tone: "err" },
+          ]}
+        />
+      </ProbeFirst>
 
-      {items.map((it, i) => (
-        <section key={i}>
-          <h3 id={`issue-${i + 1}`}>
-            {i + 1}. {it.title}
-          </h3>
-          <p>
-            <strong>Cause</strong> — {it.cause}
-          </p>
-          <p>
-            <strong>Fix</strong>
-          </p>
-          <CodeBlock language="text">{it.fix}</CodeBlock>
-        </section>
-      ))}
+      <DecisionStart question="Bạn thấy triệu chứng gì?">
+        Đi từ trên xuống, đụng symptom giống mình → đọc Cause → làm theo Fix step-by-step.
+        Mỗi nhánh là độc lập.
+      </DecisionStart>
 
-      <h2 id="ask">Khi tất cả fail</h2>
-      <ol>
-        <li>
-          Check <code>master_app.sync_logs</code> latest entries — error message thường tự khai
-          gốc.
-        </li>
-        <li>
-          Run <code>npx gitnexus query &quot;your concept&quot;</code> trong repo cũ — process-grouped
-          results dẫn đến đúng module.
-        </li>
-        <li>
-          Liên hệ Phong (handover period). Sau handover: check git log + commit messages — Phong
-          viết kỹ.
-        </li>
-      </ol>
+      <h2 id="infra">Hạ tầng / kết nối</h2>
+
+      <DecisionBranch
+        symptom="Dashboard cards show $0 / sections trống / spinner mãi không xong"
+        cause="99% là Cloudflared tunnel ở Mac mini bị drop (ISP NAT timeout) HOẶC Colima Docker VM chưa start lại sau khi Mac mini reboot."
+        severity="danger"
+        fix={
+          <>
+            <FixStep n={1}>
+              Probe trước:{" "}
+              <TerminalInline>curl -I https://supabase.patiagency.com/rest/v1/</TerminalInline>{" "}
+              — nếu 502 thì confirm tunnel down.
+            </FixStep>
+            <FixStep n={2}>
+              SSH vào Mac mini:
+              <Terminal
+                host="you@laptop"
+                cwd="~"
+                lines={[
+                  { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
+                  { prompt: "timcook@mini $", cmd: "colima start   # nếu Docker chưa chạy" },
+                  { prompt: "timcook@mini $", cmd: "pkill cloudflared" },
+                  { prompt: "timcook@mini $", cmd: "nohup cloudflared tunnel run pati-supabase > ~/cloudflared.log 2>&1 &" },
+                ]}
+              />
+            </FixStep>
+            <FixStep n={3}>
+              Verify config có 3 setting quan trọng (đề phòng ai sửa nhầm):
+              <Terminal
+                host="timcook@mini"
+                cwd="~"
+                title="~/.cloudflared/config.yml — 3 dòng quan trọng"
+                lines={[
+                  { out: "edge-ip-version: \"4\"", tone: "ok" },
+                  { out: "originRequest:" },
+                  { out: "  tcpKeepAlive: 30s", tone: "ok" },
+                  { out: "retries: 10", tone: "ok" },
+                ]}
+              />
+            </FixStep>
+            <FixStep n={4}>
+              Quay lại laptop, chạy lại curl ở step 1 → phải thấy 200/401.
+            </FixStep>
+            <FixSuccess>
+              <TerminalInline>HTTP/2 200</TerminalInline> hoặc <TerminalInline>401</TerminalInline>
+            </FixSuccess>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="Mac mini reboot xong dashboard im luôn"
+        cause="Colima KHÔNG auto-start sau reboot — Docker VM chưa chạy nên Supabase containers chưa lên."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>SSH vào Mac mini.</FixStep>
+            <FixStep n={2}>
+              Chạy <TerminalInline>colima start</TerminalInline> và đợi VM lên.
+            </FixStep>
+            <FixStep n={3}>
+              Confirm containers chạy:{" "}
+              <TerminalInline>docker ps | grep supabase</TerminalInline> — phải có{" "}
+              <TerminalInline>supabase-rest</TerminalInline>,{" "}
+              <TerminalInline>supabase-db</TerminalInline>.
+            </FixStep>
+            <FixSuccess>
+              <TerminalInline>docker ps</TerminalInline> liệt kê ≥ 5 supabase-* containers
+            </FixSuccess>
+          </>
+        }
+      />
+
+      <h2 id="data">Số liệu / database</h2>
+
+      <DecisionBranch
+        symptom="Cards hiển thị số cũ, refresh không update"
+        cause="PostgREST schema cache lag — self-host có thể chậm 6-15 phút sau khi thêm column/constraint. Hoặc React Query stale-time chưa expire."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>
+              Restart PostgREST trên Mac mini:
+              <Terminal
+                host="timcook@mini"
+                cwd="~"
+                lines={[
+                  { prompt: "$", cmd: "docker restart supabase-rest" },
+                ]}
+              />
+            </FixStep>
+            <FixStep n={2}>
+              Hoặc fallback gọi RPC trực tiếp (ví dụ{" "}
+              <TerminalInline>upsert_ad_spend_batch</TerminalInline>) để bypass cache.
+            </FixStep>
+            <FixStep n={3}>
+              Ở UI: invalidate query key thủ công (React Query devtools → Invalidate).
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="supabase-js trả về [] giống empty table, mà data thật có"
+        cause="Quên pass db: { schema: 'master_app' } khi createClient. supabase-js default Accept-Profile: public → PostgREST đọc schema public (rỗng) → trả [] đẹp như empty thật."
+        severity="danger"
+        fix={
+          <>
+            <FixStep n={1}>
+              Mở <TerminalInline>src/lib/supabase.ts</TerminalInline>, verify{" "}
+              <TerminalInline>db: {`{ schema: "master_app" }`}</TerminalInline> có trong{" "}
+              createClient options.
+            </FixStep>
+            <FixStep n={2}>
+              Test bằng service-role key. Nếu vẫn [] thì data thật là rỗng, không phải bug.
+              Nếu thấy data → là RLS trap (xem nhánh kế tiếp).
+            </FixStep>
+            <FixStep n={3}>
+              Nếu là RLS trap: add policy:
+              <Terminal
+                host="postgres"
+                cwd="psql"
+                lines={[
+                  { prompt: "psql>", cmd: "CREATE POLICY anon_read ON master_app.<table>" },
+                  { prompt: "psql>", cmd: "  FOR SELECT TO anon USING (true);" },
+                ]}
+              />
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="Refund-rate hoặc aggregate nào đó lệch lạ (ví dụ 34% thay vì 5%)"
+        cause="PostgREST silent cap PGRST_DB_MAX_ROWS = 1000. Bare .select() truncate ở row thứ 1000 KHÔNG báo gì."
+        severity="danger"
+        fix={
+          <>
+            <FixStep n={1}>
+              Tìm chỗ query trong code, replace <TerminalInline>.select()</TerminalInline> bare
+              bằng <TerminalInline>pageAll()</TerminalInline> helper:
+            </FixStep>
+            <FixStep n={2}>
+              <Terminal
+                host="you@laptop"
+                cwd="~"
+                title="src/lib/supabase.ts"
+                lines={[
+                  { out: "import { pageAll } from \"@/lib/supabase\";" },
+                  { out: "" },
+                  { out: "const refunds = await pageAll(supabase" },
+                  { out: "  .from(\"raw_refunds\")" },
+                  { out: "  .select(\"id, amount, created_at\")" },
+                  { out: "  .gte(\"created_at\", startISO));", tone: "ok" },
+                ]}
+              />
+            </FixStep>
+            <FixStep n={3}>
+              Hoặc band-aid: <TerminalInline>.range(0, 9999)</TerminalInline>.
+            </FixStep>
+          </>
+        }
+      />
+
+      <h2 id="webhooks">Webhooks / external</h2>
+
+      <DecisionBranch
+        symptom="Shopify webhook 401 / HMAC fail trong Vercel logs"
+        cause="SHOPIFY_API_SECRET không match secret của Lark Integration custom app (KHÔNG phải public app)."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>
+              Shopify Admin → <strong>Develop apps</strong> → chọn <strong>Lark Integration</strong>{" "}
+              (không phải app khác) → <strong>API credentials</strong> tab.
+            </FixStep>
+            <FixStep n={2}>
+              Click <strong>Reveal token once</strong> ở phần <em>API secret key</em> — copy ngay
+              (chỉ show 1 lần).
+            </FixStep>
+            <FixStep n={3}>
+              <Terminal
+                host="you@laptop"
+                cwd="~"
+                lines={[
+                  { prompt: "$", cmd: "echo \"shpss_xxxxxxxxx\" > /tmp/shop-secret.txt" },
+                  { prompt: "$", cmd: "vercel env rm SHOPIFY_API_SECRET production" },
+                  { prompt: "$", cmd: "vercel env add SHOPIFY_API_SECRET production < /tmp/shop-secret.txt" },
+                  { prompt: "$", cmd: "rm /tmp/shop-secret.txt" },
+                  { prompt: "$", cmd: "vercel --prod --yes" },
+                ]}
+              />
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="ChargeFlow sync bắt đầu 401 toàn bộ"
+        cause="Session cookie hết hạn (~30 ngày). UI-API path dùng cookie không phải HMAC."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>
+              SSH vào Mac mini, mở Chrome đã pin profile:
+              <Terminal
+                host="timcook@mini"
+                cwd="~"
+                lines={[
+                  { prompt: "$", cmd: "~/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome \\" },
+                  { prompt: "", cmd: "  --remote-debugging-port=9222 \\" },
+                  { prompt: "", cmd: "  --user-data-dir=$HOME/.chargeflow-chrome" },
+                ]}
+              />
+            </FixStep>
+            <FixStep n={2}>
+              Login ChargeFlow bằng tay → DevTools → Application → Cookies → copy{" "}
+              <TerminalInline>__session</TerminalInline> value.
+            </FixStep>
+            <FixStep n={3}>
+              <Terminal
+                host="you@laptop"
+                cwd="~"
+                lines={[
+                  { prompt: "$", cmd: "echo \"<cookie value>\" > /tmp/cf.txt" },
+                  { prompt: "$", cmd: "vercel env rm CHARGEFLOW_UI_COOKIE production" },
+                  { prompt: "$", cmd: "vercel env add CHARGEFLOW_UI_COOKIE production < /tmp/cf.txt" },
+                  { prompt: "$", cmd: "vercel --prod --yes" },
+                ]}
+              />
+            </FixStep>
+            <FixSuccess>
+              Cron 5-phút tiếp theo sync xanh, sync_logs có status &quot;completed&quot;
+            </FixSuccess>
+          </>
+        }
+      />
+
+      <h2 id="deploy">Deploy / build</h2>
+
+      <DecisionBranch
+        symptom="Vercel build fail / 404 sau khi push"
+        cause="Working-tree drift — file M (modified-but-untracked) ở local mà HEAD code reference. Local thì có, Vercel build từ HEAD thì thiếu."
+        severity="danger"
+        fix={
+          <>
+            <FixStep n={1}>
+              Local: <TerminalInline>git status --porcelain</TerminalInline> phải sạch hoặc
+              chỉ có file unrelated.
+            </FixStep>
+            <FixStep n={2}>
+              Nếu có M file mà HEAD reference: <strong>commit</strong> hoặc{" "}
+              <strong>revert</strong>, đừng để treo.
+            </FixStep>
+            <FixStep n={3}>
+              <TerminalInline>bun run typecheck</TerminalInline> phải xanh local.
+            </FixStep>
+            <FixStep n={4}>
+              Re-deploy explicit (đừng đợi auto):{" "}
+              <TerminalInline>vercel --prod --yes</TerminalInline>.
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom=".vercelignore drop routes — production 404 khi local OK"
+        cause="Catch-all glob trong .vercelignore (kiểu **) match silently nhiều hơn ý định, bỏ qua /api/analytics/sync/* khi build."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>
+              Mở <TerminalInline>.vercelignore</TerminalInline>. Mỗi line phải narrow + có lý do.
+            </FixStep>
+            <FixStep n={2}>
+              Đừng dùng catch-all. Thay bằng path cụ thể.
+            </FixStep>
+            <FixStep n={3}>
+              Verify bằng <TerminalInline>vercel build</TerminalInline> local sau khi đổi —
+              check artifact ở <TerminalInline>.vercel/output/</TerminalInline> có chứa route
+              bạn cần không.
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="NEXT_PUBLIC_X mới add nhưng client vẫn dùng giá trị cũ"
+        cause="NEXT_PUBLIC_* được inline vào client bundle ở build time. vercel env add KHÔNG tự re-build."
+        severity="info"
+        fix={
+          <>
+            <FixStep n={1}>
+              Sau khi <TerminalInline>vercel env add NEXT_PUBLIC_X</TerminalInline> →{" "}
+              <strong>buộc phải</strong> <TerminalInline>vercel --prod</TerminalInline> để
+              rebuild.
+            </FixStep>
+            <FixStep n={2}>
+              Server-side vars (không có prefix) hot-reload bình thường — không cần redeploy.
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="vercel env add lưu empty string — env vẫn show có giá trị"
+        cause="echo &quot;v&quot; | vercel env add sometimes silent-stores empty (stdin trap)."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>
+              Dùng redirect file thay vì pipe:
+              <Terminal
+                host="you@laptop"
+                cwd="~"
+                lines={[
+                  { prompt: "$", cmd: "echo \"value\" > /tmp/secret.txt" },
+                  { prompt: "$", cmd: "vercel env add MY_SECRET production < /tmp/secret.txt" },
+                  { prompt: "$", cmd: "rm /tmp/secret.txt" },
+                ]}
+              />
+            </FixStep>
+            <FixStep n={2}>
+              Verify:{" "}
+              <TerminalInline>vercel env pull .env.local</TerminalInline> rồi check{" "}
+              <TerminalInline>.env.local</TerminalInline> (encrypted vars chỉ thấy NAME=&quot;&quot;,
+              nên test thực qua deployment).
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="Auto-deploy GitHub → Vercel không trigger"
+        cause="Webhook đôi khi miss. Đã xảy ra nhiều lần."
+        severity="info"
+        fix={
+          <>
+            <FixStep n={1}>
+              Đừng phụ thuộc auto. Sau push quan trọng:{" "}
+              <TerminalInline>vercel --prod --yes</TerminalInline> thủ công.
+            </FixStep>
+          </>
+        }
+      />
+
+      <h2 id="analytics">Analytics / parity bugs</h2>
+
+      <DecisionBranch
+        symptom="Calendar onChange chọn nhầm 1 ngày (chọn 18, lưu 17)"
+        cause="toISOString().slice(0,10) shift UTC. Click 18 ở UTC+7 → ISO UTC → 17."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>
+              Replace toàn bộ <TerminalInline>toISOString().slice(0,10)</TerminalInline> trong
+              calendar handler bằng <TerminalInline>format(d, &apos;yyyy-MM-dd&apos;)</TerminalInline>{" "}
+              từ date-fns (tôn trọng local tz).
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="Recharge subscription metrics lệch vài đơn vị"
+        cause="Recharge trả naive ISO (không có Z), Node parse thành local-PDT → bucket shift theo shop tz → cancelled_subs undercount."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>
+              Set env: <TerminalInline>RECHARGE_BUCKET_TZ=&quot;+00:00&quot;</TerminalInline>.
+            </FixStep>
+            <FixStep n={2}>
+              Verify handler dùng env này khi bucket: grep{" "}
+              <TerminalInline>RECHARGE_BUCKET_TZ</TerminalInline> trong{" "}
+              <TerminalInline>src/lib/analytics/</TerminalInline>.
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="Analytics card $0 cho Recharge / PG / COGS / Shipping (mà nguồn có data)"
+        cause="Stale tw-dump/live-audit/<today>_*.json captured pre-dawn — override live data via setAuditedMetric."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>
+              Check function <TerminalInline>readTwAuditMetricSums</TerminalInline> phải return{" "}
+              <TerminalInline>null</TerminalInline> nếu không có non-zero bucket. Commit{" "}
+              <TerminalInline>978e02b</TerminalInline> đã fix — verify nhánh hiện tại đã merge.
+            </FixStep>
+          </>
+        }
+      />
+
+      <DecisionBranch
+        symptom="Refund amount = 0 cho restock refunds (drift 0.5-2%)"
+        cause="Bulk-parse path overwrite correct values với 0. Restock refunds chiếm ~52% của 30-day window."
+        severity="warn"
+        fix={
+          <>
+            <FixStep n={1}>
+              Có DB trigger preserve non-zero amount đã được setup. Verify trigger tồn tại:
+              <Terminal
+                host="postgres"
+                cwd="psql"
+                lines={[
+                  { prompt: "psql>", cmd: "\\dt master_app.raw_refunds" },
+                  { prompt: "psql>", cmd: "SELECT * FROM pg_trigger WHERE tgrelid = 'master_app.raw_refunds'::regclass;" },
+                ]}
+              />
+            </FixStep>
+            <FixStep n={2}>
+              Đừng kết luận &quot;FX noise&quot; trước khi check{" "}
+              <TerminalInline>raw_refunds WHERE amount = 0</TerminalInline> count.
+            </FixStep>
+          </>
+        }
+      />
+
+      <h2 id="last-resort">Khi mọi cách đều fail</h2>
+      <HealthCheckGrid
+        title="3 chỗ tra cuối cùng trước khi ping Phong"
+        probes={[
+          {
+            label: "Sync logs trong DB",
+            cmd: "psql> SELECT * FROM master_app.sync_logs ORDER BY started_at DESC LIMIT 10;",
+            expect: "Error message thường nói rõ root cause",
+            badResult: "Empty",
+            badMeans: "pipeline chưa từng chạy → vấn đề ở cron, không phải data",
+          },
+          {
+            label: "GitNexus (impact analysis)",
+            cmd: "npx gitnexus query \"your concept\"   # chạy trong repo cũ shopify-lark-sync",
+            expect: "Process-grouped results — dẫn về đúng module liên quan",
+          },
+          {
+            label: "Git log + commit messages",
+            cmd: "git log --oneline --all | grep -i \"<keyword bạn nghi\\>\"",
+            expect: "Phong viết commit kỹ — thường đã có ghi chú về incident tương tự",
+          },
+        ]}
+      />
 
       <PageNav href="/docs/troubleshooting" />
     </>

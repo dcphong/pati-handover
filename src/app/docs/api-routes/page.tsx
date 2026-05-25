@@ -1,170 +1,294 @@
+import {
+  Activity,
+  Cable,
+  Cog,
+  KeyRound,
+  Mail,
+  Package,
+  RefreshCw,
+  Shield,
+  Truck,
+  Users,
+  Webhook,
+} from "lucide-react";
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
-import { CodeBlock } from "@/components/docs/code-block";
+import { Callout } from "@/components/docs/callout";
+import {
+  RouteCatalog,
+  RouteGroup,
+  TerminalInline,
+} from "@/components/docs/visuals";
 
 export const metadata = { title: "API Routes — PATI Handover" };
 
-const groups: { title: string; rows: string[][] }[] = [
+const ICON = "h-4 w-4 text-foreground/70";
+
+const groups: RouteGroup[] = [
   {
     title: "Auth",
-    rows: [
-      ["POST /api/auth/login", "Email + password → JWT cookie"],
-      ["POST /api/auth/logout", "Clear cookie"],
-      ["GET /api/auth/verify", "Verify cookie"],
-      ["POST /api/auth/migrate-passwords", "Bulk hash plaintext (MIGRATION_SECRET required)"],
-      ["GET /api/auth/lark/start", "Begin Lark OAuth"],
-      ["GET /api/auth/lark/callback", "Lark OAuth callback"],
+    description: "JWT cookie–based. /verify dùng để check session hợp lệ.",
+    icon: <KeyRound className={ICON} />,
+    routes: [
+      { method: "POST", path: "/api/auth/login", purpose: "Email + password → JWT cookie" },
+      { method: "POST", path: "/api/auth/logout", purpose: "Clear cookie" },
+      { method: "GET", path: "/api/auth/verify", purpose: "Verify cookie" },
+      {
+        method: "POST",
+        path: "/api/auth/migrate-passwords",
+        purpose: "Bulk hash plaintext passwords",
+        note: "MIGRATION_SECRET required",
+      },
+      { method: "GET", path: "/api/auth/lark/start", purpose: "Begin Lark OAuth flow" },
+      { method: "GET", path: "/api/auth/lark/callback", purpose: "Lark OAuth callback" },
     ],
   },
   {
     title: "Sync triggers",
-    rows: [
-      ["POST /api/sync", "Date-window Shopify sync (Python pipeline)"],
-      ["GET /api/sync/preview", "Preview rows before commit"],
-      ["GET /api/sync-logs", "Recent sync_logs"],
-      ["POST /api/cron", "Trigger GitHub Actions workflow (CRON_SECRET required)"],
-      ["POST /api/cron/chargeflow-sync-ui", "ChargeFlow CDP sync trigger"],
-      ["GET /api/health", "Liveness probe"],
-      ["GET /api/sync-health", "Per-pipeline freshness check"],
+    description: "Mọi pipeline đều gọi qua đây để workflow_dispatch sang GH Actions.",
+    icon: <RefreshCw className={ICON} />,
+    routes: [
+      { method: "POST", path: "/api/sync", purpose: "Date-window Shopify sync (Python pipeline)" },
+      { method: "GET", path: "/api/sync/preview", purpose: "Preview rows trước khi commit" },
+      { method: "GET", path: "/api/sync-logs", purpose: "Lấy sync_logs gần đây" },
+      {
+        method: "POST",
+        path: "/api/cron",
+        purpose: "Trigger GitHub Actions workflow",
+        note: "x-cron-secret required",
+      },
+      {
+        method: "POST",
+        path: "/api/cron/chargeflow-sync-ui",
+        purpose: "ChargeFlow CDP sync trigger",
+      },
+      { method: "GET", path: "/api/health", purpose: "Liveness probe" },
+      { method: "GET", path: "/api/sync-health", purpose: "Per-pipeline freshness check" },
     ],
   },
   {
     title: "Analytics",
-    rows: [
-      ["GET /api/analytics/summary", "TW-parity summary cards"],
-      ["POST /api/analytics/sync/shopify", "Incremental Shopify order sync (TS)"],
-      ["POST /api/analytics/sync/paypal", "PayPal txns sync"],
-      ["POST /api/analytics/sync/paypal-fees", "PayPal fee breakdown sync"],
-      ["POST /api/analytics/sync/recharge", "Recharge subs + charges sync"],
-      ["POST /api/analytics/sync/meta", "Meta Ads spend sync"],
-      ["POST /api/analytics/sync/google", "Google Ads spend sync"],
-      ["POST /api/analytics/sync/klaviyo", "Klaviyo events sync"],
+    description: "TripleWhale-parity. summary card đọc qua RPC summary_metrics.",
+    icon: <Activity className={ICON} />,
+    routes: [
+      { method: "GET", path: "/api/analytics/summary", purpose: "TW-parity summary cards" },
+      {
+        method: "POST",
+        path: "/api/analytics/sync/shopify",
+        purpose: "Incremental Shopify order sync (TS)",
+      },
+      { method: "POST", path: "/api/analytics/sync/paypal", purpose: "PayPal transactions" },
+      {
+        method: "POST",
+        path: "/api/analytics/sync/paypal-fees",
+        purpose: "PayPal fee breakdown",
+      },
+      {
+        method: "POST",
+        path: "/api/analytics/sync/recharge",
+        purpose: "Recharge subs + charges",
+      },
+      { method: "POST", path: "/api/analytics/sync/meta", purpose: "Meta Ads spend" },
+      { method: "POST", path: "/api/analytics/sync/google", purpose: "Google Ads spend" },
+      { method: "POST", path: "/api/analytics/sync/klaviyo", purpose: "Klaviyo events" },
     ],
   },
   {
     title: "Orders / Inventory",
-    rows: [
-      ["GET /api/orders", "List orders for active store"],
-      ["POST /api/orders/import", "CSV order import"],
-      ["GET /api/shopify-orders", "Lower-level shopify_orders view"],
-      ["GET /api/inventory", "Inventory snapshot"],
-      ["GET /api/tracking-timeline/[order]", "Tracking timeline events"],
-      ["POST /api/update-row", "Inline row edit"],
-      ["DELETE /api/delete", "Delete record"],
+    description: "Active-store scoped. /shopify-orders là view lower-level.",
+    icon: <Package className={ICON} />,
+    routes: [
+      { method: "GET", path: "/api/orders", purpose: "List orders cho active store" },
+      { method: "POST", path: "/api/orders/import", purpose: "CSV order import" },
+      { method: "GET", path: "/api/shopify-orders", purpose: "Lower-level shopify_orders view" },
+      { method: "GET", path: "/api/inventory", purpose: "Inventory snapshot" },
+      {
+        method: "GET",
+        path: "/api/tracking-timeline/[order]",
+        purpose: "Tracking timeline events",
+      },
+      { method: "POST", path: "/api/update-row", purpose: "Inline row edit" },
+      { method: "DELETE", path: "/api/delete", purpose: "Delete record" },
     ],
   },
   {
     title: "Custom tables",
-    rows: [
-      ["GET /api/custom-menus", "Sidebar entries cho custom tables"],
-      ["GET /api/custom-columns/[slug]", "Column defs for custom table"],
-      ["GET /api/custom-data/[slug]", "Rows"],
-      ["POST /api/custom-data/[slug]/import", "Bulk import rows"],
+    description: "Dynamic custom-table viewer/editor cho mỗi slug.",
+    icon: <Cable className={ICON} />,
+    routes: [
+      { method: "GET", path: "/api/custom-menus", purpose: "Sidebar entries cho custom tables" },
+      {
+        method: "GET",
+        path: "/api/custom-columns/[slug]",
+        purpose: "Column defs for custom table",
+      },
+      { method: "GET", path: "/api/custom-data/[slug]", purpose: "Rows" },
+      {
+        method: "POST",
+        path: "/api/custom-data/[slug]/import",
+        purpose: "Bulk import rows",
+      },
     ],
   },
   {
     title: "IAM",
-    rows: [
-      ["GET /api/users", "List users"],
-      ["POST /api/users", "Create user"],
-      ["PUT /api/users/[id]", "Edit user"],
-      ["DELETE /api/users/[id]", "Soft-delete user"],
-      ["GET /api/roles", "List roles (legacy)"],
-      ["GET /api/permissions", "List permissions (legacy)"],
-      ["GET /api/iam/actions", "75-action catalog"],
-      ["GET /api/iam/policies", "9 managed policies"],
-      ["POST /api/iam/policies", "Create custom policy"],
-      ["POST /api/iam/users/[id]/policies", "Attach policy to user"],
-      ["GET /api/iam/audit", "Audit log"],
+    description: "AWS-style policies. /iam UI tạo policy + attach user.",
+    icon: <Shield className={ICON} />,
+    routes: [
+      { method: "GET", path: "/api/users", purpose: "List users" },
+      { method: "POST", path: "/api/users", purpose: "Create user" },
+      { method: "PUT", path: "/api/users/[id]", purpose: "Edit user" },
+      { method: "DELETE", path: "/api/users/[id]", purpose: "Soft-delete user" },
+      { method: "GET", path: "/api/roles", purpose: "List roles (legacy)" },
+      { method: "GET", path: "/api/permissions", purpose: "List permissions (legacy)" },
+      { method: "GET", path: "/api/iam/actions", purpose: "75-action catalog" },
+      { method: "GET", path: "/api/iam/policies", purpose: "9 managed policies" },
+      { method: "POST", path: "/api/iam/policies", purpose: "Create custom policy" },
+      {
+        method: "POST",
+        path: "/api/iam/users/[id]/policies",
+        purpose: "Attach policy to user",
+      },
+      { method: "GET", path: "/api/iam/audit", purpose: "Audit log" },
     ],
   },
   {
     title: "CS Dashboard",
-    rows: [
-      ["GET /api/cs-dashboard", "Daily aggregate counters"],
-      ["GET /api/cs-dashboard/orders", "Orders for active store"],
-      ["GET /api/cs/customers/[customerId]", "Unified customer view"],
-      ["PUT /api/cs/customers/[customerId]/profile", "Save CS note + tag"],
+    description: "Gorgias 3-panel rebuild. customer_profiles join Lark Mail.",
+    icon: <Users className={ICON} />,
+    routes: [
+      { method: "GET", path: "/api/cs-dashboard", purpose: "Daily aggregate counters" },
+      { method: "GET", path: "/api/cs-dashboard/orders", purpose: "Orders cho active store" },
+      {
+        method: "GET",
+        path: "/api/cs/customers/[customerId]",
+        purpose: "Unified customer view",
+      },
+      {
+        method: "PUT",
+        path: "/api/cs/customers/[customerId]/profile",
+        purpose: "Save CS note + tag",
+      },
     ],
   },
   {
     title: "Lark Mail",
-    rows: [
-      ["GET /api/lark-mail-charts", "Volume charts"],
-      ["GET /api/lark-mail-clients", "Per-client breakdown"],
-      ["GET /api/lark-mail-customer-history/[email]", "Email history"],
-      ["GET /api/lark-mail-detail/[id]", "Message detail"],
-      ["POST /api/lark-mail-ignore", "Mark thread ignored"],
-      ["GET /api/lark-mail-sent", "Sent items"],
-      ["GET /api/lark-mail-stats", "Per-day stats"],
-      ["POST /api/lark-mail-sync", "Manual re-sync"],
-      ["GET /api/lark-mail-sync-logs", "Sync logs"],
-      ["DELETE /api/lark-mail-delete", "Hard delete (gated)"],
-      ["POST /api/lark-mail-truncate", "Truncate table (admin gated)"],
+    description: "Đồng bộ + truy vấn Lark Mail messages.",
+    icon: <Mail className={ICON} />,
+    routes: [
+      { method: "GET", path: "/api/lark-mail-charts", purpose: "Volume charts" },
+      { method: "GET", path: "/api/lark-mail-clients", purpose: "Per-client breakdown" },
+      {
+        method: "GET",
+        path: "/api/lark-mail-customer-history/[email]",
+        purpose: "Email history",
+      },
+      { method: "GET", path: "/api/lark-mail-detail/[id]", purpose: "Message detail" },
+      { method: "POST", path: "/api/lark-mail-ignore", purpose: "Mark thread ignored" },
+      { method: "GET", path: "/api/lark-mail-sent", purpose: "Sent items" },
+      { method: "GET", path: "/api/lark-mail-stats", purpose: "Per-day stats" },
+      { method: "POST", path: "/api/lark-mail-sync", purpose: "Manual re-sync" },
+      { method: "GET", path: "/api/lark-mail-sync-logs", purpose: "Sync logs" },
+      {
+        method: "DELETE",
+        path: "/api/lark-mail-delete",
+        purpose: "Hard delete",
+        note: "ADMIN_SECRET gated",
+      },
+      {
+        method: "POST",
+        path: "/api/lark-mail-truncate",
+        purpose: "Truncate table",
+        note: "ADMIN_SECRET gated",
+      },
     ],
   },
   {
     title: "ChargeFlow / Disputes",
-    rows: [
-      ["GET /api/disputes", "List disputes for active store"],
-      ["POST /api/disputes/sync", "Trigger ChargeFlow sync"],
-      ["POST /api/disputes/evidence", "Upload evidence package"],
+    description: "Active-store scoped. CDP sync trigger.",
+    icon: <Shield className={ICON} />,
+    routes: [
+      { method: "GET", path: "/api/disputes", purpose: "List disputes cho active store" },
+      { method: "POST", path: "/api/disputes/sync", purpose: "Trigger ChargeFlow sync" },
+      { method: "POST", path: "/api/disputes/evidence", purpose: "Upload evidence package" },
     ],
   },
   {
     title: "Bulk Update (proxy)",
-    rows: [
-      ["POST /api/bulk/[...path]", "Proxy to Flask bulk-update server on Mac mini"],
+    description: "Tất cả /api/bulk/* được proxy sang Flask server :5000 trên Mac mini.",
+    icon: <Truck className={ICON} />,
+    routes: [
+      {
+        method: "POST",
+        path: "/api/bulk/[...path]",
+        purpose: "Proxy → Flask bulk-update server",
+      },
     ],
   },
   {
     title: "Webhooks",
-    rows: [
-      ["POST /api/webhooks/shopify/refunds", "HMAC-verified refund webhook"],
-      ["POST /api/cj/webhook-setup", "Setup CJ webhook (ADMIN_SECRET)"],
+    description: "HMAC-verified. Shopify secret bắt buộc match Lark Integration app.",
+    icon: <Webhook className={ICON} />,
+    routes: [
+      {
+        method: "POST",
+        path: "/api/webhooks/shopify/refunds",
+        purpose: "HMAC-verified refund webhook",
+      },
+      {
+        method: "POST",
+        path: "/api/cj/webhook-setup",
+        purpose: "Setup CJ Dropshipping webhook",
+        note: "ADMIN_SECRET",
+      },
     ],
   },
+  {
+    title: "Misc",
+    icon: <Cog className={ICON} />,
+    routes: [],
+  },
 ];
+
+const validGroups = groups.filter((g) => g.routes.length > 0);
 
 export default function Page() {
   return (
     <>
-      <PageHeader eyebrow="Reference" title="API Routes" description="Toàn bộ /api/* endpoint của dashboard." />
+      <PageHeader
+        eyebrow="Reference"
+        title="API Routes"
+        description="~80 endpoints trong /src/app/api/. Search theo path/mô tả, lọc theo HTTP method."
+      />
 
-      <p>
-        Có ~80 API routes trong <code>src/app/api/</code>. Đây là index theo nhóm. Mỗi handler
-        đều scope theo active store (xem <a href="/docs/feature-multistore">Multi-Store</a>).
-      </p>
+      <Callout variant="info" title="Convention chung">
+        <ul className="list-disc ml-5 space-y-1">
+          <li>
+            Mọi route trả JSON. Lỗi:{" "}
+            <TerminalInline>{`{ error: string, detail?: any }`}</TerminalInline>.
+          </li>
+          <li>
+            Auth qua JWT cookie. <TerminalInline>401</TerminalInline> nếu thiếu/expired,{" "}
+            <TerminalInline>403</TerminalInline> nếu IAM deny.
+          </li>
+          <li>
+            Cron-only endpoint yêu cầu header{" "}
+            <TerminalInline>x-cron-secret: $CRON_SECRET</TerminalInline>.
+          </li>
+          <li>
+            Webhook yêu cầu HMAC hợp lệ. Sai secret → 401.
+          </li>
+          <li>
+            Tất cả handler scope theo active store (xem{" "}
+            <a href="/docs/feature-multistore" className="underline">
+              Multi-Store
+            </a>
+            ).
+          </li>
+        </ul>
+      </Callout>
 
-      {groups.map((g) => (
-        <section key={g.title}>
-          <h2 id={g.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}>{g.title}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th style={{ width: "45%" }}>Endpoint</th>
-                <th>Purpose</th>
-              </tr>
-            </thead>
-            <tbody>
-              {g.rows.map(([k, v]) => (
-                <tr key={k}>
-                  <td><code className="text-[12px]">{k}</code></td>
-                  <td className="text-[14px]">{v}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      ))}
-
-      <h2 id="patterns">Conventions</h2>
-      <ul>
-        <li>All routes return JSON. Errors as <code>{`{ error: string, detail?: any }`}</code>.</li>
-        <li>Auth via JWT cookie. 401 if cookie missing/expired. 403 if IAM denies.</li>
-        <li>Cron-only endpoints require <code>x-cron-secret</code> header matching <code>CRON_SECRET</code>.</li>
-        <li>Webhooks require valid HMAC. Wrong secret = 401.</li>
-      </ul>
+      <RouteCatalog groups={validGroups} />
 
       <PageNav href="/docs/api-routes" />
     </>
