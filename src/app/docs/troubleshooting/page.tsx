@@ -211,7 +211,7 @@ export default function Page() {
       <h2 id="webhooks">Webhooks / external</h2>
 
       <DecisionBranch
-        symptom="Shopify webhook 401 / HMAC fail trong Vercel logs"
+        symptom="Shopify webhook 401 / HMAC fail trong web logs"
         cause="SHOPIFY_API_SECRET không match secret của Lark Integration custom app (KHÔNG phải public app)."
         severity="warn"
         fix={
@@ -226,14 +226,11 @@ export default function Page() {
             </FixStep>
             <FixStep n={3}>
               <Terminal
-                host="you@laptop"
-                cwd="~"
+                host="timcook@mini"
+                cwd="~/Coding_workspace/PATI/shopify-lark-sync"
                 lines={[
-                  { prompt: "$", cmd: "echo \"shpss_xxxxxxxxx\" > /tmp/shop-secret.txt" },
-                  { prompt: "$", cmd: "vercel env rm SHOPIFY_API_SECRET production" },
-                  { prompt: "$", cmd: "vercel env add SHOPIFY_API_SECRET production < /tmp/shop-secret.txt" },
-                  { prompt: "$", cmd: "rm /tmp/shop-secret.txt" },
-                  { prompt: "$", cmd: "vercel --prod --yes" },
+                  { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # SHOPIFY_API_SECRET=shpss_xxx" },
+                  { prompt: "$", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
                 ]}
               />
             </FixStep>
@@ -265,13 +262,11 @@ export default function Page() {
             </FixStep>
             <FixStep n={3}>
               <Terminal
-                host="you@laptop"
-                cwd="~"
+                host="timcook@mini"
+                cwd="~/Coding_workspace/PATI/shopify-lark-sync"
                 lines={[
-                  { prompt: "$", cmd: "echo \"<cookie value>\" > /tmp/cf.txt" },
-                  { prompt: "$", cmd: "vercel env rm CHARGEFLOW_UI_COOKIE production" },
-                  { prompt: "$", cmd: "vercel env add CHARGEFLOW_UI_COOKIE production < /tmp/cf.txt" },
-                  { prompt: "$", cmd: "vercel --prod --yes" },
+                  { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # CHARGEFLOW_UI_COOKIE=<cookie value>" },
+                  { prompt: "$", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
                 ]}
               />
             </FixStep>
@@ -285,8 +280,8 @@ export default function Page() {
       <h2 id="deploy">Deploy / build</h2>
 
       <DecisionBranch
-        symptom="Vercel build fail / 404 sau khi push"
-        cause="Working-tree drift — file M (modified-but-untracked) ở local mà HEAD code reference. Local thì có, Vercel build từ HEAD thì thiếu."
+        symptom="GitHub Actions deploy Mac mini fail / production không đổi sau khi push"
+        cause="Working-tree drift hoặc deploy-web.sh không fast-forward được. Mac mini chỉ deploy code đã commit/push lên origin/main."
         severity="danger"
         fix={
           <>
@@ -303,28 +298,31 @@ export default function Page() {
             </FixStep>
             <FixStep n={4}>
               Re-deploy explicit (đừng đợi auto):{" "}
-              <TerminalInline>vercel --prod --yes</TerminalInline>.
+              <TerminalInline>DEPLOY_BRANCH=main bash scripts/macmini-stack/deploy-web.sh --force</TerminalInline>{" "}
+              trên Mac mini.
             </FixStep>
           </>
         }
       />
 
       <DecisionBranch
-        symptom=".vercelignore drop routes — production 404 khi local OK"
-        cause="Catch-all glob trong .vercelignore (kiểu **) match silently nhiều hơn ý định, bỏ qua /api/analytics/sync/* khi build."
+        symptom="Build OK nhưng https://pnl.patigroup.com trả 502"
+        cause="Next.js service hoặc Cloudflared ingress trên Mac mini không route được tới 127.0.0.1:3000."
         severity="warn"
         fix={
           <>
             <FixStep n={1}>
-              Mở <TerminalInline>.vercelignore</TerminalInline>. Mỗi line phải narrow + có lý do.
+              Check local service:{" "}
+              <TerminalInline>curl -sf http://127.0.0.1:3000/api/health</TerminalInline>{" "}
+              trên Mac mini.
             </FixStep>
             <FixStep n={2}>
-              Đừng dùng catch-all. Thay bằng path cụ thể.
+              Check launchd:{" "}
+              <TerminalInline>launchctl print gui/$(id -u)/com.pati.web</TerminalInline>.
             </FixStep>
             <FixStep n={3}>
-              Verify bằng <TerminalInline>vercel build</TerminalInline> local sau khi đổi —
-              check artifact ở <TerminalInline>.vercel/output/</TerminalInline> có chứa route
-              bạn cần không.
+              Nếu local OK nhưng public 502, restart cloudflared và verify ingress có{" "}
+              <TerminalInline>pnl.patigroup.com → http://localhost:3000</TerminalInline>.
             </FixStep>
           </>
         }
@@ -332,59 +330,60 @@ export default function Page() {
 
       <DecisionBranch
         symptom="NEXT_PUBLIC_X mới add nhưng client vẫn dùng giá trị cũ"
-        cause="NEXT_PUBLIC_* được inline vào client bundle ở build time. vercel env add KHÔNG tự re-build."
+        cause="NEXT_PUBLIC_* được inline vào client bundle ở build time. Đổi .env trên Mac mini KHÔNG tự rebuild."
         severity="info"
         fix={
           <>
             <FixStep n={1}>
-              Sau khi <TerminalInline>vercel env add NEXT_PUBLIC_X</TerminalInline> →{" "}
-              <strong>buộc phải</strong> <TerminalInline>vercel --prod</TerminalInline> để
-              rebuild.
+              Sau khi đổi <TerminalInline>NEXT_PUBLIC_X</TerminalInline> →{" "}
+              <strong>buộc phải</strong>{" "}
+              <TerminalInline>bash scripts/macmini-stack/deploy-web.sh --force</TerminalInline>{" "}
+              để rebuild + restart.
             </FixStep>
             <FixStep n={2}>
-              Server-side vars (không có prefix) hot-reload bình thường — không cần redeploy.
+              Server-side vars cũng nên restart <TerminalInline>com.pati.web</TerminalInline> để
+              process đọc lại env rõ ràng.
             </FixStep>
           </>
         }
       />
 
       <DecisionBranch
-        symptom="vercel env add lưu empty string — env vẫn show có giá trị"
-        cause="echo &quot;v&quot; | vercel env add sometimes silent-stores empty (stdin trap)."
+        symptom="Prod env đổi rồi nhưng API vẫn đọc giá trị cũ"
+        cause="Mac mini web process đọc .env lúc start. Đổi file env mà không restart thì process cũ vẫn giữ giá trị cũ."
         severity="warn"
         fix={
           <>
             <FixStep n={1}>
-              Dùng redirect file thay vì pipe:
+              Sửa đúng nguồn env production:
               <Terminal
-                host="you@laptop"
-                cwd="~"
+                host="timcook@mini"
+                cwd="~/Coding_workspace/PATI/shopify-lark-sync"
                 lines={[
-                  { prompt: "$", cmd: "echo \"value\" > /tmp/secret.txt" },
-                  { prompt: "$", cmd: "vercel env add MY_SECRET production < /tmp/secret.txt" },
-                  { prompt: "$", cmd: "rm /tmp/secret.txt" },
+                  { prompt: "$", cmd: "nano .env" },
+                  { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # prod override nếu có" },
                 ]}
               />
             </FixStep>
             <FixStep n={2}>
-              Verify:{" "}
-              <TerminalInline>vercel env pull .env.local</TerminalInline> rồi check{" "}
-              <TerminalInline>.env.local</TerminalInline> (encrypted vars chỉ thấy NAME=&quot;&quot;,
-              nên test thực qua deployment).
+              Restart rõ ràng:{" "}
+              <TerminalInline>bash scripts/macmini-stack/deploy-web.sh --force</TerminalInline>{" "}
+              hoặc <TerminalInline>launchctl kickstart -k gui/$(id -u)/com.pati.web</TerminalInline>.
             </FixStep>
           </>
         }
       />
 
       <DecisionBranch
-        symptom="Auto-deploy GitHub → Vercel không trigger"
-        cause="Webhook đôi khi miss. Đã xảy ra nhiều lần."
+        symptom="Auto-deploy GitHub → Mac mini không trigger"
+        cause="GitHub Actions deploy-macmini không chạy, hoặc fail ở bước Tailscale/SSH."
         severity="info"
         fix={
           <>
             <FixStep n={1}>
-              Đừng phụ thuộc auto. Sau push quan trọng:{" "}
-              <TerminalInline>vercel --prod --yes</TerminalInline> thủ công.
+              Mở Actions → <TerminalInline>Deploy to Mac mini</TerminalInline>. Nếu cần, chạy{" "}
+              <TerminalInline>workflow_dispatch</TerminalInline> thủ công hoặc SSH vào Mac mini
+              chạy <TerminalInline>deploy-web.sh --force</TerminalInline>.
             </FixStep>
           </>
         }

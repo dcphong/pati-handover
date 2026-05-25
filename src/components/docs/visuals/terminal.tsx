@@ -34,7 +34,10 @@ export function Terminal({
   }
 
   return (
-    <div className="not-prose my-4 rounded-lg border bg-zinc-950 text-zinc-100 overflow-hidden shadow-sm">
+    <div
+      data-dev-detail
+      className="not-prose my-4 rounded-lg border bg-zinc-950 text-zinc-100 overflow-hidden shadow-sm"
+    >
       <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900/80 px-3 py-1.5">
         <div className="flex items-center gap-2 text-[12px] text-zinc-400">
           <div className="flex gap-1.5">

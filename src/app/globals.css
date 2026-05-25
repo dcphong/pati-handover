@@ -193,6 +193,41 @@
   @apply bg-muted/40;
 }
 
+/* Audience mode: User reads plain-language guidance; Dev keeps exact commands,
+   schemas, code, and implementation details. */
+html[data-audience="user"] [data-dev-detail] {
+  display: none !important;
+}
+
+html[data-audience="user"] .prose-docs > .not-prose:not([data-user-detail]):not([data-page-header]):not([data-page-nav]) {
+  display: none !important;
+}
+
+html[data-audience="user"] .prose-docs table {
+  display: none !important;
+}
+
+html[data-audience="dev"] [data-user-detail] {
+  display: none !important;
+}
+
+html[data-audience="user"] .prose-docs {
+  @apply max-w-4xl;
+}
+
+html[data-audience="user"] .prose-docs h2 {
+  @apply text-xl;
+}
+
+html[data-audience="user"] .prose-docs p,
+html[data-audience="user"] .prose-docs li {
+  @apply text-[15px] leading-7;
+}
+
+html[data-audience="user"] .prose-docs code:not(pre code) {
+  @apply border-0 bg-muted/50 font-sans text-[13px] text-foreground/80;
+}
+
 /* Subtle dot grid background for hero */
 .dot-grid {
   background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);

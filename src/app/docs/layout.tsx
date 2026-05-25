@@ -1,4 +1,5 @@
 import { DocsSidebar } from "@/components/docs/sidebar";
+import { AudienceBrief } from "@/components/docs/audience-brief";
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -8,7 +9,10 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           <DocsSidebar />
         </aside>
         <main className="flex-1 min-w-0 py-12 px-4 sm:px-10">
-          <article className="prose-docs max-w-3xl mx-auto">{children}</article>
+          <article className="prose-docs max-w-3xl mx-auto">
+            <AudienceBrief />
+            {children}
+          </article>
         </main>
       </div>
     </div>

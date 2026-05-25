@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type Runner = "macmini" | "gha" | "vercel";
+type Runner = "macmini" | "gha" | "webapi";
 
 const runnerStyles: Record<Runner, { bg: string; text: string; label: string }> = {
   macmini: {
@@ -14,10 +14,10 @@ const runnerStyles: Record<Runner, { bg: string; text: string; label: string }> 
     text: "text-violet-700 dark:text-violet-300",
     label: "GH Actions",
   },
-  vercel: {
+  webapi: {
     bg: "bg-sky-500/20 border-sky-500/40",
     text: "text-sky-700 dark:text-sky-300",
-    label: "Vercel",
+    label: "Web API",
   },
 };
 
@@ -121,7 +121,7 @@ export function ScheduleGrid({ jobs }: { jobs: CronJob[] }) {
         </span>
         <span>
           <span className="inline-block h-3 w-3 rounded-sm border bg-sky-500/20 border-sky-500/40 align-text-bottom mr-1" />
-          Vercel HTTP cron
+          Mac mini web API
         </span>
         <span className="ml-auto font-mono">Time = Asia/Ho_Chi_Minh (UTC+7)</span>
       </div>
@@ -135,7 +135,7 @@ export function RunnerLegend({ children }: { children?: ReactNode }) {
       <RunnerCard
         runner="macmini"
         title="Mac mini cron"
-        desc="Heavy / persistent — Playwright, Chrome CDP, big backfills. Survives Vercel 300s timeout."
+        desc="Heavy / persistent — Playwright, Chrome CDP, big backfills. Runs under launchd on the Mac mini."
       />
       <RunnerCard
         runner="gha"
@@ -143,9 +143,9 @@ export function RunnerLegend({ children }: { children?: ReactNode }) {
         desc="Triggerable từ UI (workflow_dispatch). Analytics providers, North Stars matview refresh."
       />
       <RunnerCard
-        runner="vercel"
-        title="Vercel HTTP cron"
-        desc="Endpoint /api/cron/* được gọi từ Mac mini với CRON_SECRET. Cold start chấp nhận được."
+        runner="webapi"
+        title="Mac mini web API"
+        desc="Endpoint /api/cron/* chạy trong Next.js web service, protected bằng CRON_SECRET."
       />
       {children}
     </div>

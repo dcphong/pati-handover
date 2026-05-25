@@ -59,7 +59,7 @@ const categories: Category[] = [
       { concern: "Runtime", tech: "Python 3.12 + uv/pip venv" },
       { concern: "HTTP server (Bulk)", tech: "Flask" },
       { concern: "Browser automation", tech: "Playwright (CDP)" },
-      { concern: "Scheduling", tech: "Mac mini cron + GH Actions + Vercel cron HTTP" },
+      { concern: "Scheduling", tech: "Mac mini launchd cron + GH Actions" },
     ],
   },
   {
@@ -67,9 +67,9 @@ const categories: Category[] = [
     icon: Cloud,
     tone: "sky",
     items: [
-      { concern: "Web hosting", tech: "Vercel (Fluid Compute)" },
-      { concern: "Self-host", tech: "Mac mini Docker (Supabase + Flask + Chrome CDP)" },
-      { concern: "Tunnel", tech: "Cloudflared (supabase.patiagency.com)" },
+      { concern: "Web hosting", tech: "Mac mini launchd com.pati.web → next start :3000" },
+      { concern: "Self-host", tech: "Mac mini Docker (Supabase + Flask + Chrome CDP) + web" },
+      { concern: "Tunnel", tech: "Cloudflared (pnl.patigroup.com + supabase.patiagency.com)" },
       { concern: "Intra-team VPN", tech: "Tailscale" },
       { concern: "DNS", tech: "GoDaddy — patigroup.com (additive-only)" },
     ],

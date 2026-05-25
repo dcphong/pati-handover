@@ -45,7 +45,7 @@ const layers: LayerItem[] = [
     description: "Read upstream → clean → batch upsert vào Supabase. WRITE-only.",
     icon: Workflow,
     tone: "emerald",
-    host: "Mac mini cron + GitHub Actions",
+    host: "Mac mini launchd cron + GitHub Actions",
     items: [
       "sync/run.py",
       "modules/pipeline.py",
@@ -70,10 +70,10 @@ const layers: LayerItem[] = [
   },
   {
     name: "Next.js dashboard + API",
-    description: "Web UI + /api/* — read DB, ghi mutation, gọi workflow_dispatch",
+    description: "Web UI + /api/* — read DB, ghi mutation, nhận webhook/OAuth",
     icon: Code2,
     tone: "violet",
-    host: "Vercel · Fluid Compute · Node 24",
+    host: "Mac mini · launchd com.pati.web · Node 24",
     items: [
       "App Router (src/app)",
       "/api/* ≈ 80 routes",
@@ -86,10 +86,10 @@ const layers: LayerItem[] = [
     description: "Lịch trình + trigger cho mọi pipeline",
     icon: Zap,
     tone: "orange",
-    host: "Mac mini · GitHub Actions · Vercel HTTP cron",
+    host: "Mac mini launchd · GitHub Actions",
     items: [
       "16 Mac mini cron jobs",
-      "13 GH Actions workflows",
+      "GH Actions deploy + selected workflows",
       "ChargeFlow Chrome CDP",
       "Cloudflared tunnel",
     ],
@@ -163,7 +163,8 @@ export default function Page() {
       <Callout variant="info" title="Quy tắc bóc tách">
         Python <strong>WRITE-only</strong>, Next.js <strong>READ/WRITE</strong>. KHÔNG có
         shared library, KHÔNG có HTTP call trực tiếp giữa Python ↔ Next.js. Mọi giao tiếp đi
-        qua Postgres. Cron orchestration nằm ngoài cả 2 layer (Mac mini + GitHub Actions).
+        qua Postgres. Cron orchestration và web process đều nằm trên Mac mini; GitHub Actions
+        chủ yếu dùng để deploy và trigger một số workflow phụ.
       </Callout>
 
       <h2 id="two-binaries">Hai binary, một database</h2>
@@ -184,7 +185,7 @@ export default function Page() {
               <span className="text-muted-foreground">Runtime:</span> Next.js 16 · Node 24
             </div>
             <div>
-              <span className="text-muted-foreground">Host:</span> Vercel (Fluid Compute)
+              <span className="text-muted-foreground">Host:</span> Mac mini launchd (com.pati.web)
             </div>
             <div>
               <span className="text-muted-foreground">Build:</span>{" "}
@@ -208,7 +209,7 @@ export default function Page() {
               <span className="text-muted-foreground">Runtime:</span> Python 3.12 · venv
             </div>
             <div>
-              <span className="text-muted-foreground">Host:</span> Mac mini cron + GH Actions
+              <span className="text-muted-foreground">Host:</span> Mac mini launchd cron + GH Actions
             </div>
             <div>
               <span className="text-muted-foreground">Run:</span>{" "}
@@ -330,8 +331,8 @@ export default function Page() {
           why="Bare .select() silent-truncate. Đã từng làm refund-rate hiển thị sai 6× (34% vs 5.5%)."
         />
         <Invariant
-          rule="NEXT_PUBLIC_* phải redeploy sau khi env add"
-          why="Inline vào client bundle ở build time."
+          rule="NEXT_PUBLIC_* phải rebuild + restart web service sau khi đổi env"
+          why="Inline vào client bundle ở build time; Mac mini runtime đọc .env rồi next start lại qua launchd."
         />
       </div>
 

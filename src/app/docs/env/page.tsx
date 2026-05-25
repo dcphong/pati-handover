@@ -161,7 +161,7 @@ const categories: EnvCategory[] = [
   {
     title: "Auth & runtime",
     icon: KeyRound,
-    description: "JWT custom + cookie. Cron secret cho Mac mini gọi vào Vercel.",
+    description: "JWT custom + cookie. Cron secret cho Mac mini gọi endpoint nội bộ.",
     rows: [
       {
         name: "JWT_SECRET",
@@ -183,7 +183,7 @@ const categories: EnvCategory[] = [
         status: "required",
         desc: (
           <>
-            Bearer token Mac mini cron dùng để call Vercel{" "}
+            Bearer token Mac mini cron dùng để call{" "}
             <TerminalInline>/api/cron/*</TerminalInline>.
           </>
         ),
@@ -290,7 +290,7 @@ const categories: EnvCategory[] = [
       {
         name: "CHARGEFLOW_UI_COOKIE",
         status: "prod-only",
-        desc: "Set trên Vercel từ Mac mini Chrome CDP. Source-of-truth dispute sync.",
+        desc: "Set trong Mac mini runtime env từ Chrome CDP. Source-of-truth dispute sync.",
       },
       {
         name: "CHARGEFLOW_UI_STATUS_PARAM",
@@ -351,12 +351,12 @@ const categories: EnvCategory[] = [
   {
     title: "GitHub Actions",
     icon: Webhook,
-    description: "PAT để workflow_dispatch sang sync workflows.",
+    description: "Dùng cho GitHub Actions deploy Mac mini và workflow_dispatch phụ.",
     rows: [
       {
         name: "GITHUB_TOKEN",
         status: "required",
-        desc: "PAT để trigger workflow_dispatch từ Vercel.",
+        desc: "GitHub Actions token/PAT dùng khi deploy-web.sh fetch repo hoặc trigger workflow phụ.",
       },
       {
         name: "GITHUB_REPO",
@@ -400,13 +400,13 @@ export default function Page() {
 
       <Callout variant="warning" title="Never commit .env">
         File <TerminalInline>.env</TerminalInline> đã có trong{" "}
-        <TerminalInline>.gitignore</TerminalInline>. Tất cả secret production set qua{" "}
-        <TerminalInline>vercel env add</TerminalInline>. Xem{" "}
+        <TerminalInline>.gitignore</TerminalInline>. Production hiện đọc env từ Mac mini repo{" "}
+        <TerminalInline>.env</TerminalInline> và override tại{" "}
+        <TerminalInline>~/pati-supabase/cron/.env.web</TerminalInline>. Xem{" "}
         <a href="/docs/deploy-vercel" className="underline">
           Deploy
         </a>{" "}
-        cho cách add chuẩn (dùng <TerminalInline>{`< file`}</TerminalInline> redirect, không
-        echo|pipe).
+        để biết deploy script restart web service sau khi đổi env.
       </Callout>
 
       <h2 id="legend">Status legend</h2>
@@ -416,7 +416,7 @@ export default function Page() {
         <div><strong>Tuỳ chọn</strong>: feature liên quan sẽ disable nếu thiếu.</div>
         <div><strong>Legacy</strong>: dùng cho fallback, có cái mới thay thế.</div>
         <div><strong>1-lần</strong>: chỉ dùng cho migration/backfill, có thể xoá sau.</div>
-        <div><strong>Prod-only</strong>: chỉ set ở Vercel production, không cần cho dev.</div>
+        <div><strong>Prod-only</strong>: chỉ set trên Mac mini runtime, không cần cho dev.</div>
       </div>
 
       <h2 id="catalog">Catalog — phân theo provider</h2>
@@ -424,22 +424,23 @@ export default function Page() {
         <EnvCategoryCard key={cat.title} cat={cat} />
       ))}
 
-      <h2 id="vercel-pull">Đồng bộ env từ Vercel về local</h2>
-      <p>Sau khi link Vercel project:</p>
+      <h2 id="macmini-env">Đồng bộ env từ Mac mini về local</h2>
+      <p>Nguồn production hiện là Mac mini, không phải Vercel env. Nếu bạn có quyền SSH:</p>
       <Terminal
         host="you@laptop"
         cwd="~/Coding/shopify-lark-sync"
         lines={[
-          { prompt: "$", cmd: "vercel link             # one-time" },
-          { prompt: "$", cmd: "vercel env pull .env.local" },
+          { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
+          { prompt: "timcook@mini $", cmd: "cd ~/Coding_workspace/PATI/shopify-lark-sync" },
+          { prompt: "timcook@mini $", cmd: "cp .env .env.local.backup.$(date +%F)" },
           { divider: true, label: "kết quả" },
-          { out: "✓ Created .env.local", tone: "ok" },
+          { out: "Dùng .env hiện tại làm source để đối chiếu local; không commit file này.", tone: "ok" },
         ]}
       />
-      <Callout variant="warning" title="Pull không decrypt secret">
-        Encrypted vars sẽ show <TerminalInline>NAME=&quot;&quot;</TerminalInline> bất kể giá
-        trị thực. Bạn vẫn phải nhập tay những giá trị nhạy cảm — pull chỉ giúp đồng bộ{" "}
-        <em>tên</em> biến.
+      <Callout variant="warning" title="Không paste secret lung tung">
+        Copy env qua kênh riêng an toàn. Không paste nguyên file vào chat, ticket, hoặc docs.
+        Khi đổi env production, chạy lại <TerminalInline>deploy-web.sh --force</TerminalInline>{" "}
+        hoặc push main để GitHub Actions rebuild + restart Mac mini web.
       </Callout>
 
       <h2 id="gotchas">2 gotcha thường gặp</h2>
@@ -447,27 +448,28 @@ export default function Page() {
         <div className="rounded-xl border-2 border-amber-500/40 bg-amber-500/[0.04] p-4">
           <div className="flex items-center gap-2 mb-2">
             <Activity className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <div className="font-semibold text-[14px]">NEXT_PUBLIC_* phải redeploy</div>
+            <div className="font-semibold text-[14px]">NEXT_PUBLIC_* phải rebuild + restart</div>
           </div>
           <div className="text-[13px] leading-6 text-foreground/85">
             Vars có prefix <TerminalInline>NEXT_PUBLIC_</TerminalInline> được inline vào client
-            bundle ở build time. <TerminalInline>vercel env add</TerminalInline> alone won&apos;t
-            propagate — phải <TerminalInline>vercel --prod</TerminalInline> sau.
+            bundle ở build time. Sửa env xong phải build lại và restart{" "}
+            <TerminalInline>com.pati.web</TerminalInline> qua deploy Mac mini.
           </div>
         </div>
         <div className="rounded-xl border-2 border-red-500/40 bg-red-500/[0.04] p-4">
           <div className="flex items-center gap-2 mb-2">
             <Activity className="h-4 w-4 text-red-600 dark:text-red-400" />
-            <div className="font-semibold text-[14px]">echo|pipe lưu empty</div>
+            <div className="font-semibold text-[14px]">Đổi env phải có backup</div>
           </div>
           <div className="text-[13px] leading-6 text-foreground/85">
-            <TerminalInline>echo &quot;v&quot; | vercel env add NAME prod</TerminalInline> đôi
-            khi silent-stores empty. Dùng redirect file thay vào:
+            Trước khi sửa env trên Mac mini, backup file hiện tại rồi dùng editor/secret store.
+            Sau đó force deploy để process đọc lại env:
             <Terminal
               host="you@laptop"
               cwd="~"
               lines={[
-                { prompt: "$", cmd: "vercel env add MY_SECRET production < secret.txt" },
+                { prompt: "timcook@mini $", cmd: "cp .env .env.backup.$(date +%F-%H%M)" },
+                { prompt: "timcook@mini $", cmd: "DEPLOY_BRANCH=main bash scripts/macmini-stack/deploy-web.sh --force" },
               ]}
             />
           </div>

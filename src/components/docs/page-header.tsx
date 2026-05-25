@@ -8,7 +8,7 @@ export function PageHeader({
   description?: string;
 }) {
   return (
-    <div className="mb-10 not-prose">
+    <div data-page-header className="mb-10 not-prose">
       {eyebrow && (
         <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">{eyebrow}</div>
       )}

@@ -32,7 +32,7 @@ export const navigation: NavSection[] = [
   {
     title: "Deployment",
     items: [
-      { title: "Vercel", href: "/docs/deploy-vercel" },
+      { title: "Mac mini Web Deploy", href: "/docs/deploy-vercel" },
       { title: "Cron Jobs", href: "/docs/cron-jobs" },
       { title: "Mac mini Self-Host", href: "/docs/mac-mini" },
       { title: "Cloudflared Tunnel", href: "/docs/cloudflared" },

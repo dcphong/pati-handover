@@ -121,7 +121,7 @@ export default function Page() {
           <div className="space-y-1 text-[13px] leading-6">
             <Fact label="Runtime" value="Next.js 16 (TypeScript) · Node 24" />
             <Fact label="Code path" value="src/" />
-            <Fact label="Host" value="Vercel (Fluid Compute)" />
+            <Fact label="Host" value="Mac mini launchd · next start :3000" />
             <Fact label="Reads + writes" value="Supabase qua REST + RPC" />
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function Page() {
           <div className="space-y-1 text-[13px] leading-6">
             <Fact label="Runtime" value="Python 3.12 · venv" />
             <Fact label="Code path" value="sync/" />
-            <Fact label="Host" value="Mac mini cron + GitHub Actions" />
+            <Fact label="Host" value="Mac mini launchd cron + GitHub Actions" />
             <Fact label="WRITE-only" value="batch upsert vào Supabase" />
           </div>
         </div>

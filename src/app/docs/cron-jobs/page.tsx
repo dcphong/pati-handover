@@ -113,9 +113,10 @@ export default function Page() {
       <Callout variant="info" title="Quy tắc">
         Job có Playwright / browser session → <strong>Mac mini</strong>. Job &gt; 5 phút →
         <strong>Mac mini</strong>. Job hourly nhẹ → <strong>GH Actions</strong> hoặc{" "}
-        <strong>Vercel HTTP cron</strong>. Mac mini cron <em>gọi vào</em> Vercel{" "}
-        <TerminalInline>/api/cron/*</TerminalInline> với <TerminalInline>CRON_SECRET</TerminalInline>{" "}
-        header.
+        <strong>Mac mini web API</strong>. Cron gọi{" "}
+        <TerminalInline>https://pnl.patigroup.com/api/cron/*</TerminalInline> với{" "}
+        <TerminalInline>CRON_SECRET</TerminalInline> header; route handler chạy trên{" "}
+        <TerminalInline>com.pati.web</TerminalInline>.
       </Callout>
 
       <h2 id="schedule">Schedule grid (Asia/Ho_Chi_Minh)</h2>
@@ -162,7 +163,7 @@ export default function Page() {
 
       <h2 id="alerts">Stale-cron alerts</h2>
       <p>
-        <TerminalInline>cron_watchdog.yml</TerminalInline> chạy 1×/giờ. Đọc{" "}
+        Cron watchdog chạy 1×/giờ từ Mac mini launchd hoặc workflow fallback. Đọc{" "}
         <TerminalInline>sync_logs</TerminalInline> latest{" "}
         <TerminalInline>completed_at</TerminalInline> per pipeline. Nếu {">"} 25h từ last
         success → ping Lark webhook.

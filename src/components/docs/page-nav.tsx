@@ -5,7 +5,7 @@ import { siblings } from "@/lib/nav";
 export function PageNav({ href }: { href: string }) {
   const { prev, next } = siblings(href);
   return (
-    <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
+    <div data-page-nav className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
       {prev ? (
         <Link
           href={prev.href}

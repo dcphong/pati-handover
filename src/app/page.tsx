@@ -23,24 +23,28 @@ const quickStart = [
   {
     title: "Local Setup",
     description: "Bun install, env vars, run dev server",
+    userDescription: "Cài dự án trên máy cá nhân để dev có thể chạy thử dashboard.",
     href: "/docs/setup",
     Icon: Cog,
   },
   {
     title: "Supabase Connection",
     description: "Self-host on Mac mini, master_app schema",
+    userDescription: "Nơi lưu dữ liệu trung tâm mà dashboard đang đọc và cập nhật.",
     href: "/docs/supabase",
     Icon: Database,
   },
   {
-    title: "Deploy to Vercel",
-    description: "Production = pnl.patigroup.com",
+    title: "Mac mini Deploy",
+    description: "GH Actions → Tailscale SSH → launchd next start",
+    userDescription: "Quy trình đưa bản mới của dashboard lên Mac mini production.",
     href: "/docs/deploy-vercel",
     Icon: Rocket,
   },
   {
     title: "Troubleshooting",
     description: "Tunnel 502, PostgREST cache lag, build drift",
+    userDescription: "Bắt đầu từ đây khi dashboard lỗi, dữ liệu trống hoặc số liệu lạ.",
     href: "/docs/troubleshooting",
     Icon: Wrench,
   },
@@ -51,6 +55,7 @@ const featureCards = [
     title: "Shopify Sync",
     description:
       "Dual-pipeline (Python date-window + TS incremental) for orders, products, balance. Webhooks via HMAC.",
+    userDescription: "Đưa đơn hàng, sản phẩm và hoàn tiền từ Shopify vào dashboard.",
     href: "/docs/feature-shopify-sync",
     Icon: ShoppingBag,
     tags: ["python", "next-api", "supabase"],
@@ -59,6 +64,7 @@ const featureCards = [
     title: "Lark Base Sync",
     description:
       "Bidirectional bitable writer/reader, 42 tables. COGS, fulfillment, custom tables.",
+    userDescription: "Đưa dữ liệu vận hành từ Lark vào dashboard và đồng bộ ngược khi cần.",
     href: "/docs/feature-lark",
     Icon: Cable,
     tags: ["lark", "bitable"],
@@ -67,6 +73,7 @@ const featureCards = [
     title: "Analytics (TW Parity)",
     description:
       "TripleWhale clone. raw_orders, raw_refunds, raw_ad_spend, v_stvf, summary_metrics RPC.",
+    userDescription: "Báo cáo doanh thu, chi phí, hoàn tiền và lợi nhuận cho team business.",
     href: "/docs/feature-analytics",
     Icon: Gauge,
     tags: ["ad-spend", "klaviyo", "recharge", "meta"],
@@ -75,6 +82,7 @@ const featureCards = [
     title: "Multi-Store",
     description:
       "Active-store-context, shop_id scoping on all reads/writes. Phase 3 landed 2026-05-16.",
+    userDescription: "Tách dữ liệu theo từng store để tránh xem nhầm số liệu.",
     href: "/docs/feature-multistore",
     Icon: Boxes,
     tags: ["scoping"],
@@ -82,6 +90,7 @@ const featureCards = [
   {
     title: "IAM",
     description: "AWS-style policies, 75 actions, audit log. /iam page.",
+    userDescription: "Quản lý ai được xem hoặc thao tác từng phần trong dashboard.",
     href: "/docs/feature-iam",
     Icon: KeyRound,
     tags: ["policies"],
@@ -90,6 +99,7 @@ const featureCards = [
     title: "COGS Catalog",
     description:
       "Lark per-PO authoritative source. master_app.cogs_full_catalog overrides raw_variants.cost.",
+    userDescription: "Nguồn giá vốn sản phẩm dùng để tính lợi nhuận chính xác.",
     href: "/docs/feature-cogs",
     Icon: Package,
     tags: ["cost-of-goods"],
@@ -98,6 +108,7 @@ const featureCards = [
     title: "ChargeFlow Disputes",
     description:
       "5-min cron via Mac mini Chrome CDP. Auto evidence collection + upload.",
+    userDescription: "Theo dõi tranh chấp thanh toán và bằng chứng cần xử lý.",
     href: "/docs/feature-chargeflow",
     Icon: ShieldCheck,
     tags: ["chargebacks", "cdp"],
@@ -105,6 +116,7 @@ const featureCards = [
   {
     title: "CS Dashboard",
     description: "Gorgias 3-panel rebuild + Lark Mail reconcile. customer_profiles join.",
+    userDescription: "Màn hình hỗ trợ CS xem khách hàng, đơn hàng, email và ghi chú.",
     href: "/docs/feature-cs",
     Icon: Compass,
     tags: ["customer-service"],
@@ -112,6 +124,7 @@ const featureCards = [
   {
     title: "Best Fulfillment",
     description: "CSV import for Lark shipping rate card → bestfulfill_shipping_rates.",
+    userDescription: "So sánh chi phí vận chuyển để chọn phương án fulfillment phù hợp.",
     href: "/docs/feature-bestfulfill",
     Icon: Truck,
     tags: ["shipping"],
@@ -120,6 +133,7 @@ const featureCards = [
     title: "VNH / NS3 Fulfillment",
     description:
       "Flexport REST API. Auto-submit stuck Shopify FOs (REQUEST_FULFILLMENT).",
+    userDescription: "Luồng gửi đơn sang đơn vị fulfillment và xử lý đơn bị kẹt.",
     href: "/docs/feature-fulfillment",
     Icon: Truck,
     tags: ["flexport"],
@@ -127,6 +141,7 @@ const featureCards = [
   {
     title: "Cron Jobs",
     description: "16 cron jobs on Mac mini + GH Actions. North Stars daily, Meta ads hourly.",
+    userDescription: "Các lịch tự động cập nhật dữ liệu cho dashboard.",
     href: "/docs/cron-jobs",
     Icon: GitBranch,
     tags: ["scheduling"],
@@ -134,6 +149,7 @@ const featureCards = [
   {
     title: "Mac mini Self-Host",
     description: "M4/16GB at home. Tailscale + Cloudflared. Supabase Docker stack.",
+    userDescription: "Máy chủ nội bộ đang chạy database và một số dịch vụ nền.",
     href: "/docs/mac-mini",
     Icon: Cloud,
     tags: ["infra"],
@@ -159,8 +175,23 @@ export default function Home() {
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl leading-8">
               Everything người mới cần để chạy được hệ thống Shopify · Lark · Supabase ·
-              Vercel của PATI. Từ kết nối DB, deploy, đến từng feature chi tiết.
+              Mac mini self-hosted của PATI. Từ kết nối DB, deploy, đến từng feature chi tiết.
             </p>
+            <div
+              data-user-detail
+              className="mt-5 max-w-2xl rounded-lg border border-emerald-500/30 bg-emerald-500/[0.04] px-4 py-3 text-sm leading-6 text-foreground/80"
+            >
+              Bạn đang ở <strong>User mode</strong>: docs ưu tiên giải thích dễ hiểu cho người vận hành,
+              ẩn bớt command/code và thuật ngữ nội bộ. Chuyển sang <strong>Dev</strong> trên thanh
+              trên cùng khi cần chi tiết kỹ thuật.
+            </div>
+            <div
+              data-dev-detail
+              className="mt-5 max-w-2xl rounded-lg border border-violet-500/30 bg-violet-500/[0.04] px-4 py-3 text-sm leading-6 text-foreground/80"
+            >
+              Dev mode đang bật: docs hiển thị exact runtime, schema, API route, command và các
+              invariant cần giữ khi sửa code.
+            </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/docs/overview"
@@ -226,7 +257,10 @@ export default function Home() {
                   <q.Icon className="h-4 w-4" />
                 </div>
                 <div className="font-semibold mb-1">{q.title}</div>
-                <div className="text-sm text-muted-foreground leading-5">{q.description}</div>
+                <div className="text-sm text-muted-foreground leading-5">
+                  <span data-user-detail>{q.userDescription}</span>
+                  <span data-dev-detail>{q.description}</span>
+                </div>
                 <ArrowRight className="absolute top-5 right-5 h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
               </Link>
             ))}
@@ -244,8 +278,14 @@ export default function Home() {
               Every moving piece, documented.
             </h2>
             <p className="mt-2 text-muted-foreground max-w-2xl">
-              Each card jumps to a deep-dive page covering data flow, tables touched,
-              env vars, known pitfalls, and how to extend it.
+              <span data-user-detail>
+                Mỗi card dẫn tới một trang giải thích mục đích, ai dùng, khi nào cần kiểm tra,
+                và khi nào cần gọi dev hỗ trợ.
+              </span>
+              <span data-dev-detail>
+                Each card jumps to a deep-dive page covering data flow, tables touched,
+                env vars, known pitfalls, and how to extend it.
+              </span>
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -263,9 +303,10 @@ export default function Home() {
                 </div>
                 <div className="font-semibold text-base mb-1.5">{f.title}</div>
                 <div className="text-sm text-muted-foreground leading-6 flex-1">
-                  {f.description}
+                  <span data-user-detail>{f.userDescription}</span>
+                  <span data-dev-detail>{f.description}</span>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-1.5">
+                <div data-dev-detail className="mt-4 flex flex-wrap gap-1.5">
                   {f.tags.map((t) => (
                     <span
                       key={t}
@@ -293,8 +334,8 @@ export default function Home() {
               </h2>
               <p className="mt-3 text-muted-foreground leading-7">
                 Next.js 15 App Router (TypeScript) for the dashboard, Python 3.12 for sync
-                workers, Supabase (self-host on Mac mini), Vercel for production hosting.
-                Cloudflared tunnel exposes the home Supabase via{" "}
+                workers, Supabase and the production web host on Mac mini. Cloudflared exposes
+                Supabase and the web app via{" "}
                 <code className="px-1 py-0.5 bg-muted rounded text-[12px] font-mono">
                   supabase.patiagency.com
                 </code>
@@ -319,7 +360,7 @@ export default function Home() {
                 <div>
                   <span className="text-violet-500">api</span>{" "}
                   <span className="text-muted-foreground">→</span>{" "}
-                  /src/app/api · Fluid Compute
+                  /src/app/api · Node runtime on Mac mini
                 </div>
                 <div>
                   <span className="text-emerald-500">workers</span>{" "}

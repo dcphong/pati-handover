@@ -29,7 +29,7 @@ export default function Page() {
       <PageHeader
         eyebrow="Deployment"
         title="Cloudflared Tunnel"
-        description="Cách Vercel ngoài internet kết nối Supabase đang chạy ở nhà Phong. Khi 502 = đọc trang này."
+        description="Public ingress cho Mac mini self-host: web app, Supabase và ChargeFlow trigger đều đi qua Cloudflare Tunnel. Khi 502 = đọc trang này."
       />
 
       <h2 id="why">Cách tunnel hoạt động</h2>
@@ -50,10 +50,10 @@ export default function Page() {
               tone="sky"
             />,
             <FlowNode
-              key="vercel"
+              key="web"
               icon={ShieldCheck}
-              label="Vercel Function"
-              sub="api/* route handler"
+              label="Mac mini Next.js"
+              sub="127.0.0.1:3000"
               tone="violet"
             />,
             <FlowNode
@@ -111,6 +111,10 @@ retries: 10
 ingress:
   - hostname: supabase.patiagency.com
     service: http://localhost:8000   # Kong gateway của Supabase Docker stack
+  - hostname: chargeflow-trigger.patiagency.com
+    service: http://localhost:9876
+  - hostname: pnl.patigroup.com
+    service: http://localhost:3000   # Next.js web trên Mac mini
   - service: http_status:404`}
       </CodeBlock>
 
@@ -124,7 +128,7 @@ ingress:
       <h2 id="probe">Probe tunnel — luôn làm đầu tiên</h2>
       <p>
         Trước khi đào schema / RLS / auth, chạy lệnh dưới. Nó trả lời câu hỏi quan trọng nhất:
-        <em>“Vercel có nhìn thấy Mac mini không?”</em>
+        <em>“Cloudflare có route được vào Mac mini không?”</em>
       </p>
       <Terminal
         host="you@laptop"
@@ -244,9 +248,10 @@ ingress:
 
       <h2 id="dns">DNS — đừng động vào</h2>
       <Callout variant="warning">
-        Cloudflared tự manage CNAME ở Cloudflare DNS cho{" "}
-        <TerminalInline>supabase.patiagency.com</TerminalInline> — point về tunnel UUID. Nếu sửa
-        bằng tay từ Cloudflare dashboard, tunnel sẽ miss routes. Khi cần đổi hostname: dùng{" "}
+        Cloudflared route nhiều hostname về cùng tunnel UUID:{" "}
+        <TerminalInline>pnl.patigroup.com</TerminalInline>,{" "}
+        <TerminalInline>supabase.patiagency.com</TerminalInline>, và{" "}
+        <TerminalInline>chargeflow-trigger.patiagency.com</TerminalInline>. Khi cần đổi hostname: dùng{" "}
         <TerminalInline>cloudflared tunnel route dns &lt;tunnel&gt; &lt;hostname&gt;</TerminalInline>.
       </Callout>
 
@@ -266,9 +271,10 @@ ingress:
           </div>
         </div>
         <div className="rounded-lg border p-3">
-          <div className="font-semibold mb-1">Vercel /api/proxy/*</div>
+          <div className="font-semibold mb-1">Legacy /api/proxy/*</div>
           <div className="text-muted-foreground text-[12px] leading-5">
-            Proxy qua Tailscale từ Vercel function. Đã thử nhưng latency cao do double-hop.
+            Proxy qua Tailscale từ serverless function đời cũ. Đã thử nhưng latency cao do
+            double-hop.
           </div>
         </div>
       </div>

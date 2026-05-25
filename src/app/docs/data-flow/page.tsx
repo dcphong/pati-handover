@@ -272,13 +272,13 @@ export default function Page() {
         </div>
         <div className="rounded-xl border-2 border-violet-500/40 bg-violet-500/[0.04] p-4">
           <div className="text-[10px] uppercase tracking-widest font-semibold text-violet-700 dark:text-violet-300 mb-1.5">
-            TypeScript / Vercel
+            TypeScript / Mac mini web API
           </div>
           <code className="font-mono text-[12.5px] font-semibold block mb-2">
             /api/analytics/sync/shopify
           </code>
           <ul className="text-[13px] text-foreground/85 space-y-1.5 list-disc ml-4">
-            <li>Worker: Vercel Function</li>
+            <li>Worker: Next.js Route Handler trên Mac mini</li>
             <li>
               Mode: <code className="text-[12px]">updated_at</code> incremental cursor
             </li>
@@ -362,7 +362,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY master_app.mv_north_stars_stock;`}
             <FlowNode
               key="api"
               icon={Code2}
-              label="Vercel Function"
+              label="Mac mini Next.js API"
               sub="GET /api/analytics/summary?from=…&to=…"
               tone="violet"
             />,

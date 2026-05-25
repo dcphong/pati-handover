@@ -31,8 +31,8 @@ export default function Page() {
             <span className="text-muted-foreground mt-0.5">1.</span>
             <div>
               Bulk fulfillment thường <strong>&gt; 60s</strong> (Shopify 25 mutations/sec, 1000
-              orders = ~40s + Lark read). Vercel Fluid Compute timeout 300s đủ nhưng không
-              optimal.
+              orders = ~40s + Lark read). Chạy qua Flask service riêng ổn định hơn Next.js route
+              handler cho job dài và progress streaming.
             </div>
           </li>
           <li className="flex items-start gap-2">
@@ -150,7 +150,7 @@ export default function Page() {
       />
 
       <Callout variant="warning" title="Production runs on Mac mini">
-        Vercel KHÔNG host Flask server. Production{" "}
+        Next.js web service KHÔNG host Flask server. Production{" "}
         <TerminalInline>BULK_SERVER_URL</TerminalInline> trỏ về{" "}
         <TerminalInline>https://bulk.patiagency.com</TerminalInline> (Cloudflared tunnel → Mac
         mini port 5000).

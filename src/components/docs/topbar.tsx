@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { AudienceModeSwitch } from "@/components/docs/audience-mode";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -28,43 +29,48 @@ export function Topbar() {
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">shopify-lark-sync</span>
           </div>
         </Link>
-        <nav className="hidden md:flex items-center gap-1 text-sm">
-          <Link
-            href="/docs/overview"
-            className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
-          >
-            Docs
-          </Link>
-          <Link
-            href="/docs/architecture"
-            className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
-          >
-            Architecture
-          </Link>
-          <Link
-            href="/docs/deploy-vercel"
-            className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
-          >
-            Deploy
-          </Link>
-          <Link
-            href="/docs/troubleshooting"
-            className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
-          >
-            Troubleshooting
-          </Link>
-          <span className="mx-2 h-5 w-px bg-border" />
-          <a
-            href="https://github.com/dcphong/pati-handover"
-            target="_blank"
-            rel="noreferrer"
-            className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors inline-flex items-center gap-1.5"
-          >
-            <GithubIcon className="h-4 w-4" />
-            <span>GitHub</span>
-            <ExternalLink className="h-3 w-3 opacity-60" />
-          </a>
-        </nav>
+        <div className="flex items-center gap-2">
+          <AudienceModeSwitch className="md:hidden" />
+          <nav className="hidden md:flex items-center gap-1 text-sm">
+            <Link
+              href="/docs/overview"
+              className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
+            >
+              Docs
+            </Link>
+            <Link
+              href="/docs/architecture"
+              className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
+            >
+              Architecture
+            </Link>
+            <Link
+              href="/docs/deploy-vercel"
+              className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
+            >
+              Deploy
+            </Link>
+            <Link
+              href="/docs/troubleshooting"
+              className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
+            >
+              Troubleshooting
+            </Link>
+            <span className="mx-2 h-5 w-px bg-border" />
+            <AudienceModeSwitch />
+            <span className="mx-2 h-5 w-px bg-border" />
+            <a
+              href="https://github.com/dcphong/pati-handover"
+              target="_blank"
+              rel="noreferrer"
+              className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+            >
+              <GithubIcon className="h-4 w-4" />
+              <span>GitHub</span>
+              <ExternalLink className="h-3 w-3 opacity-60" />
+            </a>
+          </nav>
+        </div>
       </div>
     </header>
   );

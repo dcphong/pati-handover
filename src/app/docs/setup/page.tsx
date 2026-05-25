@@ -54,10 +54,10 @@ const prereqs = [
   },
   {
     icon: Box,
-    name: "Vercel CLI",
-    detail: "npm i -g vercel",
-    note: "Cần login bằng account có quyền vào project.",
-    install: "https://vercel.com/cli",
+    name: "Tailscale",
+    detail: "VPN vào Mac mini",
+    note: "Cần khi SSH vào Mac mini hoặc verify production self-host.",
+    install: "https://tailscale.com/download",
   },
 ];
 
@@ -165,7 +165,10 @@ export default function Page() {
               <li>
                 Hỏi Phong (hoặc successor): <em>&quot;cho mình file .env production để dev local&quot;</em>.
               </li>
-              <li>Hoặc dùng <TerminalInline>vercel env pull .env.local</TerminalInline> sau khi link project (xem step 4 ở <a href="/docs/deploy-vercel" className="underline">Deploy</a>).</li>
+              <li>
+                Hoặc copy từ Mac mini runtime env nếu bạn có quyền SSH:{" "}
+                <TerminalInline>~/Coding_workspace/PATI/shopify-lark-sync/.env</TerminalInline>.
+              </li>
               <li>
                 Đối chiếu full danh sách env vars ở <a href="/docs/env" className="underline">Environment Variables</a>.
               </li>
@@ -282,7 +285,7 @@ export default function Page() {
 
         <Step n={6} title="Lint + typecheck" hint="trước khi push">
           <p>
-            CI Vercel chạy <TerminalInline>bun run build</TerminalInline> — nếu typecheck
+            Mac mini deploy chạy <TerminalInline>bun run build</TerminalInline> — nếu typecheck
             fail, build fail luôn. Trước khi push:
           </p>
           <Terminal
@@ -342,7 +345,7 @@ export default function Page() {
             <div className="font-semibold text-[14px]">Deploy</div>
           </div>
           <div className="text-[12.5px] text-muted-foreground leading-5">
-            Sau khi local chạy được, push code và deploy production lên Vercel.
+            Sau khi local chạy được, push code và deploy production lên Mac mini.
           </div>
         </a>
         <a

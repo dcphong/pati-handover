@@ -24,7 +24,10 @@ export function CodeBlock({
   }
 
   return (
-    <div className={cn("my-5 rounded-lg border overflow-hidden bg-muted/40", className)}>
+    <div
+      data-dev-detail
+      className={cn("my-5 rounded-lg border overflow-hidden bg-muted/40", className)}
+    >
       {(filename || language) && (
         <div className="flex items-center justify-between border-b bg-muted/60 px-3.5 py-1.5">
           <div className="flex items-center gap-2 text-xs">

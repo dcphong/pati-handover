@@ -204,23 +204,22 @@ const store = await resolveActiveStore(request);
             ]}
           />
         </Step>
-        <Step n={2} title="Add SHOPIFY_ACCESS_TOKEN_<SLUG> Vercel env">
+        <Step n={2} title="Add SHOPIFY_ACCESS_TOKEN_<SLUG> trên Mac mini">
           <Terminal
-            host="you@laptop"
-            cwd="~"
+            host="timcook@mini"
+            cwd="~/Coding_workspace/PATI/shopify-lark-sync"
             lines={[
-              { prompt: "$", cmd: "echo \"shpat_xxx\" > /tmp/t.txt" },
-              { prompt: "$", cmd: "vercel env add SHOPIFY_ACCESS_TOKEN_NEWSTORE production < /tmp/t.txt" },
-              { prompt: "$", cmd: "rm /tmp/t.txt" },
+              { prompt: "$", cmd: "nano .env   # SHOPIFY_ACCESS_TOKEN_NEWSTORE=shpat_xxx" },
+              { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # nếu cần override prod-only" },
             ]}
           />
         </Step>
-        <Step n={3} title="Redeploy để client pickup env">
+        <Step n={3} title="Rebuild + restart web service">
           <Terminal
-            host="you@laptop"
-            cwd="~"
+            host="timcook@mini"
+            cwd="~/Coding_workspace/PATI/shopify-lark-sync"
             lines={[
-              { prompt: "$", cmd: "vercel --prod --yes" },
+              { prompt: "$", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
             ]}
           />
         </Step>

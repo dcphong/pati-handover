@@ -33,13 +33,19 @@ export default function Page() {
       <PageHeader
         eyebrow="Deployment"
         title="Mac mini Self-Host"
-        description="Máy ở nhà Phong chạy Supabase + cron + Chrome session cho ChargeFlow. Mọi feature dashboard đều phụ thuộc nó."
+        description="Máy ở nhà Phong chạy production web Next.js, Supabase, cron và Chrome session cho ChargeFlow. Mọi feature dashboard đều phụ thuộc nó."
       />
 
       <h2 id="topology">Topology — cái gì ở đâu</h2>
 
       <div className="not-prose my-6 grid lg:grid-cols-2 gap-4">
         <ZoneCard zone="Mac mini @ home" location="100.94.220.128 (Tailscale)" tone="emerald">
+          <Service
+            icon={Monitor}
+            name="Next.js web"
+            detail="com.pati.web · next start 127.0.0.1:3000 · pnl.patigroup.com"
+            status="up"
+          />
           <Service
             icon={Container}
             name="Colima VM"
@@ -55,7 +61,7 @@ export default function Page() {
           <Service
             icon={Cloud}
             name="cloudflared"
-            detail="tunnel pati-supabase → supabase.patiagency.com"
+            detail="tunnel → pnl.patigroup.com + supabase.patiagency.com"
             status="up"
           />
           <Service
@@ -86,7 +92,7 @@ export default function Page() {
           <Service
             icon={Monitor}
             name="Public URL"
-            detail="https://supabase.patiagency.com  →  qua cloudflared"
+            detail="https://pnl.patigroup.com + https://supabase.patiagency.com"
           />
           <Service
             icon={Power}
@@ -102,15 +108,17 @@ export default function Page() {
         <FactRow label="Tailscale IP" value="100.94.220.128" />
         <FactRow label="SSH user" value="timcook" />
         <FactRow label="Docker" value="Colima VM (lightweight Docker Desktop alt)" mono={false} />
-        <FactRow label="Public tunnel" value="cloudflared → supabase.patiagency.com" />
-        <FactRow label="Lên prod ngày" value="2026-05-10 (migrate khỏi Supabase Cloud)" mono={false} />
+        <FactRow label="Web service" value="launchd com.pati.web → bun run next start --hostname 127.0.0.1 --port 3000" mono={false} />
+        <FactRow label="Public tunnel" value="cloudflared → pnl.patigroup.com + supabase.patiagency.com" />
+        <FactRow label="DB lên prod" value="2026-05-10 (migrate khỏi Supabase Cloud)" mono={false} />
+        <FactRow label="Web deploy" value="GitHub Actions deploy-macmini.yml → deploy-web.sh" mono={false} />
         <FactRow label="Vị trí" value="Nhà Phong — Quận 1, HCMC" mono={false} />
       </div>
 
       <Callout variant="info" title="Tại sao tự host?">
-        Supabase Cloud hit quota bandwidth + storage nhiều lần (hết free tier). Self-host trên
-        M4 cho compute + storage gần miễn phí, latency thấp hơn (Tailscale intra), và đủ stable
-        cho production (32h+ uptime mặc định). Supabase Cloud project hiện không còn load-bearing.
+        Supabase Cloud hit quota bandwidth + storage nhiều lần (hết free tier). Web hosting cũng
+        đã chuyển khỏi Vercel để tránh timeout/cold-start và gom runtime về cùng Mac mini. M4 đủ
+        chạy Next.js, Supabase Docker, cron và Chrome CDP nếu theo dõi RAM/log đều đặn.
       </Callout>
 
       <h2 id="boot-order">Thứ tự khởi động sau khi Mac mini reboot</h2>
@@ -183,7 +191,25 @@ export default function Page() {
           />
         </Step>
 
-        <Step n={5} title="(Nếu cần) Khởi động Chrome cho ChargeFlow">
+        <Step n={5} title="Khởi động / kiểm tra web service">
+          <Terminal
+            host="timcook@mini"
+            cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+            lines={[
+              { prompt: "$", cmd: "launchctl kickstart -k \"gui/$(id -u)/com.pati.web\"" },
+              { prompt: "$", cmd: "curl -sf http://127.0.0.1:3000/api/health" },
+              { divider: true, label: "logs nếu fail" },
+              { prompt: "$", cmd: "tail -80 ~/pati-supabase/cron/logs/web.err.log" },
+              { prompt: "$", cmd: "tail -80 ~/pati-supabase/cron/logs/web.log" },
+            ]}
+          />
+          <StepCheck>
+            Từ máy bạn: <TerminalInline>curl -sf https://pnl.patigroup.com/api/health</TerminalInline>{" "}
+            trả 2xx.
+          </StepCheck>
+        </Step>
+
+        <Step n={6} title="(Nếu cần) Khởi động Chrome cho ChargeFlow">
           <p className="text-[13px]">
             Chỉ cần làm nếu cron ChargeFlow đang stale. Profile pin sẵn ở{" "}
             <TerminalInline>$HOME/.chargeflow-chrome</TerminalInline>.
@@ -210,7 +236,9 @@ export default function Page() {
         <a href="https://pnl.patigroup.com" target="_blank" rel="noreferrer">
           pnl.patigroup.com
         </a>{" "}
-        — phải thấy data thật. Hoặc:{" "}
+        — phải thấy login/dashboard. Hoặc:{" "}
+        <TerminalInline>curl -sf https://pnl.patigroup.com/api/health</TerminalInline> → 2xx.
+        Database tunnel check:{" "}
         <TerminalInline>curl -I https://supabase.patiagency.com/rest/v1/</TerminalInline>{" "}
         → 200/401.
       </Callout>
@@ -219,6 +247,13 @@ export default function Page() {
       <HealthCheckGrid
         title="3 cái này confirm Mac mini đang OK"
         probes={[
+          {
+            label: "Web public reachable",
+            cmd: "curl -sf https://pnl.patigroup.com/api/health",
+            expect: "2xx JSON",
+            badResult: "502 / timeout",
+            badMeans: "com.pati.web hoặc cloudflared route down",
+          },
           {
             label: "Public tunnel reachable",
             cmd: "curl -I https://supabase.patiagency.com/rest/v1/",

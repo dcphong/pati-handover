@@ -68,7 +68,7 @@ export default function Page() {
               key="endpoint"
               icon={Network}
               label="POST /api/cron/chargeflow-sync-ui"
-              sub="Vercel + CRON_SECRET header"
+              sub="Mac mini web API + CRON_SECRET header"
               tone="violet"
             />,
             <FlowNode
@@ -195,16 +195,13 @@ export default function Page() {
             → tìm <TerminalInline>__session</TerminalInline> → copy value.
           </p>
         </Step>
-        <Step n={4} title="Update env trên Vercel + redeploy">
+        <Step n={4} title="Update env trên Mac mini + restart web">
           <Terminal
-            host="you@laptop"
-            cwd="~"
+            host="timcook@mini"
+            cwd="~/Coding_workspace/PATI/shopify-lark-sync"
             lines={[
-              { prompt: "$", cmd: "echo \"<cookie value>\" > /tmp/cf.txt" },
-              { prompt: "$", cmd: "vercel env rm CHARGEFLOW_UI_COOKIE production" },
-              { prompt: "$", cmd: "vercel env add CHARGEFLOW_UI_COOKIE production < /tmp/cf.txt" },
-              { prompt: "$", cmd: "rm /tmp/cf.txt" },
-              { prompt: "$", cmd: "vercel --prod --yes" },
+              { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # CHARGEFLOW_UI_COOKIE=<cookie value>" },
+              { prompt: "$", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
             ]}
           />
           <p className="text-[12.5px] text-muted-foreground mt-1">
@@ -216,9 +213,10 @@ export default function Page() {
       <h2 id="hardened-fallback">Public API fallback — khi CDP path chết</h2>
       <p>Switch flag để bypass CDP và dùng HMAC API:</p>
       <CodeBlock language="bash">
-{`vercel env add CHARGEFLOW_USE_HMAC production
-# value: true
-vercel --prod --yes`}
+{`# On Mac mini:
+echo "CHARGEFLOW_USE_HMAC=true" >> ~/pati-supabase/cron/.env.web
+cd ~/Coding_workspace/PATI/shopify-lark-sync
+bash scripts/macmini-stack/deploy-web.sh --force`}
       </CodeBlock>
 
       <h2 id="tables">Tables touched</h2>

@@ -199,8 +199,9 @@ export default function Page() {
 
       <h2 id="rpc">summary_metrics RPC — single source for dashboard</h2>
       <p>
-        Single Postgres function trả toàn bộ summary card values. Self-host RPC và cloud RPC có
-        thể diverge — Vercel reads self-host, must keep in sync. Memo:{" "}
+        Single Postgres function trả toàn bộ summary card values. Web API chạy trên Mac mini đọc
+        self-host Postgres qua Supabase/PostgREST; khi đổi function/view phải refresh schema cache
+        và smoke-test dashboard. Memo:{" "}
         <TerminalInline>project_parity_loop_2026_05_13</TerminalInline>.
       </p>
       <CodeBlock language="sql">
@@ -229,9 +230,9 @@ export default function Page() {
         />
         <TrapRow
           n={2}
-          title="RPC 60s timeout"
-          why="Vercel function timeout 60s ở plan cũ. Long-range queries chết giữa chừng, client thấy spinner."
-          fix="Stream / chunked client-side join. Hoặc upgrade plan timeout 300s."
+          title="RPC query quá nặng"
+          why="Long-range queries vẫn có thể làm Next.js API chậm/OOM trên Mac mini, dù không còn serverless timeout."
+          fix="Stream / chunked client-side join, cache matview, hoặc giới hạn range trước khi query raw tables."
         />
         <TrapRow
           n={3}

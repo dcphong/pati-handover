@@ -91,7 +91,7 @@ export default function Page() {
         <PipelineCard
           tone="violet"
           name="/api/analytics/sync/shopify"
-          runtime="TypeScript / Vercel Function"
+          runtime="TypeScript / Mac mini Next.js API"
           strategy="updated_at cursor (incremental)"
           cron="Hourly / on-demand"
           target="raw_orders (analytics)"
@@ -244,15 +244,15 @@ await admin.graphql(\`
             ]}
           />
         </Step>
-        <Step n={3} title="Set per-store access token trên Vercel">
+        <Step n={3} title="Set per-store access token trên Mac mini">
           <Terminal
             host="you@laptop"
             cwd="~"
             lines={[
-              { prompt: "$", cmd: "echo \"shpat_xxxxxxxxxxxx\" > /tmp/tok.txt" },
-              { prompt: "$", cmd: "vercel env add SHOPIFY_ACCESS_TOKEN_NEWSTORE production < /tmp/tok.txt" },
-              { prompt: "$", cmd: "rm /tmp/tok.txt" },
-              { prompt: "$", cmd: "vercel --prod --yes" },
+              { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
+              { prompt: "timcook@mini $", cmd: "cd ~/Coding_workspace/PATI/shopify-lark-sync" },
+              { prompt: "timcook@mini $", cmd: "nano .env   # add SHOPIFY_ACCESS_TOKEN_NEWSTORE=shpat_xxx" },
+              { prompt: "timcook@mini $", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
             ]}
           />
           <p className="text-[12.5px] text-muted-foreground mt-1">
