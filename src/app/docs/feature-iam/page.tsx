@@ -104,9 +104,29 @@ export default function Page() {
       <PageHeader
         eyebrow="Core Features"
         title="IAM & Permissions"
-        description="AWS-style policies · 75 actions · 9 managed policies · audit log. Landed 2026-05-18 ở trang /iam."
+        description="Quản lý ai vào được trang nào, làm được thao tác gì. Mọi cấp quyền đều ghi audit log."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Cấp quyền hoạt động ra sao</h2>
+        <p>
+          Mỗi tài khoản được gắn một hoặc nhiều policy (ví dụ Admin, Operations, CS, Analytics).
+          Policy quyết định người đó vào được trang nào, click được nút nào. Nếu không thấy menu
+          hay nút mà bạn nghĩ đáng ra phải có, khả năng cao là chưa được cấp quyền.
+        </p>
+
+        <h2 id="user-when-call">Khi nào báo dev / admin</h2>
+        <ul>
+          <li>Đăng nhập được nhưng không thấy menu cần dùng.</li>
+          <li>Click một nút nhận lỗi &ldquo;permission denied&rdquo;.</li>
+          <li>Cần cấp quyền cho thành viên mới — phải qua admin (không tự cấp).</li>
+          <li>Có người vừa nghỉ — nhớ thu hồi quyền.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="model">Permission model (luồng check)</h2>
       <div className="not-prose my-6 rounded-xl border bg-card p-4 sm:p-5">
         <FlowRow arrows="down">
@@ -221,6 +241,8 @@ LIMIT 50;`}
         <TerminalInline>permissions.includes(&quot;view_analytics&quot;)</TerminalInline> vẫn
         work — IAM layer auto-emits aliases. Đừng rush rewrite chỗ check cũ; migrate dần.
       </Callout>
+
+      </section>
 
       <PageNav href="/docs/feature-iam" />
     </>

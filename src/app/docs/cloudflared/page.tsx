@@ -29,9 +29,32 @@ export default function Page() {
       <PageHeader
         eyebrow="Deployment"
         title="Cloudflared Tunnel"
-        description="Public ingress cho Mac mini self-host: web app, Supabase và ChargeFlow trigger đều đi qua Cloudflare Tunnel. Khi 502 = đọc trang này."
+        description="Đường ra internet của Mac mini. Web app + database + chargeflow đều đi qua đây."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Tunnel này dùng để làm gì</h2>
+        <p>
+          Mac mini ở nhà không có IP public. Cloudflared mở một &ldquo;ống dẫn&rdquo; ra
+          internet để dashboard (<code>pnl.patigroup.com</code>) và database
+          (<code>supabase.patiagency.com</code>) tới được Mac mini mà không phải mở port router.
+        </p>
+        <p>
+          Khi tunnel rớt: dashboard báo lỗi 502, cards $0, hoặc các nút bấm không phản hồi.
+          Đây là <strong>chỗ đầu tiên</strong> cần kiểm tra trước khi đào schema hay RLS.
+        </p>
+
+        <h2 id="user-when-call">Khi nào cần báo dev</h2>
+        <ul>
+          <li>Dashboard load không nổi mà internet vẫn OK.</li>
+          <li>Một số trang hiện được, một số 502 — tunnel có thể đang reconnect.</li>
+          <li>Tình trạng kéo dài quá 5 phút.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="why">Cách tunnel hoạt động</h2>
       <p>
         Mac mini ở nhà sau ISP NAT — không có IP public cố định. Cloudflared mở outbound từ Mac
@@ -278,6 +301,8 @@ ingress:
           </div>
         </div>
       </div>
+
+      </section>
 
       <PageNav href="/docs/cloudflared" />
     </>

@@ -11,7 +11,7 @@ type Line =
 
 export function Terminal({
   host = "you@laptop",
-  cwd = "~/shopify-lark-sync",
+  cwd = "~/pati-master-app",
   lines,
   title,
 }: {

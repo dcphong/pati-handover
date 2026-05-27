@@ -19,9 +19,29 @@ export default function Page() {
       <PageHeader
         eyebrow="Reference"
         title="Troubleshooting"
-        description="Triệu chứng bạn thấy → nguyên nhân → 1-2-3 cách fix. Đi từ trên xuống."
+        description="Khi dashboard có vấn đề: đọc triệu chứng → nguyên nhân → cách xử."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Khi gặp lỗi</h2>
+        <p>
+          Trước khi báo dev, làm 2 việc giúp khoanh nhanh vấn đề:
+        </p>
+        <ol>
+          <li>Reload lại trang. Một số lỗi do mạng tạm thời.</li>
+          <li>Mở thử trang khác trên dashboard — nếu cũng lỗi, khả năng tunnel hoặc Mac mini có vấn đề.</li>
+        </ol>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Lỗi kéo dài &gt; 5 phút trên nhiều trang.</li>
+          <li>Số liệu hiển thị bất thường (âm, 0, hoặc lệch quá xa).</li>
+          <li>Một nút bấm không phản hồi.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <ProbeFirst>
         Khi dashboard hỏng / cards $0 / API trả lỗi, <strong>luôn luôn</strong> chạy lệnh
         sau ĐẦU TIÊN. Nếu trả 502, tunnel Mac mini down — fix tunnel xong mọi thứ khác
@@ -227,7 +247,7 @@ export default function Page() {
             <FixStep n={3}>
               <Terminal
                 host="timcook@mini"
-                cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+                cwd="~/Coding_workspace/PATI/pati-master-app"
                 lines={[
                   { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # SHOPIFY_API_SECRET=shpss_xxx" },
                   { prompt: "$", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
@@ -263,7 +283,7 @@ export default function Page() {
             <FixStep n={3}>
               <Terminal
                 host="timcook@mini"
-                cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+                cwd="~/Coding_workspace/PATI/pati-master-app"
                 lines={[
                   { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # CHARGEFLOW_UI_COOKIE=<cookie value>" },
                   { prompt: "$", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
@@ -358,7 +378,7 @@ export default function Page() {
               Sửa đúng nguồn env production:
               <Terminal
                 host="timcook@mini"
-                cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+                cwd="~/Coding_workspace/PATI/pati-master-app"
                 lines={[
                   { prompt: "$", cmd: "nano .env" },
                   { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # prod override nếu có" },
@@ -477,7 +497,7 @@ export default function Page() {
           },
           {
             label: "GitNexus (impact analysis)",
-            cmd: "npx gitnexus query \"your concept\"   # chạy trong repo cũ shopify-lark-sync",
+            cmd: "npx gitnexus query \"your concept\"   # chạy trong repo pati-master-app",
             expect: "Process-grouped results — dẫn về đúng module liên quan",
           },
           {
@@ -487,6 +507,8 @@ export default function Page() {
           },
         ]}
       />
+
+      </section>
 
       <PageNav href="/docs/troubleshooting" />
     </>

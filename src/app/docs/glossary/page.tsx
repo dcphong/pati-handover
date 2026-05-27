@@ -18,7 +18,7 @@ const terms: { term: string; def: string }[] = [
   { term: "FO", def: "Fulfillment Order. Shopify can split 1 order → N FOs across locations." },
   { term: "com.pati.web", def: "launchd LaunchAgent chạy Next.js production server trên Mac mini tại 127.0.0.1:3000." },
   { term: "Flexport", def: "Logistics partner. NS3 warehouse uses Flexport Logistics API." },
-  { term: "Gorgias", def: "Legacy CS platform. Rebuild = /cs-dashboard." },
+  { term: "CS Dashboard", def: "3-panel CS view tự host tại /cs-dashboard. Trước đây dùng Gorgias, đã thay thế." },
   { term: "Klaviyo", def: "Email/SMS marketing platform. Drives Email Sent / Click / Attributed cards." },
   { term: "Lark", def: "Feishu Singapore version. PATI's collaboration platform — Base, Mail, Bot, OAuth." },
   { term: "Mac mini", def: "M4/16GB at Phong's home. Hosts Next.js web, Supabase Docker, Chrome CDP, and cron jobs." },
@@ -43,7 +43,7 @@ const terms: { term: string; def: string }[] = [
   { term: "Sidecar", def: "Sidekick term cho auxiliary process (ví dụ Flask bulk-update server next to Next.js)." },
   { term: "SoT", def: "Source of Truth. Shopify = SoT for orders. Lark = SoT for COGS." },
   { term: "Supabase", def: "Self-hosted Postgres + REST + Auth + Realtime + Storage stack on Mac mini." },
-  { term: "Tailscale", def: "Mesh VPN. Used cho intra-team SSH + WireGuard private IPs (100.94.x.x)." },
+  { term: "Tailscale", def: "Mesh VPN. Dùng cho SSH riêng tư + WireGuard private IPs (100.94.x.x)." },
   { term: "TimCook", def: "Mac mini SSH username (joke). Có admin sudo." },
   { term: "TripleWhale (TW)", def: "Legacy P&L SaaS. Being replaced by PATI's clone with first-party data." },
   { term: "VNH", def: "Việt Nam Hà Nội warehouse." },
@@ -57,7 +57,7 @@ export default function Page() {
       <PageHeader
         eyebrow="Reference"
         title="Glossary"
-        description="Vocab & acronyms team PATI dùng. Search dưới để tra nhanh."
+        description="Vocab & acronyms PATI dùng. Search dưới để tra nhanh."
       />
 
       <GlossaryBrowser terms={terms} />

@@ -105,9 +105,27 @@ export default function Page() {
       <PageHeader
         eyebrow="Deployment"
         title="Cron Jobs"
-        description="16 cron jobs trên Mac mini + 13 GitHub Actions workflows. Visual grid theo giờ ngày để bạn biết khi nào chạy gì."
+        description="Lịch chạy của hệ thống — khi nào sync gì. Tổng cộng ~30 job giữa Mac mini + GitHub Actions."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Cron jobs làm gì</h2>
+        <p>
+          Đây là các tác vụ tự động đồng bộ dữ liệu định kỳ. Mỗi job kéo dữ liệu từ một nguồn
+          (Shopify, Lark, Flexport, ads provider, …) hoặc cập nhật báo cáo. Khi số trên dashboard
+          chưa mới, thường là một job đang trễ chứ không phải lỗi.
+        </p>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Một loại số liệu cũ &gt; 24 giờ.</li>
+          <li>Cần job mới (thêm provider mới, đổi lịch) — qua dev.</li>
+          <li>Job báo đỏ liên tục trên trang Sync Health.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="who-runs-what">Ai chạy job nào — nguyên tắc phân chia</h2>
       <RunnerLegend />
       <Callout variant="info" title="Quy tắc">
@@ -215,6 +233,8 @@ export default function Page() {
           { prompt: "", cmd: "ORDER BY started_at DESC;" },
         ]}
       />
+
+      </section>
 
       <PageNav href="/docs/cron-jobs" />
     </>

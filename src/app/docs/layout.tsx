@@ -1,5 +1,6 @@
 import { DocsSidebar } from "@/components/docs/sidebar";
 import { AudienceBrief } from "@/components/docs/audience-brief";
+import { DocsIntegrationDecorations } from "@/components/docs/docs-integration-decorations";
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         </aside>
         <main className="flex-1 min-w-0 py-12 px-4 sm:px-10">
           <article className="prose-docs max-w-3xl mx-auto">
+            <DocsIntegrationDecorations />
             <AudienceBrief />
             {children}
           </article>

@@ -70,7 +70,7 @@ const categories: Category[] = [
       { concern: "Web hosting", tech: "Mac mini launchd com.pati.web → next start :3000" },
       { concern: "Self-host", tech: "Mac mini Docker (Supabase + Flask + Chrome CDP) + web" },
       { concern: "Tunnel", tech: "Cloudflared (pnl.patigroup.com + supabase.patiagency.com)" },
-      { concern: "Intra-team VPN", tech: "Tailscale" },
+      { concern: "Private VPN access", tech: "Tailscale" },
       { concern: "DNS", tech: "GoDaddy — patigroup.com (additive-only)" },
     ],
   },
@@ -84,6 +84,27 @@ const categories: Category[] = [
       { concern: "Lint", tech: "ESLint 9 (eslint-config-next)" },
     ],
   },
+];
+
+const userStackGroups = [
+  "Dashboard: Next.js + React là phần dùng trên trình duyệt.",
+  "Database: Supabase/Postgres là nơi giữ dữ liệu chuẩn.",
+  "Worker nền: Python kéo dữ liệu từ Shopify, Lark, Flexport và provider quảng cáo.",
+  "Hạ tầng: Mac mini chạy web, database, cron; Cloudflared đưa service ra domain public.",
+  "Truy cập nội bộ: Tailscale dùng để SSH/remote vào Mac mini an toàn.",
+];
+
+const userDecisions = [
+  "Bun được dùng để cài package/build nhanh và thống nhất môi trường dev.",
+  "shadcn/ui giúp UI nhẹ, dễ chỉnh và không bị phụ thuộc style nặng của Ant Design.",
+  "Python và Next.js tách vai trò: Python lo đồng bộ dữ liệu, Next.js lo dashboard.",
+];
+
+const userVersions = [
+  "Next.js/React: nền của dashboard web.",
+  "Bun: tool cài package và build.",
+  "Python: chạy các worker đồng bộ dữ liệu.",
+  "Postgres/Supabase: database production.",
 ];
 
 const toneMap = {
@@ -109,13 +130,43 @@ export default function Page() {
       <PageHeader
         eyebrow="Architecture"
         title="Tech Stack"
-        description="Mỗi concern dùng tech gì. 5 nhóm để dễ scan."
+        description="Mỗi phần của hệ thống đang dùng công nghệ gì. Hữu ích khi cần biết ai/ai phụ trách phần nào."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Stack rút gọn</h2>
+        <ul>
+          <li><strong>Dashboard</strong>: Next.js + React (phần dùng trên trình duyệt).</li>
+          <li><strong>Database</strong>: Supabase / Postgres (nơi giữ dữ liệu chuẩn).</li>
+          <li><strong>Worker nền</strong>: Python (kéo dữ liệu từ Shopify, Lark, Flexport, ads).</li>
+          <li><strong>Hạ tầng</strong>: Mac mini chạy web + DB + cron; Cloudflared đưa service ra domain public.</li>
+          <li><strong>Truy cập nội bộ</strong>: Tailscale để SSH vào Mac mini an toàn.</li>
+        </ul>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Cần biết một lỗi cụ thể thuộc phần nào — dev đối chiếu stack rồi xử.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="catalog">Stack theo nhóm</h2>
+      <div data-user-detail className="not-prose my-5 rounded-xl border bg-card p-4">
+        <p className="m-0 text-sm leading-6 text-foreground/85">
+          Trang này trả lời câu hỏi: mỗi phần của hệ thống đang dùng công nghệ gì và phần đó
+          chịu trách nhiệm cho việc nào.
+        </p>
+        <ul className="mt-4 space-y-2 text-sm leading-6 text-foreground/85">
+          {userStackGroups.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </div>
       {categories.map((cat) => (
         <section
           key={cat.title}
+          data-dev-detail
           className={`not-prose my-6 rounded-xl border-2 ${toneMap[cat.tone]} overflow-hidden`}
         >
           <div className="px-4 py-3 border-b bg-card/60 flex items-center gap-2">
@@ -146,7 +197,18 @@ export default function Page() {
       ))}
 
       <h2 id="rationale">3 quyết định tech chính — vì sao</h2>
-      <div className="not-prose my-5 grid sm:grid-cols-3 gap-3">
+      <div data-user-detail className="not-prose my-5 rounded-xl border bg-card p-4">
+        <p className="m-0 text-sm leading-6 text-foreground/85">
+          Ba quyết định này giúp hệ thống dễ maintain: build nhanh, UI dễ kiểm soát, và phần
+          đồng bộ dữ liệu không trộn lẫn với phần dashboard.
+        </p>
+        <ul className="mt-4 space-y-2 text-sm leading-6 text-foreground/85">
+          {userDecisions.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </div>
+      <div data-dev-detail className="not-prose my-5 grid sm:grid-cols-3 gap-3">
         <Rationale
           icon={Box}
           title="Bun-only"
@@ -177,7 +239,18 @@ export default function Page() {
       </Callout>
 
       <h2 id="version-table">Version pin nhanh</h2>
-      <div className="not-prose my-5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[12.5px]">
+      <div data-user-detail className="not-prose my-5 rounded-xl border bg-card p-4">
+        <p className="m-0 text-sm leading-6 text-foreground/85">
+          Version pin là danh sách phiên bản chính để dev cài đúng môi trường. User không cần nhớ
+          số version; chỉ cần biết khi nâng cấp các phần này thì phải test lại dashboard và sync.
+        </p>
+        <ul className="mt-4 space-y-2 text-sm leading-6 text-foreground/85">
+          {userVersions.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </div>
+      <div data-dev-detail className="not-prose my-5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[12.5px]">
         <VersionPill name="Next.js" version="16.2.6" />
         <VersionPill name="React" version="19.2.4" />
         <VersionPill name="Tailwind" version="v4" />
@@ -187,6 +260,8 @@ export default function Page() {
         <VersionPill name="Postgres" version="15+" />
         <VersionPill name="TypeScript" version="5" />
       </div>
+
+      </section>
 
       <PageNav href="/docs/tech-stack" />
     </>

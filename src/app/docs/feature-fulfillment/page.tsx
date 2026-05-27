@@ -19,9 +19,29 @@ export default function Page() {
       <PageHeader
         eyebrow="Operations"
         title="VNH / NS3 Fulfillment"
-        description="Flexport Logistics API + Lark warehouse routing + auto-submit stuck Shopify FOs."
+        description="Tự đẩy đơn Shopify sang kho phù hợp (VNH ở Hà Nội hoặc Flexport ở Mỹ). Theo dõi tồn kho và phục vụ NS#3."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Pipeline này làm gì</h2>
+        <p>
+          Khi có đơn mới, hệ thống quyết định nó nên đi qua kho nào (VNH ở Hà Nội hay Flexport
+          ở Mỹ), sau đó tự gửi yêu cầu fulfillment. Đồng thời sync tồn kho và tracking về
+          dashboard để theo dõi NS#3 (Stock Cover).
+        </p>
+
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Đơn được tạo trên Shopify nhưng &gt; 1 giờ chưa được gửi sang kho nào.</li>
+          <li>NS#3 trên dashboard không cập nhật &gt; 24 giờ.</li>
+          <li>Tracking không cập nhật sau khi đơn đã được fulfilled.</li>
+          <li>Routing rule cần đổi (vd thêm kho mới) — luôn cần dev.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="vocab">Từ vựng cần nhớ</h2>
       <div className="not-prose my-5 grid sm:grid-cols-3 gap-3">
         <Vocab
@@ -107,8 +127,8 @@ const mutation = \`
       <h2 id="ui-routes">UI routes</h2>
       <div className="not-prose my-5 rounded-xl border bg-card overflow-hidden">
         <RouteRow icon={Truck} path="/vnh-fulfill" desc="VNH bulk fulfill page" />
-        <RouteRow icon={Boxes} path="/portfolio/stock-cover" desc="NS3 dashboard (stock cover days)" />
-        <RouteRow icon={Package} path="/inventory" desc="Cross-warehouse inventory snapshot" />
+        <RouteRow icon={Boxes} path="/north-stars" desc="North Stars (NS#3 = stock cover days)" />
+        <RouteRow icon={Package} path="/portfolio/inventory" desc="Cross-warehouse inventory snapshot" />
         <RouteRow icon={RefreshCw} path="/workflows/shipmonk" desc="Optional ShipMonk pipeline (infrequent)" />
       </div>
 
@@ -125,6 +145,8 @@ const mutation = \`
       <p className="text-[13px] text-muted-foreground">
         Flask server gọi Shopify Admin GraphQL mutate fulfillments theo batch 25.
       </p>
+
+      </section>
 
       <PageNav href="/docs/feature-fulfillment" />
     </>

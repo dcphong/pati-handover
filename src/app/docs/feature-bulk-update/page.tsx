@@ -18,11 +18,36 @@ export default function Page() {
   return (
     <>
       <PageHeader
-        eyebrow="Operations"
-        title="Bulk Update Server"
-        description="Flask backend cho /api/bulk/* — chạy trên Mac mini, accept Lark/Excel/CSV input, batch fulfillment."
+        eyebrow="Beta / Test Features"
+        title="Bulk Update Server (Beta)"
+        description="Công cụ thử nghiệm để xử lý fulfillment hàng loạt từ Lark / Excel / CSV. Không phải luồng vận hành mặc định."
       />
 
+      <Callout variant="warning" title="Beta feature">
+        Bulk Update chỉ dùng khi chủ động test hoặc xử lý một batch có người kiểm soát. Đây
+        không phải luồng vận hành mặc định trong Project Overview chính.
+      </Callout>
+
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Khi nào dùng tính năng này</h2>
+        <p>
+          Khi cần gửi yêu cầu fulfillment cho rất nhiều đơn cùng lúc (vd vài trăm đến vài nghìn),
+          quá tốc độ cron production có thể xử trong ngày. Tính năng này nhận file (Excel / CSV
+          từ Lark) và đẩy hàng loạt.
+        </p>
+
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>File input có lỗi format mà UI không nói rõ.</li>
+          <li>Batch chạy quá lâu không có progress.</li>
+          <li>Một số dòng fail mà không biết tại sao.</li>
+          <li>Cần extend tính năng cho input mới — luôn qua dev.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="why">Vì sao tách Flask khỏi Next.js?</h2>
       <div className="not-prose my-5 rounded-xl border bg-card p-4">
         <div className="font-semibold text-[14px] mb-2">3 lý do:</div>
@@ -129,7 +154,7 @@ export default function Page() {
       <h2 id="run-local">Run local</h2>
       <Terminal
         host="you@laptop"
-        cwd="~/Coding/shopify-lark-sync"
+        cwd="~/Coding/pati-master-app"
         title="Một lệnh — Next dev + Flask cùng lúc"
         lines={[
           { prompt: "$", cmd: "bun run dev:full" },
@@ -140,7 +165,7 @@ export default function Page() {
       />
       <Terminal
         host="you@laptop"
-        cwd="~/Coding/shopify-lark-sync"
+        cwd="~/Coding/pati-master-app"
         title="Hoặc chạy thủ công"
         lines={[
           { prompt: "$", cmd: "python sync/bulk_update/server.py" },
@@ -190,6 +215,8 @@ export default function Page() {
           order admin URL.
         </div>
       </div>
+
+      </section>
 
       <PageNav href="/docs/feature-bulk-update" />
     </>

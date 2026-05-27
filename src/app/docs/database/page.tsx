@@ -203,9 +203,25 @@ export default function Page() {
       <PageHeader
         eyebrow="Architecture"
         title="Database Schema"
-        description="Schema master_app — tables, views, matview, RPC. Catalog scannable theo cluster."
+        description="Bản đồ các bảng + view + matview + RPC trong database. Trang này thuần kỹ thuật."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Trang này dành cho ai</h2>
+        <p>
+          Dành cho dev khi cần biết bảng/view nào đang giữ dữ liệu gì. Người dùng cuối không
+          query DB trực tiếp — dashboard đã làm sẵn.
+        </p>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Báo cáo cần thêm cột / chiều mới — luôn qua dev.</li>
+          <li>Một báo cáo lệch số mà không rõ nguồn — dev sẽ tra schema để xác minh.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <Callout variant="info" title="Schema = master_app">
         Mọi production table sống trong <TerminalInline>master_app</TerminalInline>. Schema{" "}
         <TerminalInline>public</TerminalInline> chỉ là placeholder empty. Migration files
@@ -321,6 +337,8 @@ export default function Page() {
           }
         />
       </div>
+
+      </section>
 
       <PageNav href="/docs/database" />
     </>

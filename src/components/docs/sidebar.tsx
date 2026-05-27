@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { detectIntegrations, IntegrationLogo } from "@/components/docs/integration-logo";
 import { navigation } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,8 @@ export function DocsSidebar() {
           <ul className="flex flex-col">
             {section.items.map((item) => {
               const active = pathname === item.href;
+              const integrations = detectIntegrations(item.title);
+
               return (
                 <li key={item.href}>
                   <Link
@@ -29,6 +32,13 @@ export function DocsSidebar() {
                     )}
                   >
                     <span className="flex items-center gap-2">
+                      {integrations.map((integration) => (
+                        <IntegrationLogo
+                          key={integration}
+                          integration={integration}
+                          className={cn("h-[18px] w-[18px]", active && "border-transparent bg-background/15")}
+                        />
+                      ))}
                       {item.title}
                       {item.badge && (
                         <span className="ml-auto text-[10px] uppercase tracking-wider bg-muted text-muted-foreground rounded px-1.5 py-0.5">

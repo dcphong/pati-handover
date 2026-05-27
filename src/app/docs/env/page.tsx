@@ -363,7 +363,7 @@ const categories: EnvCategory[] = [
         status: "required",
         desc: (
           <>
-            <TerminalInline>Hoaibaodata/shopify-lark-sync</TerminalInline>.
+            <TerminalInline>dev-pati/pati-master-app</TerminalInline>.
           </>
         ),
       },
@@ -395,9 +395,26 @@ export default function Page() {
       <PageHeader
         eyebrow="Getting Started"
         title="Environment Variables"
-        description="Full catalog mọi env vars app và workers cần. Nhóm theo provider, có status badge."
+        description="Danh mục các khóa cấu hình kết nối Shopify / Supabase / Lark / các provider khác. Trang này thuần kỹ thuật."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Tóm tắt</h2>
+        <p>
+          Đây là &ldquo;chìa khóa&rdquo; giúp dashboard kết nối với các dịch vụ bên ngoài. Người
+          dùng không cần đụng vào — chỉ dev mới setup hoặc đổi.
+        </p>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Một tính năng đột nhiên báo &ldquo;unauthorized&rdquo; — khả năng token hết hạn.</li>
+          <li>Một provider mới được mua/đăng ký — cần dev thêm khóa vào.</li>
+          <li>Không bao giờ chia sẻ hoặc paste secret ở chat công khai.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <Callout variant="warning" title="Never commit .env">
         File <TerminalInline>.env</TerminalInline> đã có trong{" "}
         <TerminalInline>.gitignore</TerminalInline>. Production hiện đọc env từ Mac mini repo{" "}
@@ -428,10 +445,10 @@ export default function Page() {
       <p>Nguồn production hiện là Mac mini, không phải Vercel env. Nếu bạn có quyền SSH:</p>
       <Terminal
         host="you@laptop"
-        cwd="~/Coding/shopify-lark-sync"
+        cwd="~/Coding/pati-master-app"
         lines={[
           { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
-          { prompt: "timcook@mini $", cmd: "cd ~/Coding_workspace/PATI/shopify-lark-sync" },
+          { prompt: "timcook@mini $", cmd: "cd ~/Coding_workspace/PATI/pati-master-app" },
           { prompt: "timcook@mini $", cmd: "cp .env .env.local.backup.$(date +%F)" },
           { divider: true, label: "kết quả" },
           { out: "Dùng .env hiện tại làm source để đối chiếu local; không commit file này.", tone: "ok" },
@@ -475,6 +492,8 @@ export default function Page() {
           </div>
         </div>
       </div>
+
+      </section>
 
       <PageNav href="/docs/env" />
     </>

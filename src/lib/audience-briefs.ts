@@ -11,7 +11,7 @@ export const audienceBriefs: Record<string, AudienceBrief> = {
     userSummary:
       "Đây là bức tranh tổng quan: hệ thống gom đơn hàng, tồn kho, vận chuyển, CS và số liệu kinh doanh vào một dashboard chung.",
     userBullets: [
-      "Dùng trang này để hiểu ai dùng dashboard và từng nhóm dùng để làm gì.",
+      "Dùng trang này để hiểu dashboard phục vụ workflow nào và bắt đầu từ đâu.",
       "Bạn không cần nhớ tên bảng, worker hay file code ở User mode.",
       "Khi cần sửa hệ thống hoặc debug, chuyển sang Dev mode.",
     ],
@@ -138,6 +138,17 @@ export const audienceBriefs: Record<string, AudienceBrief> = {
     ],
     devSummary: "Dev mode giữ tunnel hostname, service mapping, diagnostics và restart commands.",
   },
+  "/docs/tailscale": {
+    userTitle: "Kết nối an toàn vào Mac mini",
+    userSummary:
+      "Trang này hướng dẫn cài Tailscale và dùng mạng riêng để vào Mac mini khi cần hỗ trợ vận hành.",
+    userBullets: [
+      "User mode có từng bước cài app, đăng nhập và remote màn hình.",
+      "Không mở port router hoặc chia sẻ quyền khi chưa được duyệt.",
+      "Dev mode có lệnh SSH, VNC, kiểm tra port và checklist quyền.",
+    ],
+    devSummary: "Dev mode giữ Tailscale install flow, ACL/access checklist, SSH/VNC commands và security rules.",
+  },
   "/docs/feature-shopify-sync": {
     userTitle: "Đồng bộ dữ liệu Shopify",
     userSummary:
@@ -148,17 +159,6 @@ export const audienceBriefs: Record<string, AudienceBrief> = {
       "Dev mode có endpoint, webhook, refund và timezone details.",
     ],
     devSummary: "Dev mode hiển thị raw_orders/refunds/variants flow, webhook HMAC và sync edge cases.",
-  },
-  "/docs/feature-lark": {
-    userTitle: "Đồng bộ dữ liệu từ Lark",
-    userSummary:
-      "Trang này mô tả dữ liệu từ Lark Base/Mail được đưa vào dashboard để phục vụ vận hành và CS.",
-    userBullets: [
-      "Lark là nơi một số team nhập hoặc quản lý dữ liệu vận hành.",
-      "Nếu thông tin trên dashboard lệch Lark, cần kiểm tra lần sync gần nhất.",
-      "Dev mode có API, token, table mapping và fallback chi tiết.",
-    ],
-    devSummary: "Dev mode giữ Lark API scopes, bitable mapping, mail sync và retry/fallback notes.",
   },
   "/docs/feature-analytics": {
     userTitle: "Báo cáo kinh doanh và lợi nhuận",
@@ -207,7 +207,7 @@ export const audienceBriefs: Record<string, AudienceBrief> = {
   "/docs/feature-chargeflow": {
     userTitle: "Quản lý tranh chấp thanh toán",
     userSummary:
-      "Trang này mô tả cách team xử lý dispute/chargeback và bằng chứng liên quan.",
+      "Trang này mô tả cách xử lý dispute/chargeback và bằng chứng liên quan.",
     userBullets: [
       "Dùng để biết case nào cần bằng chứng hoặc hành động tiếp theo.",
       "Không expose thông tin nội bộ không cần thiết cho khách hàng.",
@@ -218,13 +218,25 @@ export const audienceBriefs: Record<string, AudienceBrief> = {
   "/docs/feature-cs": {
     userTitle: "Dashboard chăm sóc khách hàng",
     userSummary:
-      "Trang này giải thích cách team CS xem thông tin khách hàng, đơn hàng, email và ghi chú.",
+      "Trang này giải thích cách CS xem thông tin khách hàng, đơn hàng, email và ghi chú.",
     userBullets: [
       "Dùng để hỗ trợ khách nhanh hơn và có ngữ cảnh đầy đủ hơn.",
       "Nếu dữ liệu khách hàng thiếu, cần kiểm tra nguồn Shopify/Lark Mail.",
       "Dev mode có matching, refund-rate và query caveats.",
     ],
     devSummary: "Dev mode giữ CS data joins, Lark Mail reconcile, customer profile and bug history details.",
+  },
+  "/docs/feature-cs-of": {
+    userTitle: "Workflow CS & OF",
+    userSummary:
+      "Trang này là hướng dẫn thao tác payment request cho shipping cost: lấy cost, gom theo batch, xuất CSV, kiểm tra output và submit form.",
+    userBullets: [
+      "Bắt đầu từ cost thô trong Lark Base, không dùng tin nhắn tổng cuối ngày.",
+      "Nếu gom 2-3 ngày mới làm payment request thì phải cộng từng phần lại trước khi submit.",
+      "Khi lệch số, xem phần Attention & Solutions trước khi hỏi Best.",
+    ],
+    devSummary:
+      "Dev mode giữ workflow steps, batch math, form submission details và validation rules cho shipping cost payment request.",
   },
   "/docs/feature-bestfulfill": {
     userTitle: "Chọn phương án fulfillment tốt",
@@ -258,6 +270,18 @@ export const audienceBriefs: Record<string, AudienceBrief> = {
       "Dev mode có server, route, command và validation details.",
     ],
     devSummary: "Dev mode giữ Flask/local server, input formats, command flow and failure modes.",
+  },
+  "/docs/timcook": {
+    userTitle: "Openclaw training handover",
+    userSummary:
+      "Trang này tóm tắt phần bạn phụ trách cho Timcook: chuẩn bị training Openclaw, dẫn buổi học và chốt các việc cần theo dõi.",
+    userBullets: [
+      "Dùng khi cần onboarding hoặc training cho người mới vào Openclaw.",
+      "Trang này giúp gom checklist, agenda và điểm cần follow-up sau buổi training.",
+      "Nếu cần chi tiết kỹ thuật sâu hơn, chuyển sang Dev mode.",
+    ],
+    devSummary:
+      "Dev mode giữ training flow, checklist, access prep và follow-up notes cho Openclaw handover.",
   },
   "/docs/api-routes": {
     userTitle: "Các cổng backend của dashboard",

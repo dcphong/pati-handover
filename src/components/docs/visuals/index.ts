@@ -1,4 +1,4 @@
-export { Steps, Step, StepCheck, StepWarn } from "./steps";
+export { Steps, StepsHeader, Step, StepCheck, StepWarn } from "./steps";
 export type { StepStatus } from "./steps";
 export { Terminal, TerminalInline } from "./terminal";
 export { FlowNode, FlowRow, LayerStack } from "./flow";
@@ -22,3 +22,4 @@ export { FileTree } from "./tree";
 export type { TreeNode } from "./tree";
 export { HealthCheckGrid, StatusPill } from "./healthcheck";
 export type { HealthProbe } from "./healthcheck";
+export { Canvas } from "./canvas";

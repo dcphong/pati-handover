@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { detectIntegrations, IntegrationLogo } from "@/components/docs/integration-logo";
 import { cn } from "@/lib/utils";
 
 type Status = "required" | "optional" | "legacy" | "one-off" | "prod-only";
@@ -39,11 +40,17 @@ export type EnvCategory = {
 
 export function EnvCategoryCard({ cat }: { cat: EnvCategory }) {
   const requiredCount = cat.rows.filter((r) => r.status === "required").length;
+  const integrations = detectIntegrations(cat.title, cat.description);
+
   return (
     <section className="not-prose my-6 rounded-xl border bg-card overflow-hidden">
       <div className="flex items-baseline justify-between gap-3 px-4 py-3 border-b bg-muted/30">
         <div className="flex items-center gap-2">
-          {cat.icon && <cat.icon className="h-4 w-4 text-foreground/80" />}
+          {integrations.length > 0
+            ? integrations.map((integration) => (
+                <IntegrationLogo key={integration} integration={integration} className="h-5 w-5" />
+              ))
+            : cat.icon && <cat.icon className="h-4 w-4 text-foreground/80" />}
           <h3 className="text-[15px] font-semibold tracking-tight">
             {cat.title}
           </h3>

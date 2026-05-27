@@ -7,6 +7,7 @@ import {
   Monitor,
   Network,
   Power,
+  ScreenShare,
   Terminal as TerminalIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/docs/page-header";
@@ -33,9 +34,35 @@ export default function Page() {
       <PageHeader
         eyebrow="Deployment"
         title="Mac mini Self-Host"
-        description="Máy ở nhà Phong chạy production web Next.js, Supabase, cron và Chrome session cho ChargeFlow. Mọi feature dashboard đều phụ thuộc nó."
+        description="Máy tại nhà Phong chạy hầu hết hệ thống: dashboard, database, cron jobs, và session ChargeFlow."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Vì sao quan trọng</h2>
+        <p>
+          Mac mini này &ldquo;gánh&rdquo; hầu hết hệ thống PATI: dashboard web, database, các
+          cron đồng bộ Shopify/Lark/Flexport, và phiên Chrome dùng để lấy dispute từ ChargeFlow.
+          Nếu Mac mini sập → dashboard mất kết nối, cron ngừng, dữ liệu không vào.
+        </p>
+
+        <h2 id="user-watch">Để ý gì hằng ngày</h2>
+        <ul>
+          <li>Dashboard có load không (502 = tunnel / Mac mini có vấn đề).</li>
+          <li>Cron trên trang Cron Jobs có chạy gần đây không (mỗi 30 phút phải có 1 job).</li>
+          <li>Khi nhà Phong cúp điện hoặc Mac mini phải reboot, dev cần check Colima &amp; tunnel.</li>
+        </ul>
+
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Dashboard 502 hoặc trắng trang trong &gt; 5 phút.</li>
+          <li>Số liệu cũ &gt; 24 h.</li>
+          <li>Nhà mất điện hoặc Mac mini bị reboot — báo để dev khởi động lại Colima.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="topology">Topology — cái gì ở đâu</h2>
 
       <div className="not-prose my-6 grid lg:grid-cols-2 gap-4">
@@ -49,8 +76,8 @@ export default function Page() {
           <Service
             icon={Container}
             name="Colima VM"
-            detail="Docker engine — KHÔNG auto-start sau reboot"
-            status="manual"
+            detail="Docker engine — auto-start qua com.user.colima LaunchAgent"
+            status="up"
           />
           <Service
             icon={Database}
@@ -121,6 +148,198 @@ export default function Page() {
         chạy Next.js, Supabase Docker, cron và Chrome CDP nếu theo dõi RAM/log đều đặn.
       </Callout>
 
+      <h2 id="tailscale-remote-control">Remote control Mac mini qua Tailscale</h2>
+      <p>
+        Tailscale chỉ tạo mạng riêng giữa máy của bạn và Mac mini. Muốn điều khiển màn hình thì
+        Mac mini vẫn phải bật dịch vụ Screen Sharing của macOS; muốn thao tác kỹ thuật thì dùng SSH.
+      </p>
+
+      <div data-user-detail className="not-prose my-5 space-y-3">
+        <div className="rounded-xl border bg-card p-4">
+          <div className="flex items-start gap-3">
+            <ScreenShare className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <div>
+              <h3 className="m-0 text-base font-semibold tracking-tight">Bản user-non-tech</h3>
+              <p className="mt-2 text-sm leading-6 text-foreground/80">
+                Dùng khi cần nhìn và điều khiển màn hình Mac mini như đang ngồi trước máy.
+              </p>
+            </div>
+          </div>
+          <ol className="mt-4 space-y-3 text-sm leading-6 text-foreground/85">
+            <li>
+              <strong>1.</strong> Nhờ dev/admin gửi invite vào Tailscale tailnet PATI. Bạn phải dùng
+              đúng email được mời, không dùng email cá nhân khác.
+            </li>
+            <li>
+              <strong>2.</strong> Cài Tailscale từ trang chính thức{" "}
+              <a className="underline" href="https://tailscale.com/download" target="_blank" rel="noreferrer">
+                tailscale.com/download
+              </a>
+              . Trên Mac nên dùng bản Standalone; trên Windows tải file installer rồi chạy như app
+              bình thường.
+            </li>
+            <li>
+              <strong>3.</strong> Mở Tailscale, bấm Log in, đăng nhập bằng email đã được mời, rồi
+              cho phép VPN configuration nếu máy hỏi quyền.
+            </li>
+            <li>
+              <strong>4.</strong> Kiểm tra Mac mini đang online trong Tailscale. Nếu thấy offline,
+              báo dev hoặc người giữ máy kiểm tra điện/mạng.
+            </li>
+            <li>
+              <strong>5.</strong> Trên Mac, mở app <TerminalInline>Screen Sharing</TerminalInline>,
+              nhập <TerminalInline>100.94.220.128</TerminalInline> rồi bấm Connect. Nếu app yêu cầu URL,
+              dùng <TerminalInline>vnc://100.94.220.128</TerminalInline>.
+            </li>
+            <li>
+              <strong>6.</strong> Đăng nhập user <TerminalInline>timcook</TerminalInline> nếu bạn đã
+              được cấp quyền. Chỉ làm đúng việc đã được yêu cầu, không tự sửa env, restart service
+              hoặc đổi setting hệ thống.
+            </li>
+            <li>
+              <strong>7.</strong> Xong việc thì disconnect Screen Sharing và để Tailscale bật nếu còn
+              cần hỗ trợ tiếp.
+            </li>
+          </ol>
+        </div>
+        <div className="mt-4 rounded-md border border-amber-500/40 bg-amber-500/[0.06] px-3 py-2 text-[13px] leading-6">
+          Nếu bạn dùng Windows hoặc không thấy app Screen Sharing, nhờ dev setup VNC viewer qua
+          Tailscale thay vì mở port ra internet.
+        </div>
+      </div>
+
+      <div data-dev-detail className="not-prose my-5 space-y-4">
+        <div className="flex items-start gap-3">
+          <TerminalIcon className="mt-0.5 h-5 w-5 shrink-0 text-violet-600 dark:text-violet-400" />
+          <div>
+            <h3 className="m-0 text-base font-semibold tracking-tight">Bản dev</h3>
+            <p className="mt-2 text-sm leading-6 text-foreground/80">
+              Dùng Tailscale để vào private IP của Mac mini. SSH dùng cho vận hành service; Screen
+              Sharing/VNC dùng khi cần UI macOS hoặc Chrome profile.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-lg border bg-background p-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Step 1: cài trên máy dev
+            </div>
+            <ul className="mt-2 space-y-1.5 text-sm leading-6 text-foreground/85">
+              <li>macOS: dùng Standalone package từ <TerminalInline>tailscale.com/download</TerminalInline>.</li>
+              <li>Windows: dùng official <TerminalInline>.exe</TerminalInline> installer, icon nằm ở system tray.</li>
+              <li>Login bằng email đã được invite vào PATI tailnet, approve VPN configuration.</li>
+              <li>Không dùng exit node cho việc này; chỉ cần private tailnet access.</li>
+            </ul>
+          </div>
+          <div className="rounded-lg border bg-background p-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Step 2: cấp quyền
+            </div>
+            <ul className="mt-2 space-y-1.5 text-sm leading-6 text-foreground/85">
+              <li>Tailnet ACL cho phép máy của bạn connect tới <TerminalInline>100.94.220.128</TerminalInline>.</li>
+              <li>macOS Screen Sharing bật, Remote Management tắt nếu dùng Screen Sharing native.</li>
+              <li>SSH key của dev nằm trong <TerminalInline>~timcook/.ssh/authorized_keys</TerminalInline>.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-lg border bg-background p-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Step 3: dùng đúng kênh
+            </div>
+            <ul className="mt-2 space-y-1.5 text-sm leading-6 text-foreground/85">
+              <li><TerminalInline>ssh</TerminalInline>: deploy, logs, env, Docker, launchd, cron.</li>
+              <li><TerminalInline>vnc://</TerminalInline>: Chrome ChargeFlow, macOS settings, UI-only checks.</li>
+              <li><TerminalInline>tailscale ping</TerminalInline>: debug path trước khi đổ lỗi service.</li>
+            </ul>
+          </div>
+          <div className="rounded-lg border bg-background p-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Step 4: kết thúc phiên
+            </div>
+            <ul className="mt-2 space-y-1.5 text-sm leading-6 text-foreground/85">
+              <li>Đóng Screen Sharing khi xong, không để session treo qua đêm.</li>
+              <li>Không restart Mac mini nếu chưa confirm impact production.</li>
+              <li>Nếu thay env/service, ghi lại thời điểm, command và kết quả healthcheck.</li>
+            </ul>
+          </div>
+        </div>
+
+        <Terminal
+          host="you@laptop"
+          cwd="~"
+          title="Verify Tailscale path"
+          lines={[
+            { prompt: "$", cmd: "tailscale status | grep 100.94.220.128" },
+            { prompt: "$", cmd: "tailscale ping 100.94.220.128" },
+            { prompt: "$", cmd: "nc -vz 100.94.220.128 22" },
+            { prompt: "$", cmd: "nc -vz 100.94.220.128 5900   # Screen Sharing/VNC" },
+          ]}
+        />
+
+        <div className="rounded-lg border bg-background p-3 text-sm leading-6 text-foreground/85">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Nếu Screen Sharing chưa bật trên Mac mini
+          </div>
+          <ol className="mt-2 space-y-1.5">
+            <li>1. Vào System Settings, General, Sharing.</li>
+            <li>2. Tắt Remote Management nếu đang bật.</li>
+            <li>3. Bật Screen Sharing.</li>
+            <li>4. Trong Allow access for, chọn user được phép điều khiển, tối thiểu là <TerminalInline>timcook</TerminalInline>.</li>
+            <li>5. Từ laptop dev chạy lại <TerminalInline>nc -vz 100.94.220.128 5900</TerminalInline>.</li>
+          </ol>
+        </div>
+
+        <Terminal
+          host="timcook@mini"
+          cwd="~"
+          title="Enable SSH Remote Login if disabled"
+          lines={[
+            { prompt: "$", cmd: "sudo systemsetup -setremotelogin on" },
+          ]}
+        />
+
+        <Terminal
+          host="you@laptop"
+          cwd="~"
+          title="Connect"
+          lines={[
+            { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
+            { prompt: "$", cmd: "open vnc://100.94.220.128" },
+          ]}
+        />
+
+        <div className="mt-4 rounded-md border border-amber-500/40 bg-amber-500/[0.06] px-3 py-2 text-[13px] leading-6">
+          Không expose VNC/SSH bằng port-forward router. Nếu cần cấp quyền người mới, thêm user vào
+          tailnet/ACL trước, rồi cấp riêng SSH hoặc Screen Sharing permission trên Mac mini.
+        </div>
+
+        <p className="mt-4 text-xs leading-5 text-muted-foreground">
+          Reference:{" "}
+          <a className="underline" href="https://tailscale.com/docs/how-to/connect-to-devices" target="_blank" rel="noreferrer">
+            Tailscale connect to devices
+          </a>
+          {" · "}
+          <a className="underline" href="https://tailscale.com/docs/install/mac" target="_blank" rel="noreferrer">
+            Install on macOS
+          </a>
+          {" · "}
+          <a className="underline" href="https://tailscale.com/docs/install/windows" target="_blank" rel="noreferrer">
+            Install on Windows
+          </a>
+          {" · "}
+          <a className="underline" href="https://support.apple.com/guide/mac-help/mh14066/mac" target="_blank" rel="noreferrer">
+            Apple Screen Sharing
+          </a>
+          {" · "}
+          <a className="underline" href="https://support.apple.com/guide/mac-help/mh11848/mac" target="_blank" rel="noreferrer">
+            Turn Screen Sharing on/off
+          </a>
+        </p>
+      </div>
+
       <h2 id="boot-order">Thứ tự khởi động sau khi Mac mini reboot</h2>
       <p>
         Mac mini bị mất điện / restart? Đi đúng 5 bước này, KHÔNG skip step:
@@ -138,21 +357,23 @@ export default function Page() {
           />
         </Step>
 
-        <Step n={2} title="Khởi động Colima (Docker VM)" hint="rất hay quên">
+        <Step n={2} title="Kiểm tra Colima (Docker VM)" hint="auto-start qua launchd">
           <Terminal
             host="timcook@mini"
             cwd="~"
             lines={[
-              { prompt: "$", cmd: "colima start" },
-              { divider: true, label: "đợi 10-20s" },
-              { out: "INFO[0000] starting colima", tone: "muted" },
-              { out: "INFO[0015] Provisioning ...", tone: "muted" },
-              { out: "INFO[0018] colima is running", tone: "ok" },
+              { prompt: "$", cmd: "export PATH=\"/opt/homebrew/bin:/opt/homebrew/sbin:$PATH\"" },
+              { prompt: "$", cmd: "launchctl print \"gui/$(id -u)/com.user.colima\" | grep -E \"state|last exit\"" },
+              { prompt: "$", cmd: "colima status" },
+              { divider: true, label: "fallback nếu status chưa running" },
+              { prompt: "$", cmd: "launchctl kickstart -k \"gui/$(id -u)/com.user.colima\"" },
+              { prompt: "$", cmd: "sleep 30 && colima status" },
             ]}
           />
-          <StepWarn title="Đây là nguồn gốc 80% sự cố sau reboot">
-            Colima default user-level → không tự start khi máy boot. <strong>Pending:</strong>{" "}
-            launchd plist để auto-start (chưa triển khai). Khi nào làm xong, có thể bỏ step này.
+          <StepWarn title="Vẫn phải verify sau reboot">
+            <TerminalInline>com.user.colima</TerminalInline> đã được install để auto-start Colima khi
+            user session <TerminalInline>timcook</TerminalInline> live lại. Nếu Mac mini boot xong mà
+            Docker chưa chạy, dùng fallback <TerminalInline>launchctl kickstart</TerminalInline> ở trên.
           </StepWarn>
         </Step>
 
@@ -194,7 +415,7 @@ export default function Page() {
         <Step n={5} title="Khởi động / kiểm tra web service">
           <Terminal
             host="timcook@mini"
-            cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+            cwd="~/Coding_workspace/PATI/pati-master-app"
             lines={[
               { prompt: "$", cmd: "launchctl kickstart -k \"gui/$(id -u)/com.pati.web\"" },
               { prompt: "$", cmd: "curl -sf http://127.0.0.1:3000/api/health" },
@@ -330,6 +551,8 @@ export default function Page() {
         <FactRow label="SSH access" value="Phải xin tenant từ sếp trước" mono={false} />
         <FactRow label="Memo" value="reference_vps2" />
       </div>
+
+      </section>
 
       <PageNav href="/docs/mac-mini" />
     </>

@@ -26,9 +26,27 @@ export default function Page() {
       <PageHeader
         eyebrow="Operations"
         title="ChargeFlow Disputes"
-        description="5-min cron qua Mac mini Chrome CDP. Auto evidence collect + upload. Session cookie refresh ~30 ngày."
+        description="Tự gom + nộp evidence cho dispute mỗi 5 phút. Bộ máy chính nằm trên Mac mini."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Pipeline làm gì</h2>
+        <p>
+          Mỗi 5 phút, hệ thống tự đọc dispute mới từ ChargeFlow, gom evidence (đơn hàng,
+          tracking, screenshot mail) và nộp lại. Không cần can thiệp tay nếu pipeline xanh.
+        </p>
+
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Có dispute mới trên ChargeFlow nhưng dashboard PATI không cập nhật &gt; 1 giờ.</li>
+          <li>Evidence nộp lên ChargeFlow bị thiếu / sai.</li>
+          <li>Cookie ChargeFlow hết hạn (thường mỗi ~30 ngày) — báo dev để refresh.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="why-cdp">Vì sao CDP thay vì public API?</h2>
       <div className="not-prose my-5 grid sm:grid-cols-2 gap-3">
         <div className="rounded-xl border bg-card p-4">
@@ -198,7 +216,7 @@ export default function Page() {
         <Step n={4} title="Update env trên Mac mini + restart web">
           <Terminal
             host="timcook@mini"
-            cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+            cwd="~/Coding_workspace/PATI/pati-master-app"
             lines={[
               { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # CHARGEFLOW_UI_COOKIE=<cookie value>" },
               { prompt: "$", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
@@ -215,7 +233,7 @@ export default function Page() {
       <CodeBlock language="bash">
 {`# On Mac mini:
 echo "CHARGEFLOW_USE_HMAC=true" >> ~/pati-supabase/cron/.env.web
-cd ~/Coding_workspace/PATI/shopify-lark-sync
+cd ~/Coding_workspace/PATI/pati-master-app
 bash scripts/macmini-stack/deploy-web.sh --force`}
       </CodeBlock>
 
@@ -225,6 +243,8 @@ bash scripts/macmini-stack/deploy-web.sh --force`}
         <TableRow name="chargeflow_evidence_uploads" purpose="Audit log của evidence upload" />
         <TableRow name="sync_logs" purpose="pipeline='chargeflow_ui'" />
       </div>
+
+      </section>
 
       <PageNav href="/docs/feature-chargeflow" />
     </>

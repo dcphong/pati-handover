@@ -1,23 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Manrope } from "next/font/google";
+import "driver.js/dist/driver.css";
 import "./globals.css";
 import { Topbar } from "@/components/docs/topbar";
 import { AudienceModeProvider } from "@/components/docs/audience-mode";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "PATI Handover — shopify-lark-sync",
+  title: "PATI Handover — pati-master-app",
   description:
-    "Onboarding & handover documentation for the PATI shopify-lark-sync platform. Setup, deployment, features, and troubleshooting.",
+    "Onboarding & handover documentation for the PATI pati-master-app platform. Setup, deployment, features, and troubleshooting.",
 };
 
 export default function RootLayout({
@@ -29,7 +32,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-audience="user"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${manrope.variable} ${plexMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background">

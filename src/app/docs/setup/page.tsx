@@ -14,6 +14,7 @@ import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import {
   Steps,
+  StepsHeader,
   Step,
   StepCheck,
   StepWarn,
@@ -48,7 +49,7 @@ const prereqs = [
   {
     icon: GitBranch,
     name: "Git + GitHub access",
-    detail: "Hoaibaodata/shopify-lark-sync",
+    detail: "dev-pati/pati-master-app",
     note: "Repo private — xin Phong add bạn vào collaborator.",
     install: "https://git-scm.com",
   },
@@ -61,15 +62,55 @@ const prereqs = [
   },
 ];
 
+const setupWalkthroughPrompt = `Bạn là AI technical assistant đang hướng dẫn một user non-tech setup repo PATI trên máy local. Hãy hướng dẫn từng bước nhỏ, hỏi tôi đang dùng Windows/macOS/Linux trước khi đưa command, và không yêu cầu tôi paste token/password/secret/cookie thật vào chat.
+
+Mục tiêu: setup repo pati-master-app chạy được local.
+
+Repo:
+https://github.com/dev-pati/pati-master-app
+
+Checklist cần làm:
+1. Clone repo về máy, ví dụ trong ~/Coding hoặc C:\\Users\\<tên tôi>\\Coding_workspace\\PATI.
+2. cd vào folder pati-master-app và verify có src/, sync/, package.json.
+3. Install dependencies bằng Bun, chỉ dùng bun install. Không dùng npm install hoặc yarn.
+4. Nếu lỡ chạy npm install, hướng dẫn xóa node_modules rồi chạy lại bun install.
+5. Tạo file .env ở root repo với placeholder cho các group Shopify, Supabase, Lark, Auth, Sync. Nhắc tôi xin giá trị thật từ Phong/successor, không paste secret vào AI.
+6. Chạy dev server bằng bun run dev và mở http://localhost:3000.
+7. Nếu page load nhưng data trống/$0, hướng dẫn check Supabase tunnel bằng curl -I https://supabase.patiagency.com/rest/v1/.
+8. Đăng nhập bằng account được cấp; nếu cần user mới thì nhờ admin tạo trong /iam.
+9. Chạy bun run lint và bun run typecheck trước khi push.
+
+Hãy format câu trả lời thành:
+- Điều kiện cần kiểm tra trước.
+- Commands theo đúng OS.
+- Expected output sau mỗi bước.
+- Cách xử lý lỗi thường gặp.
+- Không đưa lệnh destructive hoặc lệnh làm lộ secret.`;
+
 export default function Page() {
   return (
     <>
       <PageHeader
         eyebrow="Getting Started"
         title="Local Setup"
-        description="6 bước — clone, install, env, run, login, lint. Làm xong là máy bạn chạy được như production."
+        description="Hướng dẫn dev cài project trên máy cá nhân để chạy thử / debug."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Trang này dành cho ai</h2>
+        <p>
+          Dành cho dev hoặc người muốn chạy code trên máy mình. Nếu chỉ dùng dashboard qua
+          trình duyệt, bạn KHÔNG cần làm theo trang này.
+        </p>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Cần truy cập DB / log để debug — luôn qua dev có quyền.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <div className="not-prose my-6 rounded-xl border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b bg-muted/30 flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-foreground/70" />
@@ -107,34 +148,38 @@ export default function Page() {
         </div>
       </div>
 
-      <h2 id="walkthrough">6 bước cài đặt</h2>
+      <StepsHeader
+        id="walkthrough"
+        title="6 bước cài đặt"
+        prompt={setupWalkthroughPrompt}
+      />
 
       <Steps>
-        <Step n={1} title="Clone repo về máy" hint="≈ 30 giây">
+        <Step n={1} title="Clone repo về máy" hint="≈ 30 giây" aiPrompt={null}>
           <p>Mở terminal ở thư mục bạn muốn để code (ví dụ <TerminalInline>~/Coding</TerminalInline>):</p>
           <Terminal
             host="you@laptop"
             cwd="~/Coding"
             lines={[
-              { prompt: "$", cmd: "git clone https://github.com/Hoaibaodata/shopify-lark-sync.git" },
-              { prompt: "$", cmd: "cd shopify-lark-sync" },
+              { prompt: "$", cmd: "git clone https://github.com/dev-pati/pati-master-app.git" },
+              { prompt: "$", cmd: "cd pati-master-app" },
             ]}
           />
           <StepCheck>
-            Folder <TerminalInline>shopify-lark-sync</TerminalInline> xuất hiện, chứa{" "}
+            Folder <TerminalInline>pati-master-app</TerminalInline> xuất hiện, chứa{" "}
             <TerminalInline>src/</TerminalInline>, <TerminalInline>sync/</TerminalInline>,{" "}
             <TerminalInline>package.json</TerminalInline>.
           </StepCheck>
         </Step>
 
-        <Step n={2} title="Install dependencies (bun install)" hint="≈ 2 phút">
+        <Step n={2} title="Install dependencies (bun install)" hint="≈ 2 phút" aiPrompt={null}>
           <p>
             <strong>Chỉ dùng bun</strong> — repo có preinstall gate sẽ exit 1 nếu chạy npm/yarn.
             Lệnh dưới đồng thời tạo Python venv ở postinstall.
           </p>
           <Terminal
             host="you@laptop"
-            cwd="~/Coding/shopify-lark-sync"
+            cwd="~/Coding/pati-master-app"
             lines={[
               { prompt: "$", cmd: "bun install" },
               { divider: true, label: "expected output" },
@@ -155,7 +200,7 @@ export default function Page() {
           </StepCheck>
         </Step>
 
-        <Step n={3} title="Tạo file .env" hint="phải xin Phong">
+        <Step n={3} title="Tạo file .env" hint="phải xin Phong" aiPrompt={null}>
           <p>
             File <TerminalInline>.env</TerminalInline> nằm ở root, đã được{" "}
             <TerminalInline>.gitignore</TerminalInline> — đừng commit. Cách lấy:
@@ -167,7 +212,7 @@ export default function Page() {
               </li>
               <li>
                 Hoặc copy từ Mac mini runtime env nếu bạn có quyền SSH:{" "}
-                <TerminalInline>~/Coding_workspace/PATI/shopify-lark-sync/.env</TerminalInline>.
+                <TerminalInline>~/Coding_workspace/PATI/pati-master-app/.env</TerminalInline>.
               </li>
               <li>
                 Đối chiếu full danh sách env vars ở <a href="/docs/env" className="underline">Environment Variables</a>.
@@ -176,7 +221,7 @@ export default function Page() {
           </div>
           <Terminal
             host="you@laptop"
-            cwd="~/Coding/shopify-lark-sync"
+            cwd="~/Coding/pati-master-app"
             title=".env (template — ask Phong for real values)"
             lines={[
               { out: "# Shopify (Lark Integration custom app)" },
@@ -199,7 +244,7 @@ export default function Page() {
           </StepCheck>
         </Step>
 
-        <Step n={4} title="Chạy dev server" hint="bun run dev">
+        <Step n={4} title="Chạy dev server" hint="bun run dev" aiPrompt={null}>
           <p>3 lựa chọn — chọn cái phù hợp tình huống:</p>
           <div className="not-prose my-3 grid sm:grid-cols-3 gap-2 text-[12.5px]">
             <div className="rounded-lg border p-3 bg-emerald-500/[0.04]">
@@ -229,7 +274,7 @@ export default function Page() {
           </div>
           <Terminal
             host="you@laptop"
-            cwd="~/Coding/shopify-lark-sync"
+            cwd="~/Coding/pati-master-app"
             lines={[
               { prompt: "$", cmd: "bun run dev" },
               { divider: true, label: "expected" },
@@ -252,7 +297,7 @@ export default function Page() {
           </StepWarn>
         </Step>
 
-        <Step n={5} title="Đăng nhập lần đầu" hint="JWT cookie auth">
+        <Step n={5} title="Đăng nhập lần đầu" hint="JWT cookie auth" aiPrompt={null}>
           <p>
             UI dùng JWT custom (cookie). Account đầu tiên Phong dùng là{" "}
             <TerminalInline>chanphong@patigroup.com</TerminalInline>. Sau khi handover, bạn cần
@@ -283,14 +328,14 @@ export default function Page() {
           </StepCheck>
         </Step>
 
-        <Step n={6} title="Lint + typecheck" hint="trước khi push">
+        <Step n={6} title="Lint + typecheck" hint="trước khi push" aiPrompt={null}>
           <p>
             Mac mini deploy chạy <TerminalInline>bun run build</TerminalInline> — nếu typecheck
             fail, build fail luôn. Trước khi push:
           </p>
           <Terminal
             host="you@laptop"
-            cwd="~/Coding/shopify-lark-sync"
+            cwd="~/Coding/pati-master-app"
             lines={[
               { prompt: "$", cmd: "bun run lint" },
               { prompt: "$", cmd: "bun run typecheck" },
@@ -361,6 +406,8 @@ export default function Page() {
           </div>
         </a>
       </div>
+
+      </section>
 
       <PageNav href="/docs/setup" />
     </>

@@ -200,9 +200,26 @@ export default function Page() {
       <PageHeader
         eyebrow="Architecture"
         title="Data Flow"
-        description="15 nguồn data đi vào Supabase. Mỗi nguồn có 1 trigger + 1 worker + 1 target table. Đọc hết là biết data ở đâu ra."
+        description="15 nguồn dữ liệu đi vào database. Trang này dành cho dev tra cứu data đi từ đâu đến đâu."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Tóm tắt</h2>
+        <p>
+          Mỗi loại dữ liệu trên dashboard có một &ldquo;đường đi&rdquo; riêng từ nguồn gốc
+          (Shopify, Lark, ads provider, …) qua worker tự động về database. Khi số trên dashboard
+          sai, biết được nguồn gốc giúp khoanh vùng nhanh.
+        </p>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Số lệch giữa dashboard và nguồn gốc (vd Shopify Admin báo X mà dashboard báo Y).</li>
+          <li>Một nguồn dữ liệu mới (provider, table) cần thêm vào — luôn qua dev.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="ingest">15 ingest path — từ ngoài vào Supabase</h2>
       <div className="not-prose my-6 rounded-xl border bg-card overflow-hidden">
         <div className="px-4 py-2 border-b bg-muted/30 text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">
@@ -402,6 +419,8 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY master_app.mv_north_stars_stock;`}
         <LegendItem icon={BookOpen} label="Manual import" />
         <LegendItem icon={Database} label="Postgres table" />
       </div>
+
+      </section>
 
       <PageNav href="/docs/data-flow" />
     </>

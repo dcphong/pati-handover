@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { detectIntegrations, IntegrationLogo } from "@/components/docs/integration-logo";
 import { cn } from "@/lib/utils";
 
 type Tone = "blue" | "violet" | "emerald" | "amber" | "pink" | "sky" | "orange" | "neutral";
@@ -70,9 +71,17 @@ export function Service({
   detail?: ReactNode;
   status?: "up" | "down" | "manual";
 }) {
+  const integrations = detectIntegrations(name, detail);
+
   return (
     <div className="rounded-md border bg-background px-3 py-2 flex items-center gap-2.5">
-      {Icon && (
+      {integrations.length > 0 ? (
+        <div className="flex shrink-0 -space-x-1">
+          {integrations.map((integration) => (
+            <IntegrationLogo key={integration} integration={integration} className="h-7 w-7" />
+          ))}
+        </div>
+      ) : Icon && (
         <div className="h-7 w-7 rounded-md bg-muted grid place-items-center shrink-0">
           <Icon className="h-3.5 w-3.5" />
         </div>

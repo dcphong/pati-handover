@@ -59,9 +59,29 @@ export default function Page() {
       <PageHeader
         eyebrow="Core Features"
         title="Analytics — TripleWhale Parity Clone"
-        description="50+ cards · 36/44 TW-perfect · daily ETL từ 9 provider. Rebuild TW Summary từ first-party data, ngắt dependency TW subscription."
+        description="50+ card báo cáo doanh thu, chi phí, ads, lợi nhuận. Thay thế TripleWhale bằng số liệu tự thu từ nguồn gốc."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Trang analytics dùng để làm gì</h2>
+        <p>
+          Đây là báo cáo &ldquo;summary&rdquo; chính: doanh thu, hoàn tiền, chi phí quảng cáo,
+          giá vốn, lợi nhuận. Mục tiêu là khớp số với TripleWhale (TW) để có thể ngưng trả phí
+          TW. Hầu hết các card khớp đến từng cent; vài card còn chênh nhẹ — đã ghi nhận lý do.
+        </p>
+
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Một card hiện $0 trong khi rõ ràng có doanh thu hôm nay.</li>
+          <li>Card lệch &gt; 5 % với báo cáo Shopify Admin (sau khi đã trừ refund / discount).</li>
+          <li>Spend ads (Meta/Google/TikTok) không cập nhật &gt; 12 giờ.</li>
+          <li>Lợi nhuận âm bất thường (thường do thiếu COGS hoặc thiếu ad-spend).</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="goal">Mục tiêu — penny-perfect match TW</h2>
       <p>
         Mỗi card analytics phải khớp TripleWhale &quot;<strong>penny-perfect</strong>&quot;
@@ -71,7 +91,7 @@ export default function Page() {
           dev portal
         </a>
         ,{" "}
-        Playwright capture <TerminalInline>/willy-metrics</TerminalInline>) trước khi nói
+        Playwright capture TW's <TerminalInline>app.triplewhale.com/api/v2/summary-page/willy-metrics-*</TerminalInline>) trước khi nói
         &quot;best we can do&quot;.
       </p>
 
@@ -279,6 +299,8 @@ export default function Page() {
           thực tế đang non-zero (đã từng silent-zero Recharge group).
         </div>
       </div>
+
+      </section>
 
       <PageNav href="/docs/feature-analytics" />
     </>

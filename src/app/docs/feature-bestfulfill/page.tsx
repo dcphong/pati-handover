@@ -25,9 +25,28 @@ export default function Page() {
       <PageHeader
         eyebrow="Operations"
         title="Best Fulfillment Shipping"
-        description="Best (VN) rate card đổi ~1× tháng. CSV manual export + scripted import — không live API."
+        description="Bảng giá vận chuyển Best — refresh ~1 lần/tháng bằng CSV export, không có API live."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Quy trình mỗi tháng</h2>
+        <ol>
+          <li>Ops export bảng giá mới từ Lark Base.</li>
+          <li>Dev (hoặc ops có quyền) chạy script import để cập nhật vào dashboard.</li>
+          <li>Sau khi import xong, dashboard tính shipping cost theo giá mới ngay.</li>
+        </ol>
+
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Đã đổi rate card trên Lark nhưng dashboard vẫn tính giá cũ &gt; 1 ngày.</li>
+          <li>Có level vận chuyển mới (vd &ldquo;overnight&rdquo;) — schema cần được update trước.</li>
+          <li>Một service / route hiển thị giá 0 hoặc âm.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <Callout variant="info" title="Vì sao manual CSV thay vì live API?">
         Rate card đổi không thường xuyên (~1× tháng). Schema messy (merged cells Lark). Live
         API tốn effort không xứng đáng. CSV manual + import script là trade-off đúng. Memo:{" "}
@@ -55,7 +74,7 @@ export default function Page() {
         <Step n={2} title="Run import script">
           <Terminal
             host="you@laptop"
-            cwd="~/Coding/shopify-lark-sync"
+            cwd="~/Coding/pati-master-app"
             lines={[
               { prompt: "$", cmd: "python scripts/import-best-shipping-rates.py \\" },
               { prompt: "", cmd: "  --csv docs/fulfillment/bestfulfill/BEST_SHIPPING_COST.csv \\" },
@@ -73,7 +92,7 @@ export default function Page() {
         <Step n={3} title="(Tuỳ chọn) Commit CSV để audit">
           <Terminal
             host="you@laptop"
-            cwd="~/Coding/shopify-lark-sync"
+            cwd="~/Coding/pati-master-app"
             lines={[
               { prompt: "$", cmd: "git add docs/fulfillment/bestfulfill/BEST_SHIPPING_COST.csv" },
               { prompt: "$", cmd: "git commit -m \"chore: refresh best fulfillment rates 2026-XX-XX\"" },
@@ -137,6 +156,8 @@ export default function Page() {
           action="Cần update script + schema constraint trước"
         />
       </div>
+
+      </section>
 
       <PageNav href="/docs/feature-bestfulfill" />
     </>

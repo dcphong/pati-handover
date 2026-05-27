@@ -1,6 +1,6 @@
 # PATI Handover
 
-Handover documentation for the [`shopify-lark-sync`](https://github.com/Hoaibaodata/shopify-lark-sync) platform at PATI Group.
+Handover documentation for the [`pati-master-app`](https://github.com/dev-pati/pati-master-app) platform at PATI Group.
 
 Framework-style docs site covering:
 

@@ -15,23 +15,39 @@ const STORAGE_KEY = "pati-handover-audience-mode";
 const AudienceModeContext = createContext<AudienceContextValue | null>(null);
 
 export function AudienceModeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<AudienceMode>(() => {
-    if (typeof window === "undefined") return "user";
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === "dev" || stored === "user" ? stored : "user";
-  });
+  const [mode, setModeState] = useState<AudienceMode>("user");
 
   const value = useMemo<AudienceContextValue>(
     () => ({
       mode,
       setMode: (next) => {
         setModeState(next);
-        window.localStorage.setItem(STORAGE_KEY, next);
+        try {
+          window.localStorage.setItem(STORAGE_KEY, next);
+        } catch {
+          // Keep the in-memory mode usable when browser storage is blocked.
+        }
         document.documentElement.dataset.audience = next;
       },
     }),
     [mode],
   );
+
+  useEffect(() => {
+    const hydrateTimer = window.setTimeout(() => {
+      try {
+        const stored = window.localStorage.getItem(STORAGE_KEY);
+        if (stored === "dev" || stored === "user") {
+          setModeState(stored);
+          document.documentElement.dataset.audience = stored;
+        }
+      } catch {
+        // The default User mode stays active when browser storage is blocked.
+      }
+    }, 0);
+
+    return () => window.clearTimeout(hydrateTimer);
+  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.audience = mode;
@@ -53,6 +69,7 @@ export function AudienceModeSwitch({ className }: { className?: string }) {
 
   return (
     <div
+      data-tour="audience-mode-switch"
       className={cn(
         "inline-flex items-center rounded-lg border bg-muted/40 p-0.5 text-xs font-medium",
         className,

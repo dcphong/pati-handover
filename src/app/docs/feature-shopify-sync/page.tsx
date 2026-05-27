@@ -28,9 +28,30 @@ export default function Page() {
       <PageHeader
         eyebrow="Core Features"
         title="Shopify Sync"
-        description="2 pipeline song song, webhooks HMAC, refunds zero-amount nuance. Đọc kỹ — đây là pipeline đẻ ra mọi metric."
+        description="Đơn hàng, refund và sản phẩm từ Shopify được đồng bộ về dashboard nhiều lần mỗi ngày."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Pipeline này làm gì</h2>
+        <p>
+          Mỗi đơn hàng, refund, hoặc sản phẩm mới được tạo trên Shopify đều được đồng bộ về
+          dashboard hằng giờ. Có 2 pipeline song song để đảm bảo không sót đơn — một chạy
+          incremental (mới), một chạy date-window (kiểm tra ngược lại). Refund đặc biệt cần webhook
+          live để hiện ngay.
+        </p>
+
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Đơn mới trên Shopify Admin nhưng &gt; 30 phút chưa hiện trên dashboard.</li>
+          <li>Refund hiện trên Shopify nhưng dashboard chưa trừ (webhook lỗi).</li>
+          <li>Sản phẩm mới chưa có trong portfolio sau lần đồng bộ kế tiếp.</li>
+          <li>Bị duplicate đơn (cùng order ID xuất hiện 2 lần).</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="apps">2 Shopify app trên store</h2>
       <div className="not-prose my-5 grid sm:grid-cols-2 gap-3">
         <div className="rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.04] p-4">
@@ -250,7 +271,7 @@ await admin.graphql(\`
             cwd="~"
             lines={[
               { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
-              { prompt: "timcook@mini $", cmd: "cd ~/Coding_workspace/PATI/shopify-lark-sync" },
+              { prompt: "timcook@mini $", cmd: "cd ~/Coding_workspace/PATI/pati-master-app" },
               { prompt: "timcook@mini $", cmd: "nano .env   # add SHOPIFY_ACCESS_TOKEN_NEWSTORE=shpat_xxx" },
               { prompt: "timcook@mini $", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
             ]}
@@ -274,6 +295,8 @@ await admin.graphql(\`
           </StepCheck>
         </Step>
       </Steps>
+
+      </section>
 
       <PageNav href="/docs/feature-shopify-sync" />
     </>

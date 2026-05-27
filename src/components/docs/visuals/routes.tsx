@@ -2,6 +2,7 @@
 
 import { ReactNode, useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { detectIntegrations, IntegrationLogo } from "@/components/docs/integration-logo";
 import { cn } from "@/lib/utils";
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -118,7 +119,18 @@ export function RouteCatalog({ groups }: { groups: RouteGroup[] }) {
           <section key={g.title}>
             <div className="flex items-baseline justify-between mb-3">
               <div className="flex items-center gap-2">
-                {g.icon}
+                {detectIntegrations(
+                  g.title,
+                  g.description,
+                  g.routes.map((route) => `${route.path} ${route.purpose}`).join(" "),
+                ).map((integration) => (
+                  <IntegrationLogo key={integration} integration={integration} className="h-5 w-5" />
+                ))}
+                {detectIntegrations(
+                  g.title,
+                  g.description,
+                  g.routes.map((route) => `${route.path} ${route.purpose}`).join(" "),
+                ).length === 0 && g.icon}
                 <h3 className="text-base font-semibold tracking-tight">
                   {g.title}
                 </h3>
@@ -150,8 +162,13 @@ export function RouteCatalog({ groups }: { groups: RouteGroup[] }) {
                     {r.method}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="font-mono text-[12.5px] font-semibold leading-tight break-all">
-                      {r.path}
+                    <div className="flex items-center gap-1.5">
+                      {detectIntegrations(r.path, r.purpose, r.note).map((integration) => (
+                        <IntegrationLogo key={integration} integration={integration} className="h-[18px] w-[18px]" />
+                      ))}
+                      <div className="font-mono text-[12.5px] font-semibold leading-tight break-all">
+                        {r.path}
+                      </div>
                     </div>
                     <div className="text-[12.5px] text-muted-foreground leading-5 mt-0.5">
                       {r.purpose}

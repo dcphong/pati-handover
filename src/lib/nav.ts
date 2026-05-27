@@ -39,10 +39,15 @@ export const navigation: NavSection[] = [
     ],
   },
   {
+    title: "Access",
+    items: [
+      { title: "Tailscale Access", href: "/docs/tailscale" },
+    ],
+  },
+  {
     title: "Core Features",
     items: [
       { title: "Shopify Sync", href: "/docs/feature-shopify-sync" },
-      { title: "Lark Base Sync", href: "/docs/feature-lark" },
       { title: "Analytics (TW Parity)", href: "/docs/feature-analytics" },
       { title: "Multi-Store", href: "/docs/feature-multistore" },
       { title: "IAM & Permissions", href: "/docs/feature-iam" },
@@ -56,7 +61,21 @@ export const navigation: NavSection[] = [
       { title: "CS Dashboard", href: "/docs/feature-cs" },
       { title: "Best Fulfillment", href: "/docs/feature-bestfulfill" },
       { title: "VNH / NS3 Fulfillment", href: "/docs/feature-fulfillment" },
-      { title: "Bulk Update", href: "/docs/feature-bulk-update" },
+    ],
+  },
+  {
+    title: "Beta / Test Features",
+    items: [
+      { title: "Bulk Update", href: "/docs/feature-bulk-update", badge: "beta" },
+    ],
+  },
+  {
+    title: "CS & OF",
+    items: [
+      { title: "Overview", href: "/docs/cs-of" },
+      { title: "Payment Request — Shipping", href: "/docs/cs-of/payment-request" },
+      { title: "Timcook (Training)", href: "/docs/timcook" },
+      { title: "Timcook Agent", href: "/docs/timcook-agent", badge: "new" },
     ],
   },
   {

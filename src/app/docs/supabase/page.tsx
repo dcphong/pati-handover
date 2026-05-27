@@ -29,9 +29,32 @@ export default function Page() {
       <PageHeader
         eyebrow="Getting Started"
         title="Supabase Connection"
-        description="Tự host Mac mini, schema master_app, 4 trap RLS / cache / row-cap / schema mặc định."
+        description="Database tự host trên Mac mini. Mọi số liệu dashboard đọc đều từ đây."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Supabase là gì trong dashboard này</h2>
+        <p>
+          Supabase là <strong>database trung tâm</strong>. Mọi số trên dashboard (đơn, refund,
+          ads, lợi nhuận, kho, ticket CS) đều được đọc từ đây. Các cron job đồng bộ thì ghi mới
+          vào đây.
+        </p>
+        <p>
+          Database được host trên Mac mini ở nhà — không phải cloud bên ngoài. Khi tunnel
+          (đường ra internet) rớt thì dashboard mất kết nối; xem trang Cloudflared để xử.
+        </p>
+
+        <h2 id="user-when-call">Khi nào cần báo dev</h2>
+        <ul>
+          <li>Dashboard trống một cách bất thường mặc dù cron đã chạy.</li>
+          <li>Một bảng/số lượt từ chối liên tục với mã <code>403</code> hoặc <code>401</code>.</li>
+          <li>Sửa số trực tiếp trên database — đừng tự làm.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="what">Production Supabase = self-host</h2>
       <p>
         <strong>Không phải Supabase Cloud.</strong> Stack chạy bằng Docker Compose trên Mac mini
@@ -86,7 +109,7 @@ export default function Page() {
       <h2 id="facts">Thông tin kết nối</h2>
       <div className="not-prose my-5 rounded-xl border bg-card p-4">
         <FactRow label="Public URL" value="https://supabase.patiagency.com" />
-        <FactRow label="Tailscale IP" value="100.94.220.128 (intra-team only)" />
+        <FactRow label="Tailscale IP" value="100.94.220.128 (tailnet only)" />
         <FactRow label="SSH user" value="timcook" />
         <FactRow label="Docker engine" value="Colima VM (lightweight Docker Desktop alt)" mono={false} />
         <FactRow label="Schema PATI" value="master_app" />
@@ -294,6 +317,8 @@ export const supabase = createClient(
           purpose="Mọi pipeline ghi vào đây — debug đầu tiên xem cái này."
         />
       </div>
+
+      </section>
 
       <PageNav href="/docs/supabase" />
     </>

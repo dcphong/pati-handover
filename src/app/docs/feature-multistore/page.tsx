@@ -55,9 +55,28 @@ export default function Page() {
       <PageHeader
         eyebrow="Core Features"
         title="Multi-Store Scoping"
-        description="Phase 3 đã land 2026-05-16 — mọi read/write scope theo shop_id. Đang chờ Phase 4 (cron rewrite)."
+        description="Dashboard hỗ trợ nhiều Shopify store. Đổi store ở góc trên bên trái, dữ liệu tự lọc theo."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Hỗ trợ nhiều store</h2>
+        <p>
+          Dashboard không chỉ phục vụ một store — bạn đổi store bằng &ldquo;StoreSwitcher&rdquo;
+          ở góc trên bên trái. Mọi báo cáo, đơn, refund, ads hiển thị bên dưới đều tự lọc theo
+          store đang chọn. Luôn kiểm tra đang xem đúng store trước khi kết luận số liệu.
+        </p>
+
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Đổi store nhưng dashboard không đổi số.</li>
+          <li>Một store có dữ liệu trên Shopify nhưng dashboard hiện rỗng.</li>
+          <li>Cần onboard một Shopify store mới — luôn cần dev cấu hình credential.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="status">4 phase rollout</h2>
       <div className="not-prose my-6 space-y-2.5">
         {phases.map((p) => (
@@ -207,7 +226,7 @@ const store = await resolveActiveStore(request);
         <Step n={2} title="Add SHOPIFY_ACCESS_TOKEN_<SLUG> trên Mac mini">
           <Terminal
             host="timcook@mini"
-            cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+            cwd="~/Coding_workspace/PATI/pati-master-app"
             lines={[
               { prompt: "$", cmd: "nano .env   # SHOPIFY_ACCESS_TOKEN_NEWSTORE=shpat_xxx" },
               { prompt: "$", cmd: "nano ~/pati-supabase/cron/.env.web   # nếu cần override prod-only" },
@@ -217,7 +236,7 @@ const store = await resolveActiveStore(request);
         <Step n={3} title="Rebuild + restart web service">
           <Terminal
             host="timcook@mini"
-            cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+            cwd="~/Coding_workspace/PATI/pati-master-app"
             lines={[
               { prompt: "$", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
             ]}
@@ -253,6 +272,8 @@ const store = await resolveActiveStore(request);
         <TerminalInline>SHOPIFY_OAUTH_CLIENT_ID/SECRET</TerminalInline> env trước khi tab OAuth
         work. <strong>api_key tab</strong> (paste token manual) work today.
       </Callout>
+
+      </section>
 
       <PageNav href="/docs/feature-multistore" />
     </>

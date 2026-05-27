@@ -22,9 +22,26 @@ export default function Page() {
       <PageHeader
         eyebrow="Deployment"
         title="Mac mini Web Deploy"
-        description="Production không còn host trên Vercel. Web Next.js chạy trên Mac mini, auto-deploy qua GitHub Actions, public qua Cloudflare Tunnel tại pnl.patigroup.com."
+        description="Dashboard production chạy trên Mac mini. Push lên main là tự deploy."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Tóm tắt</h2>
+        <p>
+          Dashboard không host trên Vercel nữa — chạy trên Mac mini tại nhà. Mỗi lần dev push
+          code lên nhánh <code>main</code>, GitHub Actions tự build và deploy lên Mac mini. Người
+          dùng cuối chỉ thấy site được cập nhật mới sau ~1-2 phút.
+        </p>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Bản mới đã merge nhưng dashboard chưa thấy thay đổi &gt; 10 phút.</li>
+          <li>Sau khi deploy, dashboard báo lỗi 502 hoặc trắng trang.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="current-state">Trạng thái hiện tại</h2>
       <Callout variant="success" title="Production path mới">
         Push lên <TerminalInline>main</TerminalInline> sẽ chạy GitHub Actions{" "}
@@ -62,7 +79,7 @@ export default function Page() {
         <Step n={1} title="Commit + push lên main">
           <Terminal
             host="you@laptop"
-            cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+            cwd="~/Coding_workspace/PATI/pati-master-app"
             lines={[
               { prompt: "$", cmd: "git status --short" },
               { prompt: "$", cmd: "bun run typecheck" },
@@ -111,7 +128,7 @@ export default function Page() {
         cwd="~"
         lines={[
           { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
-          { prompt: "timcook@mini $", cmd: "cd ~/Coding_workspace/PATI/shopify-lark-sync" },
+          { prompt: "timcook@mini $", cmd: "cd ~/Coding_workspace/PATI/pati-master-app" },
           { prompt: "timcook@mini $", cmd: "DEPLOY_BRANCH=main bash scripts/macmini-stack/deploy-web.sh --force" },
         ]}
       />
@@ -156,7 +173,7 @@ export default function Page() {
       </div>
       <Terminal
         host="timcook@mini"
-        cwd="~/Coding_workspace/PATI/shopify-lark-sync"
+        cwd="~/Coding_workspace/PATI/pati-master-app"
         lines={[
           { prompt: "$", cmd: "git reset --hard <last-good-sha>" },
           { prompt: "$", cmd: "bash scripts/macmini-stack/deploy-web.sh --force" },
@@ -216,6 +233,8 @@ export default function Page() {
         override từ <TerminalInline>~/pati-supabase/cron/.env.web</TerminalInline>. Vercel artifacts
         cũ chỉ dùng làm rollback lạnh trong giai đoạn chuyển đổi DNS.
       </Callout>
+
+      </section>
 
       <PageNav href="/docs/deploy-vercel" />
     </>

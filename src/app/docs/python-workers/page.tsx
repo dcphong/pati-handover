@@ -71,9 +71,26 @@ export default function Page() {
       <PageHeader
         eyebrow="Reference"
         title="Python Workers"
-        description="Layout sync/, cách setup venv, chạy pipeline, debug. Worker binary tách biệt với Next.js — WRITE-only vào Supabase."
+        description="Các script chạy nền bằng Python — kéo dữ liệu về Supabase. Trang này thuần kỹ thuật."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Workers làm gì</h2>
+        <p>
+          Worker là các script Python chạy ở chế độ nền (cron) để &ldquo;hút&rdquo; dữ liệu từ
+          Shopify / Lark / Flexport / ads providers về database. Hầu hết dữ liệu &ldquo;mới&rdquo;
+          trên dashboard đến từ đây.
+        </p>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Một loại dữ liệu cụ thể không cập nhật &gt; 12 giờ.</li>
+          <li>Cron sync lỗi liên tục.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="layout">Cấu trúc folder</h2>
       <p>
         File highlighted vàng là file bạn sẽ touch khi debug 90% trường hợp:
@@ -91,7 +108,7 @@ export default function Page() {
         <Step n={1} title="Tạo venv (theo OS)">
           <Terminal
             host="you@laptop"
-            cwd="~/Coding/shopify-lark-sync"
+            cwd="~/Coding/pati-master-app"
             title="Windows"
             lines={[
               { prompt: "$", cmd: "python -m venv .venv-windows" },
@@ -100,7 +117,7 @@ export default function Page() {
           />
           <Terminal
             host="you@laptop"
-            cwd="~/Coding/shopify-lark-sync"
+            cwd="~/Coding/pati-master-app"
             title="Mac / Linux"
             lines={[
               { prompt: "$", cmd: "python3 -m venv .venv-linux" },
@@ -111,7 +128,7 @@ export default function Page() {
         <Step n={2} title="Install requirements">
           <Terminal
             host="you@laptop"
-            cwd="~/Coding/shopify-lark-sync"
+            cwd="~/Coding/pati-master-app"
             lines={[
               { prompt: "(.venv) $", cmd: "pip install -r sync/requirements.txt" },
               { divider: true, label: "expected" },
@@ -212,6 +229,8 @@ plain = decrypt(cipher)
         toàn miễn là <strong>cùng date window</strong>. Append-only pipelines (như Lark Mail
         Mac mini cron) cần dedup logic ở DB trigger layer.
       </Callout>
+
+      </section>
 
       <PageNav href="/docs/python-workers" />
     </>

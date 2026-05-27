@@ -1,4 +1,5 @@
 import { Info, AlertTriangle, AlertOctagon, Lightbulb, CheckCircle2 } from "lucide-react";
+import { detectIntegrations, IntegrationLogo } from "@/components/docs/integration-logo";
 import { cn } from "@/lib/utils";
 
 type Variant = "info" | "warning" | "danger" | "tip" | "success";
@@ -47,13 +48,20 @@ export function Callout({
 }) {
   const s = styles[variant];
   const Icon = s.Icon;
+  const integrations = detectIntegrations(title);
+
   return (
     <div className={cn("my-5 rounded-lg border px-4 py-3.5", s.wrap)}>
       <div className="flex items-start gap-3">
         <Icon className={cn("h-4 w-4 mt-0.5 shrink-0", s.icon)} />
         <div className="flex-1 min-w-0">
           {title && (
-            <div className="text-sm font-semibold mb-1">{title}</div>
+            <div className="mb-1 flex items-center gap-1.5 text-sm font-semibold">
+              {integrations.map((integration) => (
+                <IntegrationLogo key={integration} integration={integration} className="h-5 w-5" />
+              ))}
+              <span>{title}</span>
+            </div>
           )}
           <div className="text-sm leading-6 [&>p]:my-0 [&>p+p]:mt-2 [&>ul]:my-1 [&>ol]:my-1 text-foreground/85">
             {children}

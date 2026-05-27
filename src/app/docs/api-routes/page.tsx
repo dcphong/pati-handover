@@ -1,6 +1,5 @@
 import {
   Activity,
-  Cable,
   Cog,
   KeyRound,
   Mail,
@@ -85,51 +84,32 @@ const groups: RouteGroup[] = [
       },
       {
         method: "POST",
-        path: "/api/analytics/sync/recharge",
-        purpose: "Recharge subs + charges",
+        path: "/api/analytics/sync/[provider]",
+        purpose: "Generic provider sync — provider ∈ {recharge, meta, google, klaviyo, shopify-payments, shopify-products, stripe, refresh-tokens, refund-line-items, customer-orders-count}",
       },
-      { method: "POST", path: "/api/analytics/sync/meta", purpose: "Meta Ads spend" },
-      { method: "POST", path: "/api/analytics/sync/google", purpose: "Google Ads spend" },
-      { method: "POST", path: "/api/analytics/sync/klaviyo", purpose: "Klaviyo events" },
     ],
   },
   {
     title: "Orders / Inventory",
-    description: "Active-store scoped. /shopify-orders là view lower-level.",
+    description: "Active-store scoped. Top-level GETs do not exist — only dynamic + utility routes below.",
     icon: <Package className={ICON} />,
     routes: [
-      { method: "GET", path: "/api/orders", purpose: "List orders cho active store" },
-      { method: "POST", path: "/api/orders/import", purpose: "CSV order import" },
-      { method: "GET", path: "/api/shopify-orders", purpose: "Lower-level shopify_orders view" },
-      { method: "GET", path: "/api/inventory", purpose: "Inventory snapshot" },
+      { method: "POST", path: "/api/orders/import-csv", purpose: "CSV order import" },
+      { method: "GET", path: "/api/shopify-orders/[orderId]", purpose: "Single order detail" },
+      { method: "GET", path: "/api/inventory/shopify-products", purpose: "Inventory snapshot (Shopify products)" },
       {
         method: "GET",
-        path: "/api/tracking-timeline/[order]",
+        path: "/api/tracking-timeline/[orderId]",
         purpose: "Tracking timeline events",
       },
       { method: "POST", path: "/api/update-row", purpose: "Inline row edit" },
       { method: "DELETE", path: "/api/delete", purpose: "Delete record" },
     ],
   },
-  {
-    title: "Custom tables",
-    description: "Dynamic custom-table viewer/editor cho mỗi slug.",
-    icon: <Cable className={ICON} />,
-    routes: [
-      { method: "GET", path: "/api/custom-menus", purpose: "Sidebar entries cho custom tables" },
-      {
-        method: "GET",
-        path: "/api/custom-columns/[slug]",
-        purpose: "Column defs for custom table",
-      },
-      { method: "GET", path: "/api/custom-data/[slug]", purpose: "Rows" },
-      {
-        method: "POST",
-        path: "/api/custom-data/[slug]/import",
-        purpose: "Bulk import rows",
-      },
-    ],
-  },
+  // Custom table API section removed — generic /api/custom-* endpoints
+  // expose the POM-style Lark Base sidebar viewer, which is out of scope
+  // for the handover doc (Phong 2026-05-27). Lark-sourced features that DO
+  // matter (COGS Catalog, fulfillment routing) live under their own docs.
   {
     title: "IAM",
     description: "AWS-style policies. /iam UI tạo policy + attach user.",
@@ -141,7 +121,7 @@ const groups: RouteGroup[] = [
       { method: "DELETE", path: "/api/users/[id]", purpose: "Soft-delete user" },
       { method: "GET", path: "/api/roles", purpose: "List roles (legacy)" },
       { method: "GET", path: "/api/permissions", purpose: "List permissions (legacy)" },
-      { method: "GET", path: "/api/iam/actions", purpose: "75-action catalog" },
+      { method: "GET", path: "/api/iam/permissions", purpose: "75-action catalog" },
       { method: "GET", path: "/api/iam/policies", purpose: "9 managed policies" },
       { method: "POST", path: "/api/iam/policies", purpose: "Create custom policy" },
       {
@@ -149,12 +129,12 @@ const groups: RouteGroup[] = [
         path: "/api/iam/users/[id]/policies",
         purpose: "Attach policy to user",
       },
-      { method: "GET", path: "/api/iam/audit", purpose: "Audit log" },
+      { method: "GET", path: "/api/iam/audit-log", purpose: "Audit log" },
     ],
   },
   {
     title: "CS Dashboard",
-    description: "Gorgias 3-panel rebuild. customer_profiles join Lark Mail.",
+    description: "3-panel CS dashboard. customer_profiles join Lark Mail.",
     icon: <Users className={ICON} />,
     routes: [
       { method: "GET", path: "/api/cs-dashboard", purpose: "Daily aggregate counters" },
@@ -180,10 +160,10 @@ const groups: RouteGroup[] = [
       { method: "GET", path: "/api/lark-mail-clients", purpose: "Per-client breakdown" },
       {
         method: "GET",
-        path: "/api/lark-mail-customer-history/[email]",
+        path: "/api/lark-mail-customer-history?email=...",
         purpose: "Email history",
       },
-      { method: "GET", path: "/api/lark-mail-detail/[id]", purpose: "Message detail" },
+      { method: "GET", path: "/api/lark-mail-detail?id=...", purpose: "Message detail" },
       { method: "POST", path: "/api/lark-mail-ignore", purpose: "Mark thread ignored" },
       { method: "GET", path: "/api/lark-mail-sent", purpose: "Sent items" },
       { method: "GET", path: "/api/lark-mail-stats", purpose: "Per-day stats" },
@@ -205,12 +185,15 @@ const groups: RouteGroup[] = [
   },
   {
     title: "ChargeFlow / Disputes",
-    description: "Active-store scoped. CDP sync trigger.",
+    description: "Active-store scoped. CDP sync trigger lives under /api/cron, evidence under /api/chargeflow.",
     icon: <Shield className={ICON} />,
     routes: [
       { method: "GET", path: "/api/disputes", purpose: "List disputes cho active store" },
-      { method: "POST", path: "/api/disputes/sync", purpose: "Trigger ChargeFlow sync" },
-      { method: "POST", path: "/api/disputes/evidence", purpose: "Upload evidence package" },
+      { method: "GET", path: "/api/disputes/[gateway]", purpose: "Disputes filtered by payment gateway" },
+      { method: "POST", path: "/api/cron/chargeflow-sync-ui", purpose: "Trigger ChargeFlow CDP sync (via cron endpoint)" },
+      { method: "POST", path: "/api/chargeflow/disputes/[id]/evidence", purpose: "Upload evidence package" },
+      { method: "POST", path: "/api/chargeflow/disputes/[id]/tracking-evidence", purpose: "Generate tracking-only evidence" },
+      { method: "POST", path: "/api/chargeflow/disputes/[id]/lark-mail-evidence", purpose: "Generate Lark Mail evidence screenshots" },
     ],
   },
   {
@@ -235,12 +218,6 @@ const groups: RouteGroup[] = [
         path: "/api/webhooks/shopify/refunds",
         purpose: "HMAC-verified refund webhook",
       },
-      {
-        method: "POST",
-        path: "/api/cj/webhook-setup",
-        purpose: "Setup CJ Dropshipping webhook",
-        note: "ADMIN_SECRET",
-      },
     ],
   },
   {
@@ -258,9 +235,25 @@ export default function Page() {
       <PageHeader
         eyebrow="Reference"
         title="API Routes"
-        description="~80 endpoints trong /src/app/api/. Search theo path/mô tả, lọc theo HTTP method."
+        description="Danh mục các endpoint backend mà dashboard và worker dùng. Trang này thuần kỹ thuật."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">Trang này dành cho ai</h2>
+        <p>
+          Dành cho dev. Liệt kê toàn bộ ~80 endpoint backend. Người dùng cuối không cần đọc —
+          các nút bấm trên dashboard đã tự gọi đúng endpoint.
+        </p>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Một nút trên dashboard click vào trả lỗi 404 hoặc 500.</li>
+          <li>Cần endpoint mới cho workflow mới — luôn qua dev.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <Callout variant="info" title="Convention chung">
         <ul className="list-disc ml-5 space-y-1">
           <li>
@@ -289,6 +282,8 @@ export default function Page() {
       </Callout>
 
       <RouteCatalog groups={validGroups} />
+
+      </section>
 
       <PageNav href="/docs/api-routes" />
     </>

@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { ArrowRight, ArrowDown } from "lucide-react";
+import { ArrowRight, ArrowDown, HelpCircle } from "lucide-react";
+import { detectIntegrations, IntegrationLogo } from "@/components/docs/integration-logo";
 import { cn } from "@/lib/utils";
 
 type Tone = "neutral" | "blue" | "violet" | "emerald" | "amber" | "pink" | "sky" | "orange";
@@ -29,16 +30,20 @@ const toneText: Record<Tone, string> = {
 export function FlowNode({
   icon: Icon,
   label,
+  info,
   sub,
   tone = "neutral",
   className,
 }: {
   icon?: React.ComponentType<{ className?: string }>;
   label: string;
+  info?: string;
   sub?: ReactNode;
   tone?: Tone;
   className?: string;
 }) {
+  const integrations = detectIntegrations(label, sub);
+
   return (
     <div
       className={cn(
@@ -48,10 +53,28 @@ export function FlowNode({
       )}
     >
       <div className="flex items-center gap-2">
-        {Icon && (
-          <Icon className={cn("h-3.5 w-3.5 shrink-0", toneText[tone])} />
-        )}
+        {integrations.length > 0
+          ? integrations.map((integration) => (
+              <IntegrationLogo key={integration} integration={integration} className="h-5 w-5" />
+            ))
+          : Icon && <Icon className={cn("h-3.5 w-3.5 shrink-0", toneText[tone])} />}
         <span className="font-semibold text-[13px] leading-tight">{label}</span>
+        {info && (
+          <span className="relative inline-flex shrink-0 group/help">
+            <span
+              tabIndex={0}
+              role="img"
+              aria-label={info}
+              title={info}
+              className="grid h-4 w-4 place-items-center rounded-full text-muted-foreground hover:text-foreground focus:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+            </span>
+            <span className="pointer-events-none absolute left-1/2 top-5 z-20 hidden w-64 -translate-x-1/2 rounded-md border bg-popover px-3 py-2 text-[12px] font-normal leading-5 text-popover-foreground shadow-md group-hover/help:block group-focus-within/help:block">
+              {info}
+            </span>
+          </span>
+        )}
       </div>
       {sub && (
         <div className="mt-1 text-[11px] text-muted-foreground font-mono leading-snug">
@@ -103,69 +126,83 @@ export function LayerStack({ layers }: { layers: LayerItem[] }) {
   return (
     <div className="not-prose my-6 space-y-2">
       {layers.map((layer, i) => (
-        <div key={i} className="relative">
-          <div
-            className={cn(
-              "rounded-xl border-2 px-4 py-3 backdrop-blur-sm",
-              toneMap[layer.tone ?? "neutral"]
-            )}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                {layer.icon && (
-                  <div
-                    className={cn(
-                      "h-8 w-8 rounded-md grid place-items-center shrink-0",
-                      "bg-background/60 border"
-                    )}
-                  >
-                    <layer.icon
-                      className={cn("h-4 w-4", toneText[layer.tone ?? "neutral"])}
-                    />
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <div
-                    className={cn(
-                      "font-semibold text-[13px] uppercase tracking-wider",
-                      toneText[layer.tone ?? "neutral"]
-                    )}
-                  >
-                    {layer.name}
-                  </div>
-                  {layer.description && (
-                    <div className="text-[13px] text-foreground/80 mt-0.5">
-                      {layer.description}
-                    </div>
-                  )}
-                </div>
+        <LayerStackItem key={i} layer={layer} isLast={i === layers.length - 1} />
+      ))}
+    </div>
+  );
+}
+
+function LayerStackItem({ layer, isLast }: { layer: LayerItem; isLast: boolean }) {
+  const integrations = detectIntegrations(layer.name, layer.description, ...(layer.items ?? []));
+
+  return (
+    <div className="relative">
+      <div
+        className={cn(
+          "rounded-xl border-2 px-4 py-3 backdrop-blur-sm",
+          toneMap[layer.tone ?? "neutral"]
+        )}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {integrations.length > 0 ? (
+              <div className="flex shrink-0 -space-x-1">
+                {integrations.map((integration) => (
+                  <IntegrationLogo key={integration} integration={integration} className="h-8 w-8" />
+                ))}
               </div>
-              {layer.host && (
-                <div className="text-[10px] uppercase tracking-wider font-mono text-muted-foreground shrink-0">
-                  {layer.host}
+            ) : layer.icon && (
+              <div
+                className={cn(
+                  "h-8 w-8 rounded-md grid place-items-center shrink-0",
+                  "bg-background/60 border"
+                )}
+              >
+                <layer.icon
+                  className={cn("h-4 w-4", toneText[layer.tone ?? "neutral"])}
+                />
+              </div>
+            )}
+            <div className="min-w-0">
+              <div
+                className={cn(
+                  "font-semibold text-[13px] uppercase tracking-wider",
+                  toneText[layer.tone ?? "neutral"]
+                )}
+              >
+                {layer.name}
+              </div>
+              {layer.description && (
+                <div className="text-[13px] text-foreground/80 mt-0.5">
+                  {layer.description}
                 </div>
               )}
             </div>
-            {layer.items && layer.items.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {layer.items.map((item) => (
-                  <span
-                    key={item}
-                    className="text-[11px] font-mono rounded bg-background/70 border px-1.5 py-0.5 text-foreground/75"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
-          {i < layers.length - 1 && (
-            <div className="flex justify-center py-1" aria-hidden>
-              <ArrowDown className="h-3.5 w-3.5 text-muted-foreground" />
+          {layer.host && (
+            <div className="text-[10px] uppercase tracking-wider font-mono text-muted-foreground shrink-0">
+              {layer.host}
             </div>
           )}
         </div>
-      ))}
+        {layer.items && layer.items.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {layer.items.map((item) => (
+              <span
+                key={item}
+                className="text-[11px] font-mono rounded bg-background/70 border px-1.5 py-0.5 text-foreground/75"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+      {!isLast && (
+        <div className="flex justify-center py-1" aria-hidden>
+          <ArrowDown className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+      )}
     </div>
   );
 }

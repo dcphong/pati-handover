@@ -26,7 +26,7 @@ export function Topbar() {
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-[15px] font-semibold tracking-tight">PATI Handover</span>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">shopify-lark-sync</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">pati-master-app</span>
           </div>
         </Link>
         <div className="flex items-center gap-2">
@@ -55,6 +55,18 @@ export function Topbar() {
               className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
             >
               Troubleshooting
+            </Link>
+            <Link
+              href="/docs/feature-cs-of"
+              className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
+            >
+              CS & OF
+            </Link>
+            <Link
+              href="/docs/timcook"
+              className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
+            >
+              Timcook
             </Link>
             <span className="mx-2 h-5 w-px bg-border" />
             <AudienceModeSwitch />

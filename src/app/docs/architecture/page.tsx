@@ -148,17 +148,67 @@ const flows = [
   },
 ];
 
+const userLayers = [
+  "Nguồn ngoài: Shopify, Lark, Flexport, ads, payment providers.",
+  "Worker tự động: Mac mini chạy lịch để kéo dữ liệu về.",
+  "Database: Supabase/Postgres là nơi lưu số liệu chuẩn.",
+  "Dashboard: nơi đọc số liệu và thao tác trên web.",
+  "Orchestration: lịch chạy, deploy, tunnel và healthcheck giữ hệ thống sống.",
+];
+
+const userFlows = [
+  "Shopify orders: lấy đơn hàng từ Shopify rồi đưa vào dashboard.",
+  "Flexport shipments: lấy tracking/fulfillment để theo dõi vận hành.",
+  "Custom tables: đồng bộ các bảng Lark/Excel/CSV đang dùng.",
+  "Bulk fulfillment: nhận file input rồi gửi fulfillment sang Shopify/Flexport.",
+  "Analytics: gom doanh thu, refund, ads, COGS thành báo cáo P&L.",
+];
+
 export default function Page() {
   return (
     <>
       <PageHeader
         eyebrow="Architecture"
         title="System Overview"
-        description="Toàn hệ thống 5 layer. Đọc từ trên xuống — đi theo data: từ source ngoài, vào Python worker, lưu Postgres, được dashboard đọc."
+        description="5 tầng cấu trúc hệ thống: nguồn ngoài → worker → database → dashboard → orchestration."
       />
 
+      {/* ─────────── USER MODE ─────────── */}
+      <section data-user-detail>
+        <h2 id="user-what">5 tầng — nhìn nhanh</h2>
+        <ol>
+          <li><strong>Nguồn ngoài</strong>: Shopify, Lark, Flexport, ads, payment providers.</li>
+          <li><strong>Worker tự động</strong>: Mac mini chạy lịch để kéo dữ liệu về.</li>
+          <li><strong>Database</strong>: Supabase / Postgres là nơi lưu số liệu chuẩn.</li>
+          <li><strong>Dashboard</strong>: nơi đọc số liệu và thao tác trên web.</li>
+          <li><strong>Orchestration</strong>: lịch chạy, deploy, tunnel và healthcheck giữ hệ thống sống.</li>
+        </ol>
+        <h2 id="user-when-call">Khi nào báo dev</h2>
+        <ul>
+          <li>Cần hiểu vì sao một số liệu sai để biết &ldquo;lỗi ở tầng nào&rdquo; — dev sẽ tra.</li>
+        </ul>
+      </section>
+
+      {/* ─────────── DEV MODE ─────────── */}
+      <section data-dev-detail>
       <h2 id="layers">5 layer — Data đi từ trên xuống dưới</h2>
-      <LayerStack layers={layers} />
+      <div data-user-detail className="not-prose my-5 rounded-xl border bg-card p-4">
+        <p className="m-0 text-sm leading-6 text-foreground/80">
+          Đọc trang này từ trên xuống: dữ liệu đi từ hệ thống bên ngoài, qua job tự động,
+          vào database, rồi dashboard đọc từ database để hiển thị.
+        </p>
+        <ol className="mt-4 space-y-2 text-sm leading-6 text-foreground/85">
+          {userLayers.map((item, i) => (
+            <li key={item} className="flex gap-2">
+              <span className="font-semibold tabular-nums">{i + 1}.</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div data-dev-detail>
+        <LayerStack layers={layers} />
+      </div>
 
       <Callout variant="info" title="Quy tắc bóc tách">
         Python <strong>WRITE-only</strong>, Next.js <strong>READ/WRITE</strong>. KHÔNG có
@@ -168,7 +218,13 @@ export default function Page() {
       </Callout>
 
       <h2 id="two-binaries">Hai binary, một database</h2>
-      <div className="not-prose my-6 grid sm:grid-cols-2 gap-3">
+      <div data-user-detail className="not-prose my-5 rounded-xl border bg-card p-4">
+        <p className="m-0 text-sm leading-6 text-foreground/85">
+          Hệ thống có hai chương trình chính: dashboard web để người dùng thao tác và worker
+          nền để kéo dữ liệu. Cả hai cùng đọc/ghi vào một database trung tâm để không lệch số.
+        </p>
+      </div>
+      <div data-dev-detail className="not-prose my-6 grid sm:grid-cols-2 gap-3">
         <div className="rounded-xl border-2 border-violet-500/40 bg-violet-500/[0.04] p-4">
           <div className="flex items-center gap-2 mb-2">
             <Code2 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
@@ -220,7 +276,14 @@ export default function Page() {
       </div>
 
       <h2 id="frontend">Frontend — 7 cluster</h2>
-      <div className="not-prose my-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div data-user-detail className="not-prose my-5 rounded-xl border bg-card p-4">
+        <p className="m-0 text-sm leading-6 text-foreground/85">
+          Frontend là các màn hình dashboard: xem đơn hàng, đồng bộ dữ liệu, quản lý user/quyền,
+          xem bảng custom và thao tác bulk fulfillment. Khi một màn hình lỗi, dev sẽ map nó về
+          cluster tương ứng để tìm file sửa.
+        </p>
+      </div>
+      <div data-dev-detail className="not-prose my-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {frontendClusters.map((c) => (
           <div key={c.name} className="rounded-lg border bg-card p-3.5">
             <div className="flex items-baseline justify-between mb-1">
@@ -235,7 +298,14 @@ export default function Page() {
       </div>
 
       <h2 id="backend">Backend — modules Python</h2>
-      <div className="not-prose my-5 rounded-xl border bg-card overflow-hidden">
+      <div data-user-detail className="not-prose my-5 rounded-xl border bg-card p-4">
+        <p className="m-0 text-sm leading-6 text-foreground/85">
+          Backend Python là phần chạy nền. Nó lấy dữ liệu từ Shopify/Lark/Flexport, làm sạch,
+          loại trùng, rồi ghi vào database. User thường không thao tác trực tiếp phần này; chỉ
+          cần biết khi số liệu không cập nhật thì dev sẽ kiểm tra các worker này.
+        </p>
+      </div>
+      <div data-dev-detail className="not-prose my-5 rounded-xl border bg-card overflow-hidden">
         {backendModules.map((m, i) => (
           <div
             key={m.path}
@@ -261,7 +331,20 @@ export default function Page() {
         Đây là 5 path chính bạn sẽ debug 90% thời gian. Đọc theo thứ tự call chain → biết file
         nào edit.
       </p>
-      <div className="not-prose my-6 space-y-4">
+      <div data-user-detail className="not-prose my-5 rounded-xl border bg-card p-4">
+        <p className="m-0 text-sm leading-6 text-foreground/85">
+          Nếu có sự cố, 90% sẽ rơi vào một trong năm luồng này:
+        </p>
+        <ol className="mt-4 space-y-2 text-sm leading-6 text-foreground/85">
+          {userFlows.map((item, i) => (
+            <li key={item} className="flex gap-2">
+              <span className="font-semibold tabular-nums">{i + 1}.</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div data-dev-detail className="not-prose my-6 space-y-4">
         {flows.map((f, i) => (
           <div key={f.title} className="rounded-xl border bg-card overflow-hidden">
             <div className="px-4 py-2.5 border-b bg-muted/30 flex items-center justify-between">
@@ -294,14 +377,14 @@ export default function Page() {
       </div>
 
       <Callout variant="tip" title="GitNexus — search call chains">
-        Repo cũ shopify-lark-sync đã được index bằng{" "}
+        Repo pati-master-app đã được index bằng{" "}
         <a href="https://github.com/Anthropic" target="_blank" rel="noreferrer">
           GitNexus
         </a>
         . Mở terminal trong repo đó và chạy:
         <Terminal
           host="you@laptop"
-          cwd="~/Coding/shopify-lark-sync"
+          cwd="~/Coding/pati-master-app"
           lines={[
             { prompt: "$", cmd: "npx gitnexus query \"shopify refund timezone\"" },
             { divider: true, label: "output" },
@@ -335,6 +418,8 @@ export default function Page() {
           why="Inline vào client bundle ở build time; Mac mini runtime đọc .env rồi next start lại qua launchd."
         />
       </div>
+
+      </section>
 
       <PageNav href="/docs/architecture" />
     </>
