@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import { CodeBlock } from "@/components/docs/code-block";
+import { ExternalLinkRow } from "@/components/docs/external-link-card";
 import {
   FlowNode,
   FlowRow,
@@ -20,6 +21,7 @@ import {
   Terminal,
   TerminalInline,
 } from "@/components/docs/visuals";
+import { INFRA } from "@/lib/external-links";
 
 export const metadata = { title: "Cloudflared Tunnel — PATI Handover" };
 
@@ -30,6 +32,27 @@ export default function Page() {
         eyebrow="Deployment"
         title="Cloudflared Tunnel"
         description="Đường ra internet của Mac mini. Web app + database + chargeflow đều đi qua đây."
+      />
+
+      <ExternalLinkRow
+        links={[
+          {
+            href: INFRA.cloudflareTunnels,
+            title: "Cloudflare Zero Trust — Tunnels",
+            pathHint: "one.dash.cloudflare.com",
+            desc: "Quản lý tunnel pati-supabase: hostname routing, status, recreate, certs.",
+            icon: Cloud,
+            tone: "amber",
+          },
+          {
+            href: INFRA.cloudflareDash,
+            title: "Cloudflare DNS dashboard",
+            pathHint: "dash.cloudflare.com",
+            desc: "DNS cho patiagency.com — CNAME từ tunnel UUID xuống hostname public.",
+            icon: Globe,
+            tone: "sky",
+          },
+        ]}
       />
 
       {/* ─────────── USER MODE ─────────── */}
@@ -117,7 +140,7 @@ export default function Page() {
 {`tunnel: pati-supabase
 credentials-file: /Users/timcook/.cloudflared/pati-supabase.json
 
-# (1) Force IPv4 — IPv6 ở home internet hay flaky, đã từng gây 111 disconnect/24h
+# (1) Force IPv4 — IPv6 trên residential ISP routing không ổn định; IPv4 tránh disconnect
 edge-ip-version: "4"
 
 # (2) Keep upstream alive xuyên qua NAT idle timeout (~60-120s)

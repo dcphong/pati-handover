@@ -314,9 +314,11 @@ export default function Page() {
         </div>
         <div className="text-[13px] leading-6 text-foreground/85">
           Playwright capture mỗi sáng từ TW dashboard. Dùng làm <em>second-opinion</em> để
-          spot regression, KHÔNG phải target. <strong>Cẩn thận:</strong> file dump KHÔNG được
-          zero-fill cards mà API thực tế đang non-zero (đã từng silent-zero Recharge group —
-          memo <TerminalInline>reference_tw_audit_overlay_zero_trap</TerminalInline>).
+          spot regression, KHÔNG phải target. Validator (
+          <TerminalInline>readTwAuditMetricSums</TerminalInline>) trả{" "}
+          <TerminalInline>null</TerminalInline> khi TW dump không có non-zero bucket — tránh
+          để overlay zero-fill đè lên live data. Memo:{" "}
+          <TerminalInline>reference_tw_audit_overlay_zero_trap</TerminalInline>.
         </div>
       </div>
 

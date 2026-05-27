@@ -57,13 +57,13 @@ export function Topbar() {
               Troubleshooting
             </Link>
             <Link
-              href="/docs/feature-cs-of"
+              href="/docs/cs-of"
               className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
             >
               CS & OF
             </Link>
             <Link
-              href="/docs/timcook"
+              href="/docs/timcook-agent"
               className="px-3 py-1.5 rounded-md hover:bg-muted text-foreground/70 hover:text-foreground transition-colors"
             >
               Timcook

@@ -102,9 +102,9 @@ export default function Page() {
           supabase.patiagency.com
         </a>.
       </p>
-      <Callout variant="warning" title="Cần HTTP Basic Auth (locked 2026-05-27)">
-        Studio + postgres-meta đã từng <strong>mở public</strong> ai cũng vào được. Đã lock bằng
-        Caddy basic auth. Khi mở link sẽ có browser popup yêu cầu credentials:
+      <Callout variant="warning" title="HTTP Basic Auth (Caddy gateway)">
+        Studio + postgres-meta được bảo vệ bằng <strong>Caddy basic auth</strong> ở reverse proxy
+        layer — không expose public. Khi mở link sẽ có browser popup yêu cầu credentials:
         <div className="not-prose mt-2 rounded-md border bg-background/50 p-2.5 font-mono text-[12.5px]">
           <div>Username: <strong>admin</strong></div>
           <div>Password: <strong>Admin@2025</strong></div>

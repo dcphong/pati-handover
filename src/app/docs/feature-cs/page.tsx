@@ -1,5 +1,6 @@
 import {
   AlertOctagon,
+  Globe,
   Headphones,
   Mail,
   Search,
@@ -9,7 +10,9 @@ import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import { CodeBlock } from "@/components/docs/code-block";
+import { ExternalLinkRow } from "@/components/docs/external-link-card";
 import { TerminalInline } from "@/components/docs/visuals";
+import { INFRA, LARK } from "@/lib/external-links";
 
 export const metadata = { title: "CS Dashboard — PATI Handover" };
 
@@ -34,50 +37,115 @@ export default function Page() {
       <PageHeader
         eyebrow="Operations"
         title="CS Dashboard"
-        description="Dashboard CS 3-panel tự host: thread email từ Lark Mail + customer profile tự nạp đơn Shopify và sub Recharge."
+        description="2 trang phối hợp: /cs-dashboard (overview + bảng fulfilled/unfulfilled để hành động) và /lark-mail-reconcile (3-panel thread email)."
+      />
+
+      <ExternalLinkRow
+        links={[
+          {
+            href: `${INFRA.dashboardProd}/cs-dashboard`,
+            title: "CS Dashboard — overview + actions",
+            pathHint: "pnl.patigroup.com/cs-dashboard",
+            desc: "Analytics CS (NS#1 FRT, ticket counts, refund rate) + bảng unfulfilled / fulfilled. Đây là chỗ CS coi và hành động trên đơn.",
+            icon: Headphones,
+            tone: "emerald",
+          },
+          {
+            href: `${INFRA.dashboardProd}/lark-mail-reconcile`,
+            title: "Lark Mail Reconcile — 3-panel threads",
+            pathHint: "pnl.patigroup.com/lark-mail-reconcile",
+            desc: "Inbox 3-panel: list thread + nội dung mail + customer profile bên phải. Match email khách chưa link với Shopify customer ở đây.",
+            icon: Users,
+            tone: "blue",
+          },
+          {
+            href: LARK.mail,
+            title: "Lark Mail web (source inbox)",
+            pathHint: "paticreativeagency.sg.larksuite.com/mail",
+            desc: "Inbox gốc — email khách vào Lark Mail trước, cron 5 phút sync vào dashboard.",
+            icon: Mail,
+            tone: "violet",
+          },
+        ]}
       />
 
       {/* ─────────── USER MODE ─────────── */}
       <section data-user-detail>
-        <h2 id="user-overview">CS Dashboard là gì</h2>
+        <h2 id="user-overview">2 trang, 2 mục đích</h2>
+        <div className="not-prose my-5 grid sm:grid-cols-2 gap-3">
+          <div className="rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.04] p-4">
+            <div className="font-semibold text-[14px] mb-1.5 flex items-center gap-2">
+              <Headphones className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+              <code className="text-[12.5px]">/cs-dashboard</code>
+            </div>
+            <p className="text-[13px] leading-6 text-foreground/85 m-0">
+              <strong>Overview + hành động.</strong> Xem số liệu CS tổng (FRT, refund rate, ticket
+              counts) ở phần trên. Phần dưới là bảng đơn{" "}
+              <strong>unfulfilled</strong> + <strong>fulfilled</strong> — CS dùng đây để rà đơn
+              chưa giao, follow-up, click vào order detail.
+            </p>
+          </div>
+          <div className="rounded-xl border-2 border-blue-500/40 bg-blue-500/[0.04] p-4">
+            <div className="font-semibold text-[14px] mb-1.5 flex items-center gap-2">
+              <Users className="h-4 w-4 text-blue-700 dark:text-blue-300" />
+              <code className="text-[12.5px]">/lark-mail-reconcile</code>
+            </div>
+            <p className="text-[13px] leading-6 text-foreground/85 m-0">
+              <strong>Inbox thread email 3-panel.</strong> Panel giữa = list thread + nội dung mail.
+              Panel phải = profile khách (đơn Shopify + sub Recharge + ghi chú CS). Email chưa
+              link customer → pick trong dropdown để match.
+            </p>
+          </div>
+        </div>
         <p>
-          Đây là chỗ chính để CS xử ticket. Một màn hình chia 3 cột:
-        </p>
-        <ul>
-          <li><strong>Panel trái</strong>: app sidebar — đổi store, mở menu khác.</li>
-          <li><strong>Panel giữa</strong>: danh sách thread email + nội dung từng thread.</li>
-          <li><strong>Panel phải</strong>: profile khách — đơn Shopify gần đây, sub Recharge, ghi chú CS đã lưu.</li>
-        </ul>
-        <p>
-          Email vào dashboard qua Lark Mail (đồng bộ tự động). Mỗi khách có một note nội bộ + tag
-          (vip / risk / partner) để cả nhóm cùng thấy.
+          Email gốc nằm trên <strong>Lark Mail</strong>; cron 5 phút đẩy về dashboard. Mỗi khách
+          có 1 note nội bộ + tag (vip / risk / partner) lưu trong{" "}
+          <code>customer_profiles</code> table.
         </p>
 
         <h2 id="user-workflow">Quy trình hằng ngày</h2>
         <ol>
-          <li>Mở <code>/cs-dashboard</code> — mặc định landing là inbox.</li>
-          <li>Click một thread → đọc nội dung ở giữa, profile khách hiện bên phải.</li>
-          <li>Cần ghi chú → mở panel phải, lưu note + tag. Lần sau tự hiện lại.</li>
-          <li>Email chưa map customer → vào <code>/lark-mail-reconcile</code>, pick khách trong dropdown để match.</li>
+          <li>
+            Mở <code>/cs-dashboard</code> → coi 4 metric trên cùng (open emails, FRT, ticket
+            count, refund rate). Bất thường → đào sâu.
+          </li>
+          <li>
+            Cuộn xuống bảng <strong>Unfulfilled</strong> → đơn nào quá X giờ chưa fulfilled, click
+            vào order → kiểm tra + follow-up khách hoặc OF.
+          </li>
+          <li>
+            Có email cần reply → mở <code>/lark-mail-reconcile</code> (thread view) → reply trong
+            Lark Mail tab gốc.
+          </li>
+          <li>
+            Email không match customer Shopify → vào <code>/lark-mail-reconcile</code>, pick
+            customer trong dropdown → save (lưu vào <code>customer_profiles</code>, lần sau auto-match).
+          </li>
+          <li>
+            Cần ghi note cho customer (vd VIP) → mở profile khách (trong reconcile hoặc{" "}
+            <code>/cs-dashboard/customer/[id]</code>), điền note + tag, save.
+          </li>
         </ol>
 
         <h2 id="user-troubleshoot">Khi nào cần báo dev</h2>
         <ul>
-          <li>Email mới &gt; 30 phút không thấy hiện trong inbox.</li>
-          <li>Refund rate trên dashboard cao bất thường (&gt; 10 %) — đã từng bị bug đo sai.</li>
-          <li>Click một nút mà không có gì xảy ra.</li>
+          <li>Email mới &gt; 30 phút trên Lark Mail nhưng không thấy trong reconcile.</li>
+          <li>Refund rate trên overview cao bất thường (&gt; 10 %).</li>
+          <li>Bảng Unfulfilled trống dù Shopify rõ ràng có đơn chưa giao.</li>
           <li>Customer profile bên phải trống trong khi rõ ràng có đơn Shopify.</li>
+          <li>Click một nút mà không có gì xảy ra.</li>
         </ul>
       </section>
 
       {/* ─────────── DEV MODE ─────────── */}
       <section data-dev-detail>
-        <h2 id="layout">3-panel layout</h2>
+        <h2 id="layout">3-panel layout (chỉ áp dụng <code className="text-[15px]">/lark-mail-reconcile</code>)</h2>
         <Callout variant="info" title="Sidebar app counts as panel 1">
-          Đừng add second left rail. App sidebar (StoreSwitcher + nav) đã là panel 1. Sửa CS
-          view qua <TerminalInline>&lt;ViewDropdown&gt;</TerminalInline> ở middle header, KHÔNG
+          Đừng add second left rail. App sidebar (StoreSwitcher + nav) đã là panel 1. Sửa view
+          qua <TerminalInline>&lt;ViewDropdown&gt;</TerminalInline> ở middle header, KHÔNG
           thêm column trái thứ 2. Memo:{" "}
-          <TerminalInline>feedback_three_panel_count</TerminalInline>.
+          <TerminalInline>feedback_three_panel_count</TerminalInline>.{" "}
+          <em>/cs-dashboard không phải 3-panel — đó là overview + bảng đơn (single-column scroll).</em>
         </Callout>
 
         <div className="not-prose my-6 rounded-xl border-2 bg-card overflow-hidden">
@@ -157,10 +225,10 @@ export default function Page() {
 )`}
         </CodeBlock>
 
-        <Callout variant="danger" title="PostgREST row cap đã từng đốt nóng">
-          CS Dashboard refund-rate đã show 34.3% vs sự thật 5.56% vì query refunds bị cap ở 1000
-          rows. Fix: dùng <TerminalInline>pageAll()</TerminalInline> helper khi aggregate. Memo:{" "}
-          <TerminalInline>reference_postgrest_row_cap</TerminalInline>.
+        <Callout variant="info" title="PostgREST row cap — luôn pageAll() khi aggregate">
+          PostgREST self-host cap response ở 1000 rows mặc định (PGRST_DB_MAX_ROWS). Khi
+          aggregate cross-table, luôn dùng <TerminalInline>pageAll()</TerminalInline> helper để
+          pull đầy đủ. Memo: <TerminalInline>reference_postgrest_row_cap</TerminalInline>.
         </Callout>
 
         <h2 id="tz">&quot;Today&quot; semantics</h2>

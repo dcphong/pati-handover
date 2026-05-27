@@ -227,14 +227,13 @@ export default function Page() {
         </FlowRow>
       </div>
 
-      <h2 id="refunds">Refunds — bộ phẫn liệt nhất</h2>
-      <Callout variant="warning" title="Refund amount vs subtotal trap">
-        TW &quot;Total Sales&quot; trừ <strong>line-item subtotal</strong>, không phải
-        transaction money. Restock refunds có thể có <TerminalInline>amount=0</TerminalInline>{" "}
-        (52% trong 30-day mẫu). Bulk-parse path đã từng overwrite correct values. Fix vĩnh
-        viễn: DB trigger preserve non-zero amount + backfill script. Đừng đổ lỗi 0.5–2% drift
-        cho &quot;FX noise&quot; cho đến khi check{" "}
-        <TerminalInline>raw_refunds amount=0</TerminalInline> count.
+      <h2 id="refunds">Refunds — semantics</h2>
+      <Callout variant="info" title="Refund amount vs subtotal — biết khác biệt">
+        TW &quot;Total Sales&quot; trừ <strong>line-item subtotal</strong>, không phải transaction
+        money. Restock refunds có thể có <TerminalInline>amount=0</TerminalInline> (~52% trong sample
+        30 ngày). PATI có DB trigger bảo toàn non-zero amount khi sync chạy lại, bảo đảm
+        analytics đọc đúng giá trị. Khi gặp 0.5–2% drift giữa PATI và TW, check{" "}
+        <TerminalInline>raw_refunds amount=0</TerminalInline> count trước khi nghi FX hay sync timing.
       </Callout>
 
       <Terminal

@@ -168,9 +168,8 @@ export default function Page() {
         “Tôi là <strong>timcook</strong>, chuyên viên chăm sóc khách của{" "}
         <strong>WellnessNest</strong>. Phục vụ khách bằng EN / DE / FR / IT / ES. Mang giọng brand:
         ấm áp, rõ ràng, có trách nhiệm. Suy nghĩ theo nguyên tắc MECE.” Nguồn:{" "}
-        <code>~/.openclaw/workspace/agents/timcook/SOUL.md</code>. Đổi tên <code>bezos</code> →{" "}
-        <code>timcook</code> ngày 2026-05-06 — cleanup full file đã chạy 2026-05-27, file{" "}
-        <code>.bao-…-pre-bezos-cleanup.bak</code> giữ snapshot trước cleanup.
+        <code>~/.openclaw/workspace/agents/timcook/SOUL.md</code> +{" "}
+        <code>AGENTS.md</code> + <code>IDENTITY.md</code> — coi 3 file này là source of truth.
       </Callout>
 
       <div className="not-prose my-5 grid gap-3 md:grid-cols-2">
@@ -228,11 +227,7 @@ export default function Page() {
           </p>
           <p className="mt-2">
             Cấm các câu sáo: &ldquo;checking in&rdquo;, &ldquo;monitoring&rdquo;, &ldquo;All
-            systems normal&rdquo;, &ldquo;Standing by&rdquo;.
-          </p>
-          <p className="mt-2 text-[12px] text-muted-foreground">
-            Vụ 2026-05-06 16:31 ICT: 4 tin &ldquo;checking in&rdquo; giống hệt nhau spam Telegram
-            trong 5 phút. Rule này sinh ra để chặn lặp lại.
+            systems normal&rdquo;, &ldquo;Standing by&rdquo; — chỉ gửi tin khi có sự kiện cụ thể.
           </p>
         </PersonaCard>
 
@@ -436,8 +431,7 @@ export default function Page() {
           </FlowRow>
           <p className="text-[12.5px] text-muted-foreground mt-3 leading-5">
             Báo cáo định kỳ dùng <strong>format chuẩn</strong>: title line + counts + entries
-            + outcome. Cấm filler kiểu &quot;checking in&quot; / &quot;monitoring&quot; — đã từng
-            spam 4 tin trong 5 phút.
+            + outcome. Cron trigger không có sự kiện cụ thể → close lượt rỗng, không gửi tin.
           </p>
         </WorkflowCard>
 
