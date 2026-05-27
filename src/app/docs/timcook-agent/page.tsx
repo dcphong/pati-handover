@@ -162,7 +162,7 @@ export default function Page() {
         <strong>hệ thống bên ngoài</strong> (Lark · Shopify · Recharge · ChargeFlow · …). Click vào
         các node 📄 để nhảy thẳng tới section tương ứng phía dưới.
       </p>
-      <Canvas nodes={canvasNodes} edges={canvasEdges} height={760} initialScale={0.55} />
+      <Canvas nodes={canvasNodes} edges={canvasEdges} height={760} initialScale={0.55} exportName="timcook-agent" />
 
       {/* ─── PERSONA ─────────────────────────────────────────── */}
       <h2 id="persona">Persona — luật vận hành nhìn một lần</h2>
@@ -238,7 +238,7 @@ export default function Page() {
           </p>
         </PersonaCard>
 
-        <PersonaCard tone="warn" icon={Siren} title="🚨 Trigger leo thang (Lark #openclaw-alerts)">
+        <PersonaCard tone="warn" icon={Siren} title="🚨 Trigger báo cấp trên (Lark #openclaw-alerts)">
           <ul className="ml-4 list-disc space-y-1">
             <li>Refund &gt; $50 ngoài policy</li>
             <li>Khách nhắc: lawyer, BBB, social post, dispute, chargeback</li>
@@ -251,16 +251,13 @@ export default function Page() {
           </ul>
         </PersonaCard>
 
-        <PersonaCard tone="info" icon={Scale} title="⚖ Thứ tự ưu tiên khi giằng co">
+        <PersonaCard tone="info" icon={Scale} title="⚖ Thứ tự ưu tiên khi 2 nguyên tắc va nhau">
           <ol className="ml-4 list-decimal space-y-1">
             <li>
-              <strong>Đúng &gt; nhanh</strong> — verify bằng API/file trước khi phát biểu sự kiện
+              <strong>Đúng &gt; nhanh</strong> — verify bằng API/file trước khi nói sự kiện
             </li>
             <li>
-              <strong>Outcome của khách &gt; literal policy</strong> — uốn trong giới hạn được giao
-            </li>
-            <li>
-              <strong>Leo thang &gt; bịa</strong> — đẩy supervisor còn hơn đoán tự tin
+              <strong>Outcome của khách &gt; literal policy</strong> — linh hoạt trong giới hạn được giao
             </li>
             <li>
               <strong>Source &gt; recall</strong> — đọc MEMORY/skill/API trước khi trả lời
@@ -327,7 +324,7 @@ export default function Page() {
         <WorkflowCard
           id="wf-refund"
           title="B. Refund / cancel request"
-          subtitle="Hard stops: < 120-day sub không cancel, > $50 outside policy → escalate"
+          subtitle="< 120-day sub → retention ladder (pause/skip/reschedule). > $50 ngoài policy → escalate."
           tone="amber"
         >
           <FlowRow arrows="right">
@@ -369,10 +366,29 @@ export default function Page() {
               />,
             ]}
           </FlowRow>
-          <p className="text-[12.5px] text-muted-foreground mt-3 leading-5">
-            Nếu policy fail (sub &lt; 120 ngày hoặc &gt; $50): jump sang{" "}
-            <strong>escalation-protocol</strong> → ping Lark <code>#openclaw-alerts</code> + tag supervisor.
-          </p>
+          <div className="text-[12.5px] text-muted-foreground mt-3 leading-5 space-y-2">
+            <p>
+              <strong>Nếu sub age &lt; 120 ngày (4-month minimum policy của sếp 2026-05-16):</strong>{" "}
+              KHÔNG cancel. Trả <code>POLICY_DECLINE</code>, offer customer{" "}
+              <strong>retention ladder</strong>:
+            </p>
+            <ul className="ml-5 list-disc space-y-0.5">
+              <li><strong>Pause</strong> next charge 30 / 60 / 90 ngày</li>
+              <li><strong>Skip</strong> upcoming charge, resume sau đó</li>
+              <li><strong>Reschedule</strong> sang ngày khách thấy hợp lý</li>
+            </ul>
+            <p>
+              Log <code>phase3_executions.jsonl</code> với <code>status=policy_decline</code>.
+              Cả <code>recharge_execute.py</code> + <code>email-bridge/recharge_confirmation.js</code>{" "}
+              tự enforce — đừng bypass. Source: skill{" "}
+              <code>~/.openclaw/workspace/agents/timcook/skills/cancellation-retention/SKILL.md</code>.
+            </p>
+            <p>
+              <strong>Escalate Lark <code>#openclaw-alerts</code> + tag supervisor CHỈ khi:</strong>{" "}
+              refund &gt; $50 ngoài policy, customer nhắc lawyer / BBB / chargeback, hoặc khách
+              khăng khăng từ chối toàn bộ retention ladder và cần Bao/Phong approve bypass.
+            </p>
+          </div>
         </WorkflowCard>
 
         <WorkflowCard
