@@ -180,15 +180,33 @@ export default function Page() {
           </div>
           <ul className="ml-4 list-disc text-[13px] leading-6 text-foreground/85 space-y-1">
             <li>
-              MCP server đã host sẵn. Claude Desktop / Code config nó qua <TerminalInline>~/.claude/mcp-servers.json</TerminalInline> hoặc
-              equivalent. Nó nói SQL trực tiếp tới Supabase qua tunnel cloudflared.
+              Config <strong>project-level</strong> ở <TerminalInline>.mcp.json</TerminalInline>{" "}
+              ngay root repo <TerminalInline>shopify-lark-sync</TerminalInline> (KHÔNG phải{" "}
+              <TerminalInline>~/.claude/mcp-servers.json</TerminalInline>). Khi mở repo bằng Claude
+              Code, MCP tự load. Với Claude Desktop, copy vào{" "}
+              <TerminalInline>%APPDATA%/Claude/claude_desktop_config.json</TerminalInline>.
             </li>
             <li>
-              Phép Claude: query, DDL, RPC call, mọi thứ SQL. <strong>Cẩn thận</strong> — bypass UI.
+              Server: <TerminalInline>@supabase/mcp-server-postgrest</TerminalInline> — gọi PostgREST
+              <TerminalInline>https://supabase.patiagency.com/rest/v1</TerminalInline> qua tunnel cloudflared.
+              Cung cấp 2 tool: <TerminalInline>postgrestRequest</TerminalInline>{" "}
+              (GET/POST/PUT/PATCH/DELETE) + <TerminalInline>sqlToRest</TerminalInline> (chuyển SQL → REST path).
             </li>
             <li>
-              Yêu cầu: máy của bạn (đang chạy Claude) chỉ cần mạng internet — không cần Tailscale.
-              Quyền dựa trên service-role key MCP đã được provision.
+              <strong>Giới hạn:</strong> MCP lock cứng <strong>1 schema</strong> lúc start (qua arg{" "}
+              <TerminalInline>--schema master_app</TerminalInline>). Muốn dùng schema khác phải start
+              instance MCP thứ 2 với tên khác. <strong>Không chạy DDL được</strong> — REST chỉ thao tác
+              table/view/RPC, không có <TerminalInline>CREATE TABLE</TerminalInline> hay arbitrary SQL.
+              Cần DDL → dùng <TerminalInline>/pg/query</TerminalInline> endpoint (xem Supabase doc) hoặc
+              <TerminalInline>pati-pg-direct</TerminalInline> MCP với SSH tunnel.
+            </li>
+            <li>
+              <strong>Cảnh báo bảo mật:</strong> service-role JWT + DB password đang plaintext trong{" "}
+              <TerminalInline>.mcp.json</TerminalInline>. Nếu repo public → rotate ngay. Phép Claude
+              ngang service_role = bypass RLS, bypass UI.
+            </li>
+            <li>
+              Yêu cầu: máy chạy Claude chỉ cần mạng internet — không cần Tailscale.
             </li>
           </ul>
         </div>

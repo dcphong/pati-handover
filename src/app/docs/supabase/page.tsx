@@ -449,8 +449,13 @@ export const supabase = createClient(
         ]}
       />
       <p className="text-[13px]">
-        <strong>Option B (recommended):</strong> dùng <TerminalInline>pati-supabase</TerminalInline>{" "}
-        MCP server sếp đã host cho Claude — query + DDL từ chat luôn.
+        <strong>Option B (recommended cho read):</strong> dùng{" "}
+        <TerminalInline>pati-supabase</TerminalInline> MCP server — config ở{" "}
+        <TerminalInline>.mcp.json</TerminalInline> repo, query qua PostgREST. Lock 1 schema{" "}
+        (<TerminalInline>master_app</TerminalInline>). Chi tiết ở{" "}
+        <a href="/docs/tailscale#claude-access" className="underline">Tailscale 2.6</a>.{" "}
+        <strong>KHÔNG chạy DDL được</strong> — cần DDL thì dùng <TerminalInline>/pg/query</TerminalInline>{" "}
+        endpoint hoặc psql qua SSH (Option A).
       </p>
 
       <h2 id="key-tables">Map nhanh các table quan trọng</h2>
