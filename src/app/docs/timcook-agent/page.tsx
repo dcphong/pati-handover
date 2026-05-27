@@ -24,7 +24,6 @@ import {
   TrendingUp,
   UserX,
   VolumeX,
-  Wand2,
 } from "lucide-react";
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
@@ -49,7 +48,6 @@ import {
   ports,
   tunnelHostnames,
   supabaseContainers,
-  gotchas,
   type SkillAudience,
   type CronTag,
   type ServiceTag,
@@ -171,8 +169,8 @@ export default function Page() {
         <strong>WellnessNest</strong>. Phục vụ khách bằng EN / DE / FR / IT / ES. Mang giọng brand:
         ấm áp, rõ ràng, có trách nhiệm. Suy nghĩ theo nguyên tắc MECE.” Nguồn:{" "}
         <code>~/.openclaw/workspace/agents/timcook/SOUL.md</code>. Đổi tên <code>bezos</code> →{" "}
-        <code>timcook</code> ngày 2026-05-06 — <code>IDENTITY.md</code> vẫn còn ghi &ldquo;Jeff
-        Bezos&rdquo; (xem <a href="#gotchas">Gotcha #1</a>).
+        <code>timcook</code> ngày 2026-05-06 — cleanup full file đã chạy 2026-05-27, file{" "}
+        <code>.bao-…-pre-bezos-cleanup.bak</code> giữ snapshot trước cleanup.
       </Callout>
 
       <div className="not-prose my-5 grid gap-3 md:grid-cols-2">
@@ -705,7 +703,8 @@ export default function Page() {
           />
           <StepCheck>
             Tất cả dòng đều <strong>up</strong> + tunnel trả 200/401 (không 502) + NS log mới hôm
-            nay → đứng dậy đi. Có dòng nào đỏ → nhảy xuống <a href="#gotchas">Gotchas</a>.
+            nay → đứng dậy đi. Có dòng nào đỏ → mở{" "}
+            <a href="/docs/troubleshooting" className="underline">Troubleshooting</a>.
           </StepCheck>
         </Step>
       </Steps>
@@ -865,39 +864,6 @@ export default function Page() {
         </table>
       </div>
 
-      {/* ─── GOTCHAS ─────────────────────────────────────────── */}
-      <h2 id="gotchas">Bẫy bàn giao — đọc TRƯỚC khi đụng bất cứ thứ gì</h2>
-      <p>
-        20 mìn Phong gom được trong quý vừa rồi. Mỗi cái đều từng tốn vài giờ thật.
-      </p>
-      <div className="not-prose my-6 grid gap-3 md:grid-cols-2">
-        {gotchas.map((g) => (
-          <Gotcha key={g.n} {...g} />
-        ))}
-      </div>
-
-      <Callout variant="success" title="Three open landmines — cần xử trong tuần">
-        Audit live phát hiện 3 chỗ đang lỗi <strong>cần xử ngay</strong>, không phải để tài liệu:
-        <ul className="ml-5 list-disc my-2">
-          <li>
-            <strong>IDENTITY.md vẫn ghi &ldquo;Jeff Bezos&rdquo;</strong> — đợt rename bezos →
-            timcook bỏ sót file này. Update trước khi người khác đọc.
-          </li>
-          <li>
-            <strong>Colima báo lỗi: lima not found</strong> — container vẫn chạy nhờ VM hiện tại,
-            nhưng nếu Mac mini reboot bây giờ thì không tự dậy được tới khi{" "}
-            <code>brew install lima</code>.
-          </li>
-          <li>
-            <strong>
-              Cron <code>lark-mail-sync</code> còn trỏ <code>pnl.patiagency.com</code>
-            </strong>
-            {" "}— PROD hostname giờ là <code>pnl.patigroup.com</code>. Re-point trong{" "}
-            <code>crontab -l</code>.
-          </li>
-        </ul>
-      </Callout>
-
       <PageNav href="/docs/timcook-agent" />
     </>
   );
@@ -996,29 +962,3 @@ function PersonaCard({
   );
 }
 
-function Gotcha({
-  n,
-  title,
-  body,
-  sev,
-}: {
-  n: number;
-  title: string;
-  body: string;
-  sev: "warn" | "danger";
-}) {
-  const sevClass = {
-    warn: "border-l-amber-500 bg-amber-500/[0.04]",
-    danger: "border-l-red-500 bg-red-500/[0.04]",
-  }[sev];
-  return (
-    <div className={cn("rounded-lg border border-l-4 p-3.5 text-[12.5px] leading-6", sevClass)}>
-      <div className="flex items-center gap-2 mb-1">
-        <Wand2 className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="text-[11px] font-mono text-muted-foreground">#{n}</span>
-        <span className="font-semibold text-[13px] text-foreground">{title}</span>
-      </div>
-      <div className="text-foreground/80">{body}</div>
-    </div>
-  );
-}
