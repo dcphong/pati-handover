@@ -8,6 +8,7 @@ import {
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
+import { CodeBlock } from "@/components/docs/code-block";
 import { Terminal, TerminalInline } from "@/components/docs/visuals";
 
 export const metadata = { title: "Tailscale Access — PATI Handover" };
@@ -209,6 +210,84 @@ export default function Page() {
               Yêu cầu: máy chạy Claude chỉ cần mạng internet — không cần Tailscale.
             </li>
           </ul>
+
+          <div className="mt-3 text-[12.5px] font-semibold text-emerald-700 dark:text-emerald-300">
+            Example .mcp.json (project root)
+          </div>
+          <CodeBlock language="json">
+{`{
+  "mcpServers": {
+    "pati-supabase": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-postgrest",
+        "--apiUrl",  "https://supabase.patiagency.com/rest/v1",
+        "--apiKey",  "<SUPABASE_SERVICE_ROLE_JWT>",
+        "--schema",  "master_app"
+      ]
+    },
+
+    "pati-pg-direct": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres.pati-prod:<DB_PASSWORD>@100.94.220.128:5432/postgres?sslmode=disable"
+      ]
+    }
+  }
+}`}
+          </CodeBlock>
+          <ul className="ml-4 mt-2 list-disc text-[12px] leading-6 text-foreground/75 space-y-0.5">
+            <li>
+              Lấy <TerminalInline>SUPABASE_SERVICE_ROLE_JWT</TerminalInline> ở Mac mini:{" "}
+              <TerminalInline>grep SERVICE_ROLE_KEY ~/pati-supabase/.env</TerminalInline>{" "}
+              (chmod 600 — đừng để leak).
+            </li>
+            <li>
+              Lấy <TerminalInline>DB_PASSWORD</TerminalInline>:{" "}
+              <TerminalInline>grep POSTGRES_PASSWORD ~/pati-supabase/.env</TerminalInline>.
+            </li>
+            <li>
+              Muốn 2 schema → copy block <TerminalInline>pati-supabase</TerminalInline> thành{" "}
+              <TerminalInline>pati-supabase-public</TerminalInline> (đổi tên + đổi{" "}
+              <TerminalInline>--schema</TerminalInline>). Tool MCP sẽ xuất hiện gấp đôi.
+            </li>
+            <li>
+              <TerminalInline>pati-pg-direct</TerminalInline> chỉ work khi máy chạy Claude có
+              Tailscale + Postgres bind sẵn ra Tailscale IP (chưa làm). Tạm thời cần SSH tunnel{" "}
+              <TerminalInline>ssh -L 5432:127.0.0.1:5432 timcook@100.94.220.128</TerminalInline>{" "}
+              + đổi connection string thành <TerminalInline>localhost:5432</TerminalInline>.
+            </li>
+          </ul>
+
+          <div className="mt-3 text-[12.5px] font-semibold text-emerald-700 dark:text-emerald-300">
+            Claude Desktop config (nếu dùng Claude Desktop thay vì Claude Code)
+          </div>
+          <CodeBlock language="json">
+{`// Windows: %APPDATA%\\Claude\\claude_desktop_config.json
+// macOS:   ~/Library/Application Support/Claude/claude_desktop_config.json
+//
+// Cùng schema "mcpServers" như .mcp.json — paste vào file này thay vì repo.
+
+{
+  "mcpServers": {
+    "pati-supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-postgrest",
+        "--apiUrl",  "https://supabase.patiagency.com/rest/v1",
+        "--apiKey",  "<SUPABASE_SERVICE_ROLE_JWT>",
+        "--schema",  "master_app"
+      ]
+    }
+  }
+}`}
+          </CodeBlock>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <div className="font-semibold text-[14.5px] mb-1.5">
