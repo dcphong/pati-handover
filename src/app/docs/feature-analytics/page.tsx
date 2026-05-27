@@ -58,8 +58,8 @@ export default function Page() {
     <>
       <PageHeader
         eyebrow="Core Features"
-        title="Analytics — TripleWhale Parity Clone"
-        description="50+ card báo cáo doanh thu, chi phí, ads, lợi nhuận. Thay thế TripleWhale bằng số liệu tự thu từ nguồn gốc."
+        title="Analytics — First-party SoT"
+        description="50+ card báo cáo doanh thu, chi phí, ads, lợi nhuận. Lấy thẳng từ Source of Truth của từng provider (Shopify, Klaviyo, Recharge, Meta, Google, PayPal…) — TW chỉ là một sanity check."
       />
 
       {/* ─────────── USER MODE ─────────── */}
@@ -67,8 +67,9 @@ export default function Page() {
         <h2 id="user-what">Trang analytics dùng để làm gì</h2>
         <p>
           Đây là báo cáo &ldquo;summary&rdquo; chính: doanh thu, hoàn tiền, chi phí quảng cáo,
-          giá vốn, lợi nhuận. Mục tiêu là khớp số với TripleWhale (TW) để có thể ngưng trả phí
-          TW. Hầu hết các card khớp đến từng cent; vài card còn chênh nhẹ — đã ghi nhận lý do.
+          giá vốn, lợi nhuận. <strong>Mục tiêu là số đúng từ nguồn gốc</strong> — Shopify Admin
+          API trả về bao nhiêu thì card hiện bấy nhiêu, không cộng/trừ thêm để khớp TW. Việc
+          TW khớp hay không là kết quả phụ, không phải mục tiêu.
         </p>
 
         <h2 id="user-when-call">Khi nào báo dev</h2>
@@ -82,20 +83,36 @@ export default function Page() {
 
       {/* ─────────── DEV MODE ─────────── */}
       <section data-dev-detail>
-      <h2 id="goal">Mục tiêu — penny-perfect match TW</h2>
+      <h2 id="goal">Mục tiêu — Source of Truth, không phải parity TW</h2>
       <p>
-        Mỗi card analytics phải khớp TripleWhale &quot;<strong>penny-perfect</strong>&quot;
-        (hoặc explain được tại sao không khớp). Khi không match → đào exact data source TW
-        (
-        <a href="https://triplewhale.readme.io" target="_blank" rel="noreferrer">
-          dev portal
-        </a>
-        ,{" "}
-        Playwright capture TW's <TerminalInline>app.triplewhale.com/api/v2/summary-page/willy-metrics-*</TerminalInline>) trước khi nói
-        &quot;best we can do&quot;.
+        Mỗi card phải khớp <strong>provider Source of Truth</strong> (Shopify Admin order
+        report, Klaviyo Reporting API, Recharge subscription list, Meta Ads Insights API,
+        Google Ads <TerminalInline>customer_client</TerminalInline> spend, PayPal Transaction
+        Search, OANDA FX window-avg, v.v.). Khi nghi ngờ → đào tận provider doc / dev portal /
+        official API response, sửa pipeline PATI khớp với upstream.
       </p>
+      <p>
+        TripleWhale (TW) chỉ là <em>third-party renderer</em> của cùng các provider trên.{" "}
+        <strong>TW khớp là kết quả phụ.</strong> Khi PATI ≠ TW, khả năng cao TW sai (TW có
+        lúc serve stale cache, có lúc filter ngầm, đôi khi connector của TW gãy). Validate{" "}
+        PATI vs <em>provider thật</em>, không phải PATI vs TW.
+      </p>
+      <Callout variant="info" title="Bao giờ vẫn dùng TW làm tham chiếu?">
+        TW vẫn hữu ích để spot regression nhanh (đã sống cùng số liệu này nhiều năm). Khi
+        PATI và TW lệch lớn bất ngờ → check cả hai phía <strong>cùng vs provider gốc</strong>,
+        không chỉ điều chỉnh PATI cho khớp TW. Memory{" "}
+        <TerminalInline>feedback_iteration_style</TerminalInline> + dump TW dev portal{" "}
+        <a href="https://triplewhale.readme.io" target="_blank" rel="noreferrer" className="underline">
+          triplewhale.readme.io
+        </a>{" "}
+        cho biết TW lấy số ở field nào — dùng để verify, không để mimic.
+      </Callout>
 
-      <h2 id="parity-status">Parity status (snapshot 2026-05-16)</h2>
+      <h2 id="parity-status">TW comparison snapshot (informational, 2026-05-16)</h2>
+      <p className="text-[13px] text-muted-foreground">
+        Bảng dưới so PATI với TW tại 1 thời điểm. Mục đích: phát hiện regression sớm. Lệch
+        không phải lỗi tự động — nếu PATI khớp provider, lệch TW là vấn đề của TW.
+      </p>
       <div className="not-prose my-6 rounded-xl border bg-card overflow-hidden">
         <div className="grid grid-cols-12 px-4 py-2 bg-muted/40 text-[11px] uppercase tracking-widest text-muted-foreground font-semibold border-b">
           <div className="col-span-1"></div>
@@ -279,13 +296,15 @@ export default function Page() {
         />
       </div>
 
-      <Callout variant="tip" title="Research upstream, don't settle">
-        Khi card không match TW, <strong>đi đào</strong> exact data source TW (dev portal,
-        Playwright capture) trước khi nói &quot;best we can do&quot;. Document mỗi gap&apos;s
-        root cause. Memo: <TerminalInline>feedback_iteration_style</TerminalInline>.
+      <Callout variant="tip" title="Debug pipeline against provider SoT, not TW">
+        Khi card lệch: kéo response thật từ <strong>provider gốc</strong> (Shopify Admin API,
+        Klaviyo Reporting, Meta Insights, etc.) bằng curl hoặc Playwright, so với row trong{" "}
+        <TerminalInline>raw_*</TerminalInline> table của PATI. Lệch ở đâu thì pipeline sai
+        ở đó. <em>Không</em> đảo ngược logic để cố khớp TW — TW có thể đang sai. Memo:{" "}
+        <TerminalInline>feedback_iteration_style</TerminalInline>.
       </Callout>
 
-      <h2 id="tw-dump">TW dump pipeline (audit fallback)</h2>
+      <h2 id="tw-dump">TW dump pipeline (sanity overlay, optional)</h2>
       <div className="not-prose my-5 rounded-xl border bg-card p-4">
         <div className="flex items-center gap-2 mb-2">
           <Search className="h-4 w-4 text-foreground/70" />
@@ -294,9 +313,10 @@ export default function Page() {
           </div>
         </div>
         <div className="text-[13px] leading-6 text-foreground/85">
-          Playwright capture mỗi sáng từ TW dashboard. Dùng làm <em>overlay verification</em>{" "}
-          khi card lệch. <strong>Cẩn thận:</strong> file dump KHÔNG được zero-fill cards mà API
-          thực tế đang non-zero (đã từng silent-zero Recharge group).
+          Playwright capture mỗi sáng từ TW dashboard. Dùng làm <em>second-opinion</em> để
+          spot regression, KHÔNG phải target. <strong>Cẩn thận:</strong> file dump KHÔNG được
+          zero-fill cards mà API thực tế đang non-zero (đã từng silent-zero Recharge group —
+          memo <TerminalInline>reference_tw_audit_overlay_zero_trap</TerminalInline>).
         </div>
       </div>
 

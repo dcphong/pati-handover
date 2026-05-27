@@ -69,9 +69,9 @@ const featureCards = [
     tags: ["python", "next-api", "supabase"],
   },
   {
-    title: "Analytics (TW Parity)",
+    title: "Analytics (First-party SoT)",
     description:
-      "TripleWhale clone. raw_orders, raw_refunds, raw_ad_spend, v_stvf, summary_metrics RPC.",
+      "Provider Source-of-Truth analytics. raw_orders, raw_refunds, raw_ad_spend, v_stvf, summary_metrics RPC. TW chỉ là sanity check.",
     userDescription: "Báo cáo doanh thu, chi phí, hoàn tiền và lợi nhuận phục vụ business.",
     href: "/docs/feature-analytics",
     Icon: Gauge,
