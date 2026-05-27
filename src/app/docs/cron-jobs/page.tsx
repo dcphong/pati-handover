@@ -12,88 +12,274 @@ import {
 
 export const metadata = { title: "Cron Jobs — PATI Handover" };
 
+// ── Ground truth pulled from Mac mini 2026-05-27 ─────────────────────────────
+// Source: `bash scripts/dump-cron-schedules.sh` on Mac mini reads each
+// `~/Library/LaunchAgents/com.pati.*.plist` and prints StartInterval /
+// StartCalendarInterval. 31 cron-like agents + 2 KeepAlive persistent services
+// (chargeflow-trigger-server, web) — the persistent ones are listed separately
+// since the schedule grid only makes sense for things that fire on a clock.
+
 const macMiniJobs: CronJob[] = [
+  // ── Frequent — interval-based ──────────────────────────────────────────────
   {
-    name: "shopify-larkbase-sync",
-    hours: [5, 13],
+    name: "sync-shopify",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 15,
     runner: "macmini",
-    what: "Shopify orders → Lark Base (2× ngày VN)",
+    what: "Shopify orders → shopify_orders (every 15 min, :00/:15/:30/:45)",
   },
   {
-    name: "chargeflow-sync-ui",
+    name: "sync-shopify-legacy",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 15,
+    runner: "macmini",
+    what: "Date-window Shopify backfill (every 15 min)",
+  },
+  {
+    name: "sync-providers",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 15,
+    runner: "macmini",
+    what: "Ads spend Meta/Google/TikTok/Amazon/PayPal (4×/h)",
+  },
+  {
+    name: "sync-payments",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 30,
+    runner: "macmini",
+    what: "Recharge subs + balance_transactions (2×/h, :05/:35)",
+  },
+  {
+    name: "sync-tracking-timeline",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 30,
+    runner: "macmini",
+    what: "Tracking timeline matview (every 30 min)",
+  },
+  {
+    name: "sync-custom-tables",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 30,
+    runner: "macmini",
+    what: "Custom table sync (every 30 min)",
+  },
+  {
+    name: "sync-lark-mail",
     hours: Array.from({ length: 24 }, (_, i) => i),
     every: 5,
     runner: "macmini",
-    what: "ChargeFlow CDP — every 5 min",
+    what: "Lark Mail messages reconcile (every 5 min — NOT 2×/ngày)",
   },
   {
-    name: "lark-mail-sync",
-    hours: [6, 18],
-    runner: "macmini",
-    what: "Lark Mail messages — 2× ngày",
-  },
-  {
-    name: "shopify-fulfillment",
+    name: "sync-chargeflow-ui",
     hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 5,
     runner: "macmini",
-    what: "Auto-submit stuck FOs — hourly",
+    what: "ChargeFlow UI parity (every 5 min, CDP Chrome)",
   },
   {
-    name: "north-stars-refresh",
-    hours: [23],
+    name: "sync-chargeflow-disputes",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 15,
     runner: "macmini",
-    what: "Refresh 5 matviews (nightly)",
+    what: "ChargeFlow disputes pull (every 15 min)",
+  },
+  {
+    name: "sync-disputes-first-party",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 5,
+    runner: "macmini",
+    what: "First-party disputes (every 5 min)",
+  },
+  {
+    name: "chargeflow-evidence-collect",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 15,
+    runner: "macmini",
+    what: "Evidence auto-collect + upload (every 15 min, openclaw script)",
+  },
+  {
+    name: "session-warmer",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 20,
+    runner: "macmini",
+    what: "Keep Chrome CDP cookies alive (every 20 min, openclaw)",
+  },
+  {
+    name: "submit-stuck-fulfillments",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 60,
+    runner: "macmini",
+    what: "Auto-submit Shopify FOs left UNSUBMITTED (hourly)",
+  },
+  {
+    name: "reroute-us-vnh",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 60,
+    runner: "macmini",
+    what: "Move US-bound mis-routed FOs off VNH (hourly)",
+  },
+  {
+    name: "cron-watchdog",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 10,
+    runner: "macmini",
+    what: "Health-check + alert if any cron stale (every 10 min)",
+  },
+  {
+    name: "probe-tunnel",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 5,
+    runner: "macmini",
+    what: "Cloudflared tunnel health probe (every 5 min)",
+  },
+
+  // ── Daily — calendar-based ────────────────────────────────────────────────
+  {
+    name: "pgbackup",
+    hours: [3],
+    runner: "macmini",
+    what: "pg_dump → ~/pati-supabase/backups/ (03:00 VN)",
+  },
+  {
+    name: "sync-refund-backfill",
+    hours: [2],
+    runner: "macmini",
+    what: "Refund history backfill (02:00 VN)",
+  },
+  {
+    name: "sync-fulfillment",
+    hours: [5],
+    runner: "macmini",
+    what: "Shopify fulfillment + tracking pull (05:00 VN)",
+  },
+  {
+    name: "sync-processing",
+    hours: [5],
+    runner: "macmini",
+    what: "NS#1 processing matview (05:10 VN)",
+  },
+  {
+    name: "sync-delivery",
+    hours: [5],
+    runner: "macmini",
+    what: "NS#2 OTIF matview (05:20 VN)",
+  },
+  {
+    name: "sync-stock-cover",
+    hours: [5],
+    runner: "macmini",
+    what: "NS#3 stock cover matview (05:30 VN)",
+  },
+  {
+    name: "sync-shopify-products",
+    hours: [5],
+    runner: "macmini",
+    what: "raw_variants + COGS (05:45 VN)",
+  },
+  {
+    name: "vnh-daily-auto",
+    hours: [6],
+    runner: "macmini",
+    what: "VNH scan → classify → push to THG (06:00 VN)",
+  },
+  {
+    name: "sync-cogs-full",
+    hours: [6],
+    runner: "macmini",
+    what: "Lark Base COGS catalog full re-pull (06:30 VN)",
+  },
+  {
+    name: "sync-flexport",
+    hours: [6],
+    runner: "macmini",
+    what: "Flexport inventory + shipments (06:30 VN)",
+  },
+  {
+    name: "vnh-inventory",
+    hours: [11],
+    runner: "macmini",
+    what: "THG inventory snapshot (11:00 VN)",
+  },
+
+  // ── Multi-time per day ────────────────────────────────────────────────────
+  {
+    name: "sync-shopify-larkbase",
+    hours: [5, 13],
+    runner: "macmini",
+    what: "Shopify → Lark Base — APPEND-only (05:00 + 13:00 VN)",
+  },
+  {
+    name: "vnh-tracking-poll",
+    hours: [9, 21],
+    runner: "macmini",
+    what: "Poll THG tracking → fulfill Shopify (09:00 + 21:00 VN)",
+  },
+  {
+    name: "sync-delivery-report",
+    hours: [0, 3, 6, 9, 12, 15, 18, 21],
+    runner: "macmini",
+    what: "Delivery report (every 3h at :10)",
+  },
+  {
+    name: "sync-processing-report",
+    hours: [0, 3, 6, 9, 12, 15, 18, 21],
+    runner: "macmini",
+    what: "Processing report (every 3h at :05)",
   },
 ];
 
+// GitHub Actions workflows currently enabled with cron triggers.
+//
+// Note: 10/14 `.github/workflows/*.yml` have their `cron:` lines COMMENTED OUT
+// (preserved for `workflow_dispatch` manual trigger only). The 4 below are the
+// only ones with active scheduled runs. See `manualOnlyGha` for the rest.
 const ghaJobs: CronJob[] = [
-  {
-    name: "analytics_providers_daily.yml",
-    hours: [3],
-    runner: "gha",
-    what: "Klaviyo + Google Ads",
-  },
-  {
-    name: "meta_ads_hourly.yml",
-    hours: Array.from({ length: 24 }, (_, i) => i),
-    runner: "gha",
-    what: "Meta Ads spend — hourly",
-  },
-  {
-    name: "shopify_payments_balance_daily.yml",
-    hours: [4],
-    runner: "gha",
-    what: "Daily payments balance snapshot",
-  },
-  {
-    name: "shopify_products_daily.yml",
-    hours: [2],
-    runner: "gha",
-    what: "Products + variant cost",
-  },
-  {
-    name: "lark_mail_sync.yml",
-    hours: [7, 19],
-    runner: "gha",
-    what: "Backup Lark Mail sync (fallback)",
-  },
-  {
-    name: "north_stars_daily.yml",
-    hours: [23],
-    runner: "gha",
-    what: "Lark notification + matview refresh trigger",
-  },
   {
     name: "cron_watchdog.yml",
     hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 10,
     runner: "gha",
-    what: "Health-check + alert nếu cron stale",
+    what: "Health-check + alert (every 10 min)",
   },
   {
-    name: "vnh_daily_auto.yml",
-    hours: [5],
+    name: "custom_table_sync.yml",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 30,
     runner: "gha",
-    what: "VNH (Vietnam Hanoi) daily",
+    what: "Custom table sync (every 30 min)",
+  },
+  {
+    name: "lark_mail_sync.yml",
+    hours: Array.from({ length: 24 }, (_, i) => i),
+    every: 5,
+    runner: "gha",
+    what: "Lark Mail sync — fallback to Mac mini (every 5 min)",
+  },
+];
+
+const manualOnlyGha = [
+  { name: "analytics_providers_daily.yml", what: "Klaviyo + Google Ads" },
+  { name: "daily_sync.yml", what: "Legacy shopify_orders sync (moved to Mac mini)" },
+  { name: "deploy-macmini.yml", what: "Deploy hooks for Mac mini" },
+  { name: "meta_ads_hourly.yml", what: "Meta Ads spend (now in sync-providers Mac mini)" },
+  { name: "north_stars_daily.yml", what: "North Stars + Lark notification" },
+  { name: "shopify_fulfillment_sync.yml", what: "Fulfillment sync (replaced by Mac mini)" },
+  { name: "shopify_payments_balance_daily.yml", what: "Daily payments balance" },
+  { name: "shopify_products_daily.yml", what: "Products + variant cost" },
+  { name: "vnh_daily_auto.yml", what: "VNH daily (now Mac mini)" },
+  { name: "vnh_inventory_sync.yml", what: "VNH inventory (now Mac mini)" },
+  { name: "vnh_tracking_poll.yml", what: "VNH tracking poll (now Mac mini)" },
+];
+
+const persistentServices = [
+  {
+    name: "com.pati.web",
+    what: "Next.js production server (KeepAlive, port 3000 → cloudflared tunnel → pnl.patigroup.com)",
+  },
+  {
+    name: "com.pati.chargeflow-trigger-server",
+    what: "HTTP server for 'Sync now' button (KeepAlive, port 9876 → chargeflow-trigger.patiagency.com)",
   },
 ];
 
@@ -105,7 +291,7 @@ export default function Page() {
       <PageHeader
         eyebrow="Deployment"
         title="Cron Jobs"
-        description="Lịch chạy của hệ thống — khi nào sync gì. Tổng cộng ~30 job giữa Mac mini + GitHub Actions."
+        description="Lịch chạy thực tế của hệ thống — pulled từ Mac mini launchd plists + GitHub Actions ngày 2026-05-27. 31 cron Mac mini + 3 GH Actions cron + 2 persistent services."
       />
 
       {/* ─────────── USER MODE ─────────── */}
@@ -130,18 +316,85 @@ export default function Page() {
       <RunnerLegend />
       <Callout variant="info" title="Quy tắc">
         Job có Playwright / browser session → <strong>Mac mini</strong>. Job &gt; 5 phút →
-        <strong>Mac mini</strong>. Job hourly nhẹ → <strong>GH Actions</strong> hoặc{" "}
-        <strong>Mac mini web API</strong>. Cron gọi{" "}
-        <TerminalInline>https://pnl.patigroup.com/api/cron/*</TerminalInline> với{" "}
-        <TerminalInline>CRON_SECRET</TerminalInline> header; route handler chạy trên{" "}
-        <TerminalInline>com.pati.web</TerminalInline>.
+        <strong>Mac mini</strong>. Mọi cron production hiện đã rời GH Actions, GH Actions chủ yếu
+        chỉ còn workflow_dispatch (manual) như backup.
       </Callout>
 
       <h2 id="schedule">Schedule grid (Asia/Ho_Chi_Minh)</h2>
       <p>
-        Mỗi ô = 1 lần job chạy trong giờ đó. Chấm tròn nhỏ = job chạy sub-hour (vd every 5 min).
+        Mỗi ô vuông = job chạy ở giờ đó. Chấm tròn nhỏ = sub-hour (vd <em>every 5/15/30 min</em>) — dot xuất hiện ở mọi giờ.
+        Số lượng job khá nhiều — scroll xuống cuối bảng.
       </p>
       <ScheduleGrid jobs={allJobs} />
+
+      <Callout variant="warning" title="3 chỗ bảng cũ sai vs thực tế">
+        <ul className="ml-5 list-disc space-y-1">
+          <li>
+            <TerminalInline>sync-lark-mail</TerminalInline> chạy <strong>mỗi 5 phút</strong>{" "}
+            (StartInterval=300s), KHÔNG phải 2× ngày.
+          </li>
+          <li>
+            Plist Chargeflow thực tế là <TerminalInline>sync-chargeflow-ui</TerminalInline>
+            {" + "}<TerminalInline>sync-chargeflow-disputes</TerminalInline>
+            {" + "}<TerminalInline>chargeflow-evidence-collect</TerminalInline>
+            {" + "}<TerminalInline>chargeflow-trigger-server</TerminalInline> — không phải
+            chỉ 1 plist tên <TerminalInline>chargeflow-sync-ui</TerminalInline>.
+          </li>
+          <li>
+            Shopify TS sync (<TerminalInline>/api/analytics/sync/shopify</TerminalInline>) ghi vào{" "}
+            <TerminalInline>shopify_orders</TerminalInline> chứ KHÔNG phải{" "}
+            <TerminalInline>raw_orders</TerminalInline>. Không có route nào write trực tiếp{" "}
+            <TerminalInline>raw_orders</TerminalInline> trong repo.
+          </li>
+        </ul>
+      </Callout>
+
+      <h2 id="persistent">Persistent services (KeepAlive)</h2>
+      <p>
+        Không phải cron — launchd boot lên rồi giữ chạy 24/7. Restart tự động nếu process exit.
+      </p>
+      <div className="not-prose my-4 rounded-xl border bg-card overflow-hidden">
+        <table className="w-full text-[12px]">
+          <thead className="bg-muted/40">
+            <tr>
+              <th className="text-left px-3 py-2 font-semibold w-[320px]">Plist</th>
+              <th className="text-left px-3 py-2 font-semibold">Mô tả</th>
+            </tr>
+          </thead>
+          <tbody>
+            {persistentServices.map((s) => (
+              <tr key={s.name} className="border-t">
+                <td className="px-3 py-2 font-mono text-[12px]">{s.name}</td>
+                <td className="px-3 py-2 text-muted-foreground">{s.what}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="manual-only">GitHub Actions workflows — manual only</h2>
+      <p>
+        File yml tồn tại nhưng <TerminalInline>cron:</TerminalInline> dòng đã được comment ra.
+        Chỉ chạy khi user trigger qua <TerminalInline>workflow_dispatch</TerminalInline>.
+      </p>
+      <div className="not-prose my-4 rounded-xl border bg-card overflow-hidden">
+        <table className="w-full text-[12px]">
+          <thead className="bg-muted/40">
+            <tr>
+              <th className="text-left px-3 py-2 font-semibold w-[320px]">Workflow</th>
+              <th className="text-left px-3 py-2 font-semibold">Mô tả</th>
+            </tr>
+          </thead>
+          <tbody>
+            {manualOnlyGha.map((w) => (
+              <tr key={w.name} className="border-t">
+                <td className="px-3 py-2 font-mono text-[12px]">{w.name}</td>
+                <td className="px-3 py-2 text-muted-foreground">{w.what}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <h2 id="trigger">Trigger từ UI / dashboard</h2>
       <p>
@@ -163,25 +416,36 @@ export default function Page() {
         ]}
       />
 
-      <h2 id="macmini-cron">Xem crontab trên Mac mini</h2>
+      <h2 id="macmini-cron">Xem launchd jobs trên Mac mini</h2>
       <Terminal
         host="you@laptop"
         cwd="~"
         lines={[
           { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
-          { prompt: "timcook@mini $", cmd: "crontab -l" },
+          { prompt: "timcook@mini $", cmd: "launchctl list | grep com.pati. | wc -l" },
+          { divider: true, label: "expected ≈ 33" },
+          { out: "33", tone: "ok" },
+          { prompt: "timcook@mini $", cmd: "# Schedule chi tiết của 1 plist:" },
+          { prompt: "timcook@mini $", cmd: "/usr/libexec/PlistBuddy -c 'Print :StartInterval' \\" },
+          { prompt: "", cmd: "  ~/Library/LaunchAgents/com.pati.sync-lark-mail.plist" },
+          { divider: true, label: "expected" },
+          { out: "300", tone: "ok" },
+          { prompt: "timcook@mini $", cmd: "# Dump toàn bộ schedule:" },
+          { prompt: "timcook@mini $", cmd: "bash ~/Coding_workspace/PATI/shopify-lark-sync/scripts/dump-cron-schedules.sh" },
         ]}
       />
       <Callout variant="warning" title="Job daily_sync đã move (2026-05-20)">
         Trước đây <TerminalInline>daily_sync.yml</TerminalInline> chạy trên GH Actions. Đã move
-        sang Mac mini cron 2× ngày (05h + 13h VN). <strong>APPEND-only</strong> — re-run sẽ tạo
-        duplicate rows. Memo:{" "}
+        sang Mac mini cron 2× ngày (05h + 13h VN) qua{" "}
+        <TerminalInline>com.pati.sync-shopify-larkbase</TerminalInline>.{" "}
+        <strong>APPEND-only</strong> — re-run sẽ tạo duplicate rows. Memo:{" "}
         <TerminalInline>project_shopify_larkbase_macmini_cron</TerminalInline>.
       </Callout>
 
       <h2 id="alerts">Stale-cron alerts</h2>
       <p>
-        Cron watchdog chạy 1×/giờ từ Mac mini launchd hoặc workflow fallback. Đọc{" "}
+        Cron watchdog chạy mỗi 10 phút (<TerminalInline>com.pati.cron-watchdog</TerminalInline> +
+        backup <TerminalInline>cron_watchdog.yml</TerminalInline> GH Actions). Đọc{" "}
         <TerminalInline>sync_logs</TerminalInline> latest{" "}
         <TerminalInline>completed_at</TerminalInline> per pipeline. Nếu {">"} 25h từ last
         success → ping Lark webhook.

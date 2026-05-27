@@ -97,27 +97,36 @@ export default function Page() {
 
       <h2 id="dual-pipeline">2 pipeline song song — đừng nhầm</h2>
       <p>
-        Cả 2 cùng đọc Shopify, nhưng mục đích khác nhau. <strong>shopify_orders là SoT</strong>{" "}
-        — raw_orders chỉ là analytics-shaped projection có thể re-sync.
+        Cả 2 cùng đọc Shopify và <strong>cùng upsert vào </strong>
+        <TerminalInline>master_app.shopify_orders</TerminalInline> (SoT duy nhất). Khác biệt
+        nằm ở filter, log table, và lúc nào được fire.
       </p>
       <div className="not-prose my-6 grid sm:grid-cols-2 gap-3">
         <PipelineCard
           tone="emerald"
-          name="/api/sync"
-          runtime="Python 3.12"
-          strategy="Date-window (re-fetch full ranges)"
-          cron="Mac mini 2× ngày (05h + 13h VN)"
-          target="shopify_orders (SoT)"
+          name="/api/sync (Python)"
+          runtime="Python 3.12 — sync/run.py + sync/modules/pipeline.py"
+          strategy="created_at_min/max (date-window) — re-fetch ranges"
+          cron="Mac mini com.pati.sync-shopify 4×/h (:00/:15/:30/:45)"
+          target="shopify_orders · log → sync_logs (số nhiều)"
         />
         <PipelineCard
           tone="violet"
-          name="/api/analytics/sync/shopify"
-          runtime="TypeScript / Mac mini Next.js API"
-          strategy="updated_at cursor (incremental)"
-          cron="Hourly / on-demand"
-          target="raw_orders (analytics)"
+          name="/api/analytics/sync/shopify (TS)"
+          runtime="TypeScript native fetch — Mac mini Next.js API"
+          strategy="updated_at_min cursor — incremental from latest DB row − 1h"
+          cron="On-demand: user click 'Refresh' trên /v2 analytics"
+          target="shopify_orders + raw_refunds · log → sync_log (số ít)"
         />
       </div>
+      <Callout variant="info" title="Sai lệch bảng cũ">
+        Phiên bản cũ vẽ TS sync → <TerminalInline>raw_orders</TerminalInline>. Không có route
+        nào trong repo write trực tiếp <TerminalInline>raw_orders</TerminalInline>. TS sync
+        ghi <TerminalInline>shopify_orders</TerminalInline> (conflict trên{" "}
+        <TerminalInline>(order_number, variant_sku)</TerminalInline>) +{" "}
+        <TerminalInline>raw_refunds</TerminalInline>. Memory{" "}
+        <TerminalInline>project_dual_shopify_syncs</TerminalInline> là source of truth.
+      </Callout>
 
       <h2 id="orders-flow">Order sync — đường data đi</h2>
       <div className="not-prose my-6 rounded-xl border bg-card p-4 sm:p-5">
