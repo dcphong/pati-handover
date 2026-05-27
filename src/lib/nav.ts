@@ -42,6 +42,7 @@ export const navigation: NavSection[] = [
     title: "Access",
     items: [
       { title: "Tailscale Access", href: "/docs/tailscale" },
+      { title: "Auth & Credentials", href: "/docs/auth-credentials", badge: "new" },
     ],
   },
   {
@@ -74,7 +75,6 @@ export const navigation: NavSection[] = [
     items: [
       { title: "Overview", href: "/docs/cs-of" },
       { title: "Payment Request — Shipping", href: "/docs/cs-of/payment-request" },
-      { title: "Timcook (Training)", href: "/docs/timcook" },
       { title: "Timcook Agent", href: "/docs/timcook-agent", badge: "new" },
     ],
   },

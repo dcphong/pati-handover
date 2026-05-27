@@ -9,12 +9,14 @@ import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import { CodeBlock } from "@/components/docs/code-block";
+import { ExternalLinkCard } from "@/components/docs/external-link-card";
 import {
   FlowNode,
   FlowRow,
   Terminal,
   TerminalInline,
 } from "@/components/docs/visuals";
+import { LARK } from "@/lib/external-links";
 
 export const metadata = { title: "COGS Catalog — PATI Handover" };
 
@@ -35,6 +37,16 @@ export default function Page() {
         title="COGS Catalog"
         description="Giá vốn sản phẩm gom từ Lark Base, làm nền cho mọi báo cáo lợi nhuận. Sai ở đây thì P&L sai theo."
       />
+
+      <div className="my-5">
+        <ExternalLinkCard
+          href={LARK.cogs}
+          title="Mở COGS Lark Base — nguồn ops nhập giá vốn"
+          pathHint="wiki/JhiDwNmtwizHQ6kTV8slDMJZgOr?table=tblSsTpnEZoAnqEu"
+          desc="Per-shipment COGS catalog — ops nhập 6 chi phí (production, barcode, lab, transport, designer, fulfillment). Sync về master_app.cogs_full_catalog mỗi ngày 06:30 ICT."
+          icon={Database}
+        />
+      </div>
 
       {/* ─────────── USER MODE ─────────── */}
       <section data-user-detail>
@@ -66,8 +78,11 @@ export default function Page() {
         <h2 id="user-update">Khi cần sửa giá vốn</h2>
         <ul>
           <li>
-            Sửa hàng (PO) trên <strong>Lark Base — COGS rollup</strong>. Đây là nguồn duy nhất
-            được dashboard tin.
+            Sửa hàng (PO) trên{" "}
+            <a href={LARK.cogs} target="_blank" rel="noreferrer" className="underline">
+              COGS Lark Base
+            </a>{" "}
+            (<TerminalInline>tblSsTpnEZoAnqEu</TerminalInline>). Đây là nguồn duy nhất được dashboard tin.
           </li>
           <li>
             Hệ thống đồng bộ lại mỗi ngày một lần. Cần cập nhật ngay → bấm{" "}

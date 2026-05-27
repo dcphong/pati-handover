@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import { CodeBlock } from "@/components/docs/code-block";
+import { ExternalLinkRow } from "@/components/docs/external-link-card";
 import {
   Step,
   Steps,
@@ -16,6 +17,7 @@ import {
   Terminal,
   TerminalInline,
 } from "@/components/docs/visuals";
+import { LARK } from "@/lib/external-links";
 
 export const metadata = { title: "Best Fulfillment — PATI Handover" };
 
@@ -26,6 +28,19 @@ export default function Page() {
         eyebrow="Operations"
         title="Best Fulfillment Shipping"
         description="Bảng giá vận chuyển Best — refresh ~1 lần/tháng bằng CSV export, không có API live."
+      />
+
+      <ExternalLinkRow
+        links={[
+          {
+            href: LARK.bestShippingRates,
+            title: "Best — Shipping Rate Card (Lark)",
+            pathHint: "wiki/.../table=tbljgr7rhuZPNob4",
+            desc: "Ops nhập rate card hằng tháng. CSV export từ đây → repo → import script.",
+            icon: Database,
+            tone: "emerald",
+          },
+        ]}
       />
 
       {/* ─────────── USER MODE ─────────── */}

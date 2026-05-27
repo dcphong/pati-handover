@@ -3,6 +3,7 @@ import {
   BarChart3,
   Cable,
   Database,
+  Download,
   KeyRound,
   Mail,
   Repeat,
@@ -398,6 +399,34 @@ export default function Page() {
         description="Danh mục các khóa cấu hình kết nối Shopify / Supabase / Lark / các provider khác. Trang này thuần kỹ thuật."
       />
 
+      <div className="not-prose my-6 rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.04] p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+              <Download className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="font-semibold text-[14.5px] leading-tight mb-0.5">
+                Tải file .env mẫu
+              </div>
+              <div className="text-[12.5px] text-muted-foreground leading-5">
+                File đã có sẵn các khóa cấu hình production. Dùng để dev chạy local hoặc khôi
+                phục Mac mini. <strong>Tuyệt đối không commit hoặc chia sẻ ngoài team.</strong>
+              </div>
+            </div>
+          </div>
+          <a
+            href="https://drive.google.com/file/d/1NyGm_2RraF-aGukJijqkqVPbGXXNgQnG/view?usp=drive_link"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-500/15 px-3.5 py-2 text-[13px] font-semibold text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-200 transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Mở Google Drive
+          </a>
+        </div>
+      </div>
+
       {/* ─────────── USER MODE ─────────── */}
       <section data-user-detail>
         <h2 id="user-what">Tóm tắt</h2>
@@ -460,7 +489,7 @@ export default function Page() {
         hoặc push main để GitHub Actions rebuild + restart Mac mini web.
       </Callout>
 
-      <h2 id="gotchas">2 gotcha thường gặp</h2>
+      <h2 id="gotchas">2 cạm bẫy thường gặp</h2>
       <div className="not-prose my-5 grid sm:grid-cols-2 gap-3">
         <div className="rounded-xl border-2 border-amber-500/40 bg-amber-500/[0.04] p-4">
           <div className="flex items-center gap-2 mb-2">

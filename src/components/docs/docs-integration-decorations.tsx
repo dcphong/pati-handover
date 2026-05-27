@@ -45,8 +45,16 @@ export function DocsIntegrationDecorations() {
     }
 
     return () => {
+      // Defer unmount qua microtask để tránh "synchronously unmount while React
+      // is rendering" race khi Next.js client-route đổi page.
       for (const root of roots) {
-        root.unmount();
+        queueMicrotask(() => {
+          try {
+            root.unmount();
+          } catch {
+            // Root đã bị detach trước cleanup — bỏ qua.
+          }
+        });
       }
     };
   }, []);

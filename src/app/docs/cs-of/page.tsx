@@ -3,7 +3,6 @@ import {
   ArrowRight,
   Banknote,
   Bot,
-  GraduationCap,
   Headphones,
   Mail,
   ShieldAlert,
@@ -34,16 +33,9 @@ const subpages: Subpage[] = [
     status: "ready",
   },
   {
-    href: "/docs/timcook",
-    title: "Timcook — Training Openclaw",
-    desc: "Phần Phong giữ: scope, agenda, checklist và follow-up khi training cho người mới về Openclaw.",
-    icon: GraduationCap,
-    status: "ready",
-  },
-  {
     href: "/docs/timcook-agent",
     title: "Timcook Agent — Skill + Workflow",
-    desc: "Ảnh chụp live AI agent timcook chạy trên Mac mini: persona, 19 skill, 20 cron pipeline, 33 LaunchAgent, canvas trực quan.",
+    desc: "AI agent timcook (Openclaw) đang chạy thay CS hằng ngày trên Mac mini: persona, 19 skill, 20 cron pipeline, 33 LaunchAgent, canvas + workflow visual. Train Openclaw = thêm/sửa skill ở đây.",
     icon: Bot,
     status: "ready",
     badge: "new",
@@ -74,13 +66,13 @@ export default function Page() {
       <PageHeader
         eyebrow="CS & OF"
         title="Customer Support & Order Fulfillment"
-        description="Section gom mọi workflow + tài liệu liên quan tới CS và OF. Bao gồm payment request, training Openclaw, agent timcook, và các quy trình xử case hàng ngày."
+        description="Section gom mọi workflow + tài liệu liên quan tới CS và OF. Bao gồm payment request shipping cost và agent timcook tự hành."
       />
 
       <Callout variant="info" title="Section này dành cho ai">
         <p>
-          Mọi thứ liên quan đến đội CS &amp; OF — quy trình ops Phong từng giữ tay, agent tự hành
-          timcook đang chạy thay, và training cho người mới. Trang nào cũng có thể đọc độc lập.
+          Mọi thứ liên quan đến CS &amp; OF — quy trình ops Phong từng giữ tay và agent tự hành
+          timcook đang chạy thay. Trang nào cũng có thể đọc độc lập.
         </p>
       </Callout>
 

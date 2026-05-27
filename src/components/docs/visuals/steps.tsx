@@ -8,7 +8,7 @@ export type StepStatus = "todo" | "current" | "done";
 
 export function Steps({ children }: { children: ReactNode }) {
   return (
-    <div data-user-detail className="not-prose my-8 relative">
+    <div className="not-prose my-8 relative">
       <div className="absolute left-[18px] top-2 bottom-2 w-px bg-border" aria-hidden />
       <ol className="space-y-6">{children}</ol>
     </div>

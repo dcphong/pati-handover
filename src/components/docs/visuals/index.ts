@@ -23,3 +23,4 @@ export type { TreeNode } from "./tree";
 export { HealthCheckGrid, StatusPill } from "./healthcheck";
 export type { HealthProbe } from "./healthcheck";
 export { Canvas } from "./canvas";
+export { SectionHeader, buildSectionPrompt } from "../section-header";

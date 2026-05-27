@@ -33,13 +33,12 @@ export const canvasNodes: CanvasNode[] = [
   { id: "g_infra", type: "group", group: "infra", label: "Mac mini Infrastructure (host)", x: -1200, y: -360, width: 2400, height: 600 },
   { id: "g_ext",   type: "group", group: "ext",   label: "External Systems", x: -1200, y: 260, width: 2400, height: 380 },
 
-  // Brain — top row of section links
+  // Brain — top row of section links (file-link, không edges nối nhau — MECE)
   { id: "n_readme",         type: "file", file: "#overview",  x: -360,  y: -1260, width: 720, height: 80 },
-  { id: "n_persona",        type: "file", file: "#persona",   x: -1140, y: -1140, width: 360, height: 100 },
-  { id: "n_skills",         type: "file", file: "#skills",    x: -750,  y: -1140, width: 360, height: 100 },
-  { id: "n_crons",          type: "file", file: "#crons",     x: -360,  y: -1140, width: 360, height: 100 },
-  { id: "n_runbook_brain",  type: "file", file: "#runbook",   x: 30,    y: -1140, width: 360, height: 100 },
-  { id: "n_gotchas_brain",  type: "file", file: "#gotchas",   x: 420,   y: -1140, width: 360, height: 100 },
+  { id: "n_persona",        type: "file", file: "#persona",   x: -930,  y: -1140, width: 380, height: 100 },
+  { id: "n_skills",         type: "file", file: "#skills",    x: -490,  y: -1140, width: 380, height: 100 },
+  { id: "n_crons",          type: "file", file: "#crons",     x: -50,   y: -1140, width: 380, height: 100 },
+  { id: "n_runbook_brain",  type: "file", file: "#runbook",   x: 390,   y: -1140, width: 380, height: 100 },
 
   // Brain — persona text cards
   {
@@ -99,12 +98,10 @@ export const canvasNodes: CanvasNode[] = [
       "**Bridge JS (chỉ docs)**: spam-classification",
   },
 
-  // Infra — section links
-  { id: "n_runbook",  type: "file", file: "#runbook",  x: -1140, y: -340, width: 360, height: 80 },
-  { id: "n_services", type: "file", file: "#services", x: -750,  y: -340, width: 360, height: 80 },
-  { id: "n_tunnel",   type: "file", file: "#tunnel",   x: -360,  y: -340, width: 360, height: 80 },
-  { id: "n_supabase", type: "file", file: "#supabase", x: 30,    y: -340, width: 360, height: 80 },
-  { id: "n_gotchas",  type: "file", file: "#gotchas",  x: 420,   y: -340, width: 360, height: 80 },
+  // Infra — section anchors (MECE, không nối edges sang nhau)
+  { id: "n_services", type: "file", file: "#services", x: -1000, y: -340, width: 470, height: 80 },
+  { id: "n_tunnel",   type: "file", file: "#tunnel",   x: -500,  y: -340, width: 470, height: 80 },
+  { id: "n_supabase", type: "file", file: "#supabase", x: 0,     y: -340, width: 470, height: 80 },
 
   // Infra — service cards
   {
@@ -156,39 +153,33 @@ export const canvasNodes: CanvasNode[] = [
   { id: "n_amazon",     type: "text", x: 420,   y: 410, width: 360, height: 100, text: "### Amazon\nĐơn (Shockwave) + tracking" },
 ];
 
+// MECE canvas: skills · workflows · file-link cards là HẠT ĐỘC LẬP, không nối
+// nhau bằng arrow. Edges chỉ giữ những quan hệ data-flow / kiến trúc THẬT giữa
+// các text-card hạ tầng và external systems. Section anchors (file-link cards
+// như persona/skills/crons/services/tunnel/supabase) không có edge nào.
 export const canvasEdges: CanvasEdge[] = [
-  { id: "e1",  fromNode: "n_readme",  fromSide: "bottom", toNode: "n_persona", toSide: "top" },
-  { id: "e2",  fromNode: "n_persona", fromSide: "right",  toNode: "n_skills",  toSide: "left" },
-  { id: "e3",  fromNode: "n_skills",  fromSide: "right",  toNode: "n_crons",   toSide: "left" },
-  { id: "e4",  fromNode: "n_skills",  fromSide: "bottom", toNode: "n_skills_d",toSide: "top",   label: "MECE" },
-  { id: "e5",  fromNode: "n_persona", fromSide: "bottom", toNode: "n_hs",      toSide: "top" },
-  { id: "e6",  fromNode: "n_persona", fromSide: "bottom", toNode: "n_ns",      toSide: "top" },
-  { id: "e7",  fromNode: "n_persona", fromSide: "bottom", toNode: "n_lark",    toSide: "top" },
-  { id: "e8",  fromNode: "n_persona", fromSide: "bottom", toNode: "n_silent",  toSide: "top" },
+  // Cloudflared tunnel topology — request đi từ edge xuống service nội bộ
+  { id: "e20", fromNode: "n_cflared", fromSide: "left", toNode: "n_web",     toSide: "right", label: "pnl.patigroup.com" },
+  { id: "e21", fromNode: "n_cflared", fromSide: "left", toNode: "n_cf_trig", toSide: "right", label: "chargeflow-trigger" },
+  { id: "e22", fromNode: "n_cflared", fromSide: "left", toNode: "n_caddy",   toSide: "right", label: "supabase.patiagency.com" },
 
-  { id: "e10", fromNode: "n_services",fromSide: "bottom", toNode: "n_launchd", toSide: "top",   label: "plists" },
-  { id: "e11", fromNode: "n_crons",   fromSide: "bottom", toNode: "n_launchd", toSide: "top",   label: "crontab" },
-  { id: "e12", fromNode: "n_tunnel",  fromSide: "bottom", toNode: "n_cflared", toSide: "top" },
-  { id: "e13", fromNode: "n_supabase",fromSide: "bottom", toNode: "n_caddy",   toSide: "top" },
-  { id: "e14", fromNode: "n_runbook", fromSide: "bottom", toNode: "n_web",     toSide: "top" },
-  { id: "e15", fromNode: "n_gotchas", fromSide: "bottom", toNode: "n_cflared", toSide: "top",   label: "502 root cause" },
+  // Chrome CDP feed vào chargeflow-trigger HTTP server
+  { id: "e23", fromNode: "n_cf_chrome", fromSide: "right", toNode: "n_cf_trig", toSide: "left", label: "CDP" },
 
-  { id: "e20", fromNode: "n_cflared", fromSide: "left",   toNode: "n_web",     toSide: "right", label: "pnl.patigroup.com" },
-  { id: "e21", fromNode: "n_cflared", fromSide: "left",   toNode: "n_cf_trig", toSide: "right", label: "chargeflow-trigger" },
-  { id: "e22", fromNode: "n_cflared", fromSide: "left",   toNode: "n_caddy",   toSide: "right", label: "supabase.patiagency.com" },
-  { id: "e23", fromNode: "n_cf_chrome",fromSide: "right", toNode: "n_cf_trig", toSide: "left",  label: "CDP" },
-  { id: "e24", fromNode: "n_caddy",   fromSide: "left",   toNode: "n_web",     toSide: "right", label: "DB master_app" },
+  // Web app đọc DB qua Caddy
+  { id: "e24", fromNode: "n_caddy", fromSide: "left", toNode: "n_web", toSide: "right", label: "DB master_app" },
 
-  { id: "e30", fromNode: "n_cflared", fromSide: "bottom", toNode: "n_cf_edge", toSide: "top",   label: "http/2 v4" },
-  { id: "e31", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_shopify", toSide: "top",   label: "sync-shopify*" },
-  { id: "e32", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_recharge",toSide: "top",   label: "sync-providers" },
-  { id: "e33", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_chargeflow",toSide:"top",  label: "sync-chargeflow-ui 5m" },
-  { id: "e34", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_lark_api",toSide: "top",   label: "sync-lark-mail 5m" },
-  { id: "e35", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_flexport",toSide: "top",   label: "sync-flexport" },
-  { id: "e36", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_meta_etc",toSide: "top",   label: "sync-providers" },
-  { id: "e37", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_amazon",  toSide: "top",   label: "amazon-orders 09/15" },
-  { id: "e40", fromNode: "n_runbook", fromSide: "left",   toNode: "n_tailscale",toSide:"top",   label: "SSH path" },
-  { id: "e41", fromNode: "n_tunnel",  fromSide: "right",  toNode: "n_godaddy", toSide: "top",   label: "pnl.patigroup.com CNAME" },
+  // Tunnel daemon nối ra Cloudflare edge
+  { id: "e30", fromNode: "n_cflared", fromSide: "bottom", toNode: "n_cf_edge", toSide: "top", label: "http/2 v4" },
+
+  // Launchd cron pipelines fan-out tới external systems (data flow OUT)
+  { id: "e31", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_shopify",    toSide: "top", label: "sync-shopify*" },
+  { id: "e32", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_recharge",   toSide: "top", label: "sync-providers" },
+  { id: "e33", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_chargeflow", toSide: "top", label: "sync-chargeflow-ui 5m" },
+  { id: "e34", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_lark_api",   toSide: "top", label: "sync-lark-mail 5m" },
+  { id: "e35", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_flexport",   toSide: "top", label: "sync-flexport" },
+  { id: "e36", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_meta_etc",   toSide: "top", label: "sync-providers" },
+  { id: "e37", fromNode: "n_launchd", fromSide: "bottom", toNode: "n_amazon",     toSide: "top", label: "amazon-orders 09/15" },
 ];
 
 // ─── SKILLS ──────────────────────────────────────────────────────────────

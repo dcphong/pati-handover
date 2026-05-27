@@ -70,8 +70,8 @@ export default function Page() {
       <div className="not-prose my-5 grid sm:grid-cols-3 gap-3">
         <Vocab
           term="VNH"
-          full="Việt Nam Hà Nội warehouse"
-          desc="Flexport partner — kho ở Hà Nội"
+          full="Vương Nguyên Hảo"
+          desc="Đối tác fulfillment chính của PATI — 3PL warehouse network"
         />
         <Vocab
           term="NS3"

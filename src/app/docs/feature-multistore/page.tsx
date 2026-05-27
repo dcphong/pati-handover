@@ -298,9 +298,9 @@ function LayerCard({
         <div className="font-semibold text-[13px]">{name}</div>
       </div>
       <div className="text-[12px] text-muted-foreground leading-5 mb-2">{purpose}</div>
-      <code className="block font-mono text-[11.5px] bg-zinc-950 text-zinc-100 rounded px-2 py-1 border border-zinc-800">
+      <div className="block font-mono text-[11.5px] bg-zinc-950 text-zinc-100 rounded px-2 py-1 border border-zinc-800">
         {example}
-      </code>
+      </div>
     </div>
   );
 }

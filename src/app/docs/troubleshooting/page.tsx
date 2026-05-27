@@ -116,15 +116,27 @@ export default function Page() {
 
       <DecisionBranch
         symptom="Mac mini reboot xong dashboard im luôn"
-        cause="Colima KHÔNG auto-start sau reboot — Docker VM chưa chạy nên Supabase containers chưa lên."
+        cause="Colima auto-start đã được setup (LaunchAgent com.user.colima) — đáng ra nó tự lên. Nếu vẫn im, hoặc launchd fail (xem colima-autostart.err.log), hoặc lima/limactl symlink Homebrew bị broken sau update."
         severity="warn"
         fix={
           <>
             <FixStep n={1}>SSH vào Mac mini.</FixStep>
             <FixStep n={2}>
-              Chạy <TerminalInline>colima start</TerminalInline> và đợi VM lên.
+              Check log launchd:{" "}
+              <TerminalInline>tail ~/Library/Logs/colima-autostart.err.log</TerminalInline>.
             </FixStep>
             <FixStep n={3}>
+              Nếu thấy lỗi <em>&quot;lima not found&quot;</em>, sửa Homebrew:{" "}
+              <TerminalInline>brew reinstall lima</TerminalInline>.
+            </FixStep>
+            <FixStep n={4}>
+              Kick lại LaunchAgent:{" "}
+              <TerminalInline>
+                launchctl kickstart -k gui/$(id -u)/com.user.colima
+              </TerminalInline>{" "}
+              hoặc fallback chạy tay <TerminalInline>colima start</TerminalInline>.
+            </FixStep>
+            <FixStep n={5}>
               Confirm containers chạy:{" "}
               <TerminalInline>docker ps | grep supabase</TerminalInline> — phải có{" "}
               <TerminalInline>supabase-rest</TerminalInline>,{" "}

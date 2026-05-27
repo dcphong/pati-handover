@@ -12,6 +12,7 @@ import {
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
+import { ExternalLinkRow } from "@/components/docs/external-link-card";
 import {
   Steps,
   StepsHeader,
@@ -21,6 +22,7 @@ import {
   Terminal,
   TerminalInline,
 } from "@/components/docs/visuals";
+import { INFRA } from "@/lib/external-links";
 
 export const metadata = { title: "Local Setup — PATI Handover" };
 
@@ -94,6 +96,27 @@ export default function Page() {
         eyebrow="Getting Started"
         title="Local Setup"
         description="Hướng dẫn dev cài project trên máy cá nhân để chạy thử / debug."
+      />
+
+      <ExternalLinkRow
+        links={[
+          {
+            href: INFRA.githubRepo,
+            title: "GitHub repo — dev-pati/pati-master-app",
+            pathHint: "github.com/dev-pati/pati-master-app",
+            desc: "Clone repo từ đây. Cần Phong/admin add bạn làm collaborator.",
+            icon: GitBranch,
+            tone: "violet",
+          },
+          {
+            href: INFRA.dashboardProd,
+            title: "Dashboard production (đối chiếu sau khi cài)",
+            pathHint: "pnl.patigroup.com",
+            desc: "Verify dashboard production OK trước khi bắt đầu — nếu prod cũng đỏ thì không phải lỗi local.",
+            icon: Play,
+            tone: "emerald",
+          },
+        ]}
       />
 
       <section data-user-detail className="rounded-lg border border-amber-500/30 bg-amber-500/[0.05] p-4 my-6 text-[13px] leading-6">
@@ -290,50 +313,27 @@ export default function Page() {
 
         <Step n={5} title="Đăng nhập lần đầu" hint="JWT cookie auth" aiPrompt={null}>
           <p>
-            UI dùng JWT custom (cookie). Để bàn giao nhanh, Phong đã tạo sẵn một account admin
-            mặc định — login ngay được, đổi password sau:
+            UI dùng JWT custom (cookie). Account admin mặc định dùng chung cho mọi người trong
+            handover:
           </p>
           <div className="not-prose my-3 rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.05] p-4">
             <div className="flex items-center gap-2 mb-2 font-semibold text-[14px] text-emerald-700 dark:text-emerald-300">
-              🔑 Default admin (bundled cho người tiếp nhận)
+              🔑 Default admin (dùng chung)
             </div>
             <div className="grid gap-1.5 text-[13px] font-mono">
               <div><span className="text-muted-foreground">Username:</span> <strong>admin</strong></div>
               <div><span className="text-muted-foreground">Password:</span> <strong>Admin@2025</strong></div>
               <div><span className="text-muted-foreground">Policy:</span> <strong>Admin (wildcard *:*)</strong></div>
             </div>
-            <div className="mt-3 text-[12px] text-amber-700 dark:text-amber-400">
-              ⚠ <strong>Đổi password ngay sau lần đăng nhập đầu</strong> — vào{" "}
-              <TerminalInline>/iam/users/admin</TerminalInline> → Reset password. Đừng dùng tạm
-              quá 1 tuần.
+            <div className="mt-3 text-[12px] text-muted-foreground">
+              Ai trong handover cũng login được trực tiếp bằng cặp này. Nếu cần user riêng (vd phân
+              quyền theo vai trò CS/Operations/Analytics), vào{" "}
+              <TerminalInline>/iam</TerminalInline> tạo thêm — xem{" "}
+              <a href="/docs/feature-iam" className="underline">IAM</a>.
             </div>
           </div>
-          <p className="text-[13px] text-muted-foreground">
-            Sau khi vào được, tự tạo user riêng cho mình + cộng tác viên:
-          </p>
-          <div className="rounded-lg border bg-muted/30 px-4 py-3 text-[13px] leading-6">
-            <ol className="list-decimal ml-5 space-y-1.5">
-              <li>
-                Vào <TerminalInline>/iam</TerminalInline> với <strong>admin</strong> (superadmin role) →
-                tạo user mới. Xem <a href="/docs/feature-iam" className="underline">IAM</a>.
-              </li>
-              <li>
-                Gán managed policy: <strong>Admin</strong> / <strong>Operations</strong> /{" "}
-                <strong>CS</strong> / <strong>Analytics</strong> tuỳ vai trò.
-              </li>
-              <li>
-                Set password qua <TerminalInline>/api/auth/migrate-passwords</TerminalInline>{" "}
-                (cần <TerminalInline>MIGRATION_SECRET</TerminalInline> env).
-              </li>
-              <li>
-                Sau khi user riêng có thể đăng nhập → đổi password <strong>admin</strong> mặc định
-                thành chuỗi random + lưu ở 1Password (hoặc tương đương).
-              </li>
-            </ol>
-          </div>
           <StepCheck>
-            Bạn login bằng account riêng và thấy dashboard có data thật (không phải $0).
-            Account <TerminalInline>admin</TerminalInline> mặc định đã được đổi password.
+            Login được vào dashboard và thấy data thật (không phải $0).
           </StepCheck>
         </Step>
 
@@ -411,7 +411,7 @@ export default function Page() {
             <div className="font-semibold text-[14px]">Supabase</div>
           </div>
           <div className="text-[12.5px] text-muted-foreground leading-5">
-            Self-host trên Mac mini, schema master_app, RLS gotchas.
+            Self-host trên Mac mini, schema master_app, các cạm bẫy RLS phổ biến.
           </div>
         </a>
       </div>

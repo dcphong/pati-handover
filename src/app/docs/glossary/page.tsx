@@ -46,7 +46,7 @@ const terms: { term: string; def: string }[] = [
   { term: "Tailscale", def: "Mesh VPN. Dùng cho SSH riêng tư + WireGuard private IPs (100.94.x.x)." },
   { term: "TimCook", def: "Mac mini SSH username (joke). Có admin sudo." },
   { term: "TripleWhale (TW)", def: "Legacy P&L SaaS. PATI lấy số trực tiếp từ provider (first-party SoT); TW chỉ là sanity reference, không phải target." },
-  { term: "VNH", def: "Việt Nam Hà Nội warehouse." },
+  { term: "VNH", def: "Vương Nguyên Hảo — đối tác fulfillment chính (3PL warehouse network)." },
   { term: "v_stvf", def: "Single-Table View Function. Core matview cho summary cards (raw_orders → aggregates, không phải để khớp TW)." },
   { term: "WN", def: "WellnessNest — primary store. Domain: e49d78-3.myshopify.com." },
 ];

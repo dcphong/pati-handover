@@ -250,10 +250,10 @@ function RunCard({
     <div className="rounded-lg border bg-card p-3.5">
       <div className="font-semibold text-[14px] mb-0.5">{title}</div>
       <div className="text-[12.5px] text-muted-foreground leading-5 mb-2">{desc}</div>
-      <code className="block font-mono text-[12px] bg-zinc-950 text-zinc-100 rounded px-2.5 py-1.5 border border-zinc-800 overflow-x-auto">
+      <div className="block font-mono text-[12px] bg-zinc-950 text-zinc-100 rounded px-2.5 py-1.5 border border-zinc-800 overflow-x-auto">
         <span className="text-emerald-400 mr-2 select-none">$</span>
         {cmd}
-      </code>
+      </div>
     </div>
   );
 }
