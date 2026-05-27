@@ -164,7 +164,7 @@ const featureCards = [
   },
   {
     title: "Mac mini Self-Host",
-    description: "M4/16GB at home. Tailscale + Cloudflared. Supabase Docker stack.",
+    description: "M4/16GB at the PATI office. Tailscale + Cloudflared. Supabase Docker stack.",
     userDescription: "Máy chủ nội bộ đang chạy database và một số dịch vụ nền.",
     href: "/docs/mac-mini",
     Icon: Cloud,

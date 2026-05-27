@@ -393,7 +393,7 @@ export default function Page() {
         <strong>pati-master-app</strong> là full-stack operations dashboard cho PATI Group. Nó
         đồng bộ data giữa <strong>Shopify · Lark (Feishu) Base · Flexport</strong> và các
         analytics provider (Meta / Google / Klaviyo / Recharge / PayPal), lưu vào{" "}
-        <strong>Supabase Postgres</strong> self-host trên Mac mini ở nhà.
+        <strong>Supabase Postgres</strong> self-host trên Mac mini đặt tại văn phòng PATI.
       </p>
       <p data-dev-detail>
         UI là dashboard Next.js (

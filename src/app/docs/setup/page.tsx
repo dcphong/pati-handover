@@ -96,21 +96,12 @@ export default function Page() {
         description="Hướng dẫn dev cài project trên máy cá nhân để chạy thử / debug."
       />
 
-      {/* ─────────── USER MODE ─────────── */}
-      <section data-user-detail>
-        <h2 id="user-what">Trang này dành cho ai</h2>
-        <p>
-          Dành cho dev hoặc người muốn chạy code trên máy mình. Nếu chỉ dùng dashboard qua
-          trình duyệt, bạn KHÔNG cần làm theo trang này.
-        </p>
-        <h2 id="user-when-call">Khi nào báo dev</h2>
-        <ul>
-          <li>Cần truy cập DB / log để debug — luôn qua dev có quyền.</li>
-        </ul>
+      <section data-user-detail className="rounded-lg border border-amber-500/30 bg-amber-500/[0.05] p-4 my-6 text-[13px] leading-6">
+        <strong className="block text-[14px] mb-1">Trang này dành cho dev / người chạy code trên máy</strong>
+        Nếu bạn chỉ dùng dashboard qua trình duyệt thì bỏ qua trang này — vẫn xem được walkthrough
+        bên dưới để hiểu setup quy trình ra sao.
       </section>
 
-      {/* ─────────── DEV MODE ─────────── */}
-      <section data-dev-detail>
       <div className="not-prose my-6 rounded-xl border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b bg-muted/30 flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-foreground/70" />
@@ -289,7 +280,7 @@ export default function Page() {
             login page.
           </StepCheck>
           <StepWarn title="Trang load nhưng số liệu trống / cards $0?">
-            Tunnel Mac mini ở nhà có thể down. Chạy{" "}
+            Tunnel Mac mini ở văn phòng PATI có thể down. Chạy{" "}
             <TerminalInline>
               curl -I https://supabase.patiagency.com/rest/v1/
             </TerminalInline>{" "}
@@ -299,32 +290,50 @@ export default function Page() {
 
         <Step n={5} title="Đăng nhập lần đầu" hint="JWT cookie auth" aiPrompt={null}>
           <p>
-            UI dùng JWT custom (cookie). Account đầu tiên Phong dùng là{" "}
-            <TerminalInline>chanphong@patigroup.com</TerminalInline>. Sau khi handover, bạn cần
-            tạo user mới:
+            UI dùng JWT custom (cookie). Để bàn giao nhanh, Phong đã tạo sẵn một account admin
+            mặc định — login ngay được, đổi password sau:
+          </p>
+          <div className="not-prose my-3 rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.05] p-4">
+            <div className="flex items-center gap-2 mb-2 font-semibold text-[14px] text-emerald-700 dark:text-emerald-300">
+              🔑 Default admin (bundled cho người tiếp nhận)
+            </div>
+            <div className="grid gap-1.5 text-[13px] font-mono">
+              <div><span className="text-muted-foreground">Username:</span> <strong>admin</strong></div>
+              <div><span className="text-muted-foreground">Password:</span> <strong>Admin@2025</strong></div>
+              <div><span className="text-muted-foreground">Policy:</span> <strong>Admin (wildcard *:*)</strong></div>
+            </div>
+            <div className="mt-3 text-[12px] text-amber-700 dark:text-amber-400">
+              ⚠ <strong>Đổi password ngay sau lần đăng nhập đầu</strong> — vào{" "}
+              <TerminalInline>/iam/users/admin</TerminalInline> → Reset password. Đừng dùng tạm
+              quá 1 tuần.
+            </div>
+          </div>
+          <p className="text-[13px] text-muted-foreground">
+            Sau khi vào được, tự tạo user riêng cho mình + cộng tác viên:
           </p>
           <div className="rounded-lg border bg-muted/30 px-4 py-3 text-[13px] leading-6">
             <ol className="list-decimal ml-5 space-y-1.5">
               <li>
-                Đăng nhập <TerminalInline>chanphong@patigroup.com</TerminalInline> (xin Phong
-                password tạm).
-              </li>
-              <li>
-                Vào <TerminalInline>/iam</TerminalInline> với superadmin role → tạo user mới.
-                Xem <a href="/docs/feature-iam" className="underline">IAM</a>.
+                Vào <TerminalInline>/iam</TerminalInline> với <strong>admin</strong> (superadmin role) →
+                tạo user mới. Xem <a href="/docs/feature-iam" className="underline">IAM</a>.
               </li>
               <li>
                 Gán managed policy: <strong>Admin</strong> / <strong>Operations</strong> /{" "}
-                <strong>CS</strong> / <strong>Analytics</strong>.
+                <strong>CS</strong> / <strong>Analytics</strong> tuỳ vai trò.
               </li>
               <li>
                 Set password qua <TerminalInline>/api/auth/migrate-passwords</TerminalInline>{" "}
                 (cần <TerminalInline>MIGRATION_SECRET</TerminalInline> env).
               </li>
+              <li>
+                Sau khi user riêng có thể đăng nhập → đổi password <strong>admin</strong> mặc định
+                thành chuỗi random + lưu ở 1Password (hoặc tương đương).
+              </li>
             </ol>
           </div>
           <StepCheck>
             Bạn login bằng account riêng và thấy dashboard có data thật (không phải $0).
+            Account <TerminalInline>admin</TerminalInline> mặc định đã được đổi password.
           </StepCheck>
         </Step>
 
@@ -406,8 +415,6 @@ export default function Page() {
           </div>
         </a>
       </div>
-
-      </section>
 
       <PageNav href="/docs/setup" />
     </>

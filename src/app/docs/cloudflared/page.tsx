@@ -36,7 +36,7 @@ export default function Page() {
       <section data-user-detail>
         <h2 id="user-what">Tunnel này dùng để làm gì</h2>
         <p>
-          Mac mini ở nhà không có IP public. Cloudflared mở một &ldquo;ống dẫn&rdquo; ra
+          Mac mini ở văn phòng PATI không có IP public. Cloudflared mở một &ldquo;ống dẫn&rdquo; ra
           internet để dashboard (<code>pnl.patigroup.com</code>) và database
           (<code>supabase.patiagency.com</code>) tới được Mac mini mà không phải mở port router.
         </p>
@@ -57,7 +57,7 @@ export default function Page() {
       <section data-dev-detail>
       <h2 id="why">Cách tunnel hoạt động</h2>
       <p>
-        Mac mini ở nhà sau ISP NAT — không có IP public cố định. Cloudflared mở outbound từ Mac
+        Mac mini ở văn phòng PATI sau ISP NAT — không có IP public cố định. Cloudflared mở outbound từ Mac
         mini lên Cloudflare edge, sau đó traffic được Cloudflare proxy ngược vào Mac mini qua
         chính connection đó. Mọi request đi theo đường:
       </p>
@@ -183,7 +183,7 @@ ingress:
           <StepWarn title="SSH fail?">
             <ol className="list-decimal ml-5">
               <li>Kiểm tra Tailscale: <TerminalInline>tailscale status</TerminalInline> — Mac mini phải online.</li>
-              <li>Mac mini đã bật chưa? (kiểm tra UPS / ổ điện ở nhà Phong)</li>
+              <li>Mac mini đã bật chưa? (kiểm tra UPS / ổ điện tại văn phòng PATI)</li>
               <li>SSH key bạn đã được add vào <TerminalInline>~/.ssh/authorized_keys</TerminalInline> trên Mac mini?</li>
             </ol>
           </StepWarn>

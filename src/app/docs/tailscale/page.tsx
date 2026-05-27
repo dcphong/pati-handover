@@ -56,66 +56,204 @@ export default function Page() {
         description="Mạng riêng để máy bạn vào được Mac mini. Cài 5 phút, không cần đụng VPN truyền thống."
       />
 
-      {/* ─────────── USER MODE ─────────── */}
-      <section data-user-detail>
-        <h2 id="user-what">Tóm tắt</h2>
-        <p>
-          Tailscale là một &ldquo;mạng riêng&rdquo; nhẹ giúp máy của bạn nói chuyện trực tiếp
-          với Mac mini ở nhà Phong mà không mở port router. Chỉ ai được mời mới vào được. Cần
-          khi muốn SSH / VNC / mở DB từ máy mình.
-        </p>
-        <h2 id="user-when-call">Khi nào báo dev</h2>
-        <ul>
-          <li>Cần được mời vào tailnet — không tự đăng ký.</li>
-          <li>Đã cài Tailscale mà vẫn không thấy Mac mini — báo Phong/dev để verify ACL.</li>
-        </ul>
-      </section>
-
-      {/* ─────────── DEV MODE ─────────── */}
-      <section data-dev-detail>
       <h2 id="what">Tailscale dùng để làm gì</h2>
       <p>
-        Tailscale tạo mạng riêng giữa laptop của bạn và Mac mini. Với PATI, nó dùng cho hai việc:
-        SSH vận hành kỹ thuật và Screen Sharing/VNC khi cần nhìn màn hình Mac mini.
+        Tailscale tạo mạng riêng giữa máy bạn và Mac mini ở văn phòng PATI. Mọi truy cập vào Mac mini (SSH,
+        VNC remote screen, Supabase Studio nội bộ, log files) đều phải đi qua đây — không bao
+        giờ mở port router.
       </p>
 
-      <div data-user-detail className="not-prose my-5 rounded-xl border bg-card p-4">
-        <div className="flex items-start gap-3">
-          <Network className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-          <div>
-            <h3 className="m-0 text-base font-semibold tracking-tight">Bản user-non-tech</h3>
-            <p className="mt-2 text-sm leading-6 text-foreground/80">
-              Làm theo các bước này nếu bạn chỉ cần vào màn hình Mac mini để kiểm tra hoặc thao
-              tác theo hướng dẫn của dev.
-            </p>
-          </div>
-        </div>
-        <ol className="mt-4 space-y-3 text-sm leading-6 text-foreground/85">
-          {userSteps.map((step, i) => (
-            <li key={step.title} className="flex gap-3">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border bg-background text-xs font-semibold tabular-nums">
-                {i + 1}
-              </span>
-              <span>
-                <strong>{step.title}:</strong> {step.body}
-              </span>
-            </li>
-          ))}
-        </ol>
+      <h2 id="prereq">Cần gì trước khi kết nối</h2>
+      <div className="not-prose my-5 rounded-xl border bg-card p-4">
+        <ul className="space-y-2 text-[13px] leading-6 text-foreground/85">
+          <li>
+            <strong>1 email được mời vào tailnet PATI</strong> — admin (Phong/dev) mời từ Tailscale
+            admin console. Account phải khớp email bạn dùng để login Tailscale app.
+          </li>
+          <li>
+            <strong>App Tailscale</strong> đã cài trên máy bạn (Mac/Windows/Linux/iOS/Android).
+            Tải ở <TerminalInline>tailscale.com/download</TerminalInline>.
+          </li>
+          <li>
+            <strong>Internet</strong> bình thường. Tailscale không cần mở port — chỉ outbound HTTPS.
+          </li>
+        </ul>
       </div>
 
-      <div data-dev-detail className="not-prose my-5 space-y-4">
-        <div className="flex items-start gap-3">
-          <TerminalIcon className="mt-0.5 h-5 w-5 shrink-0 text-violet-600 dark:text-violet-400" />
-          <div>
-            <h3 className="m-0 text-base font-semibold tracking-tight">Bản dev</h3>
-            <p className="mt-2 text-sm leading-6 text-foreground/80">
-              Dùng khi cần SSH, deploy, xem logs, kiểm tra Docker/Supabase hoặc mở UI macOS qua VNC.
-            </p>
+      <h2 id="steps">6 bước kết nối — làm lần đầu</h2>
+      <ol className="not-prose my-5 space-y-3">
+        {userSteps.map((step, i) => (
+          <li key={step.title} className="flex gap-3 rounded-lg border bg-card p-4">
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border bg-background text-xs font-semibold tabular-nums">
+              {i + 1}
+            </span>
+            <div className="flex-1">
+              <div className="font-semibold text-[14px] mb-0.5">{step.title}</div>
+              <div className="text-[13px] leading-6 text-foreground/80">{step.body}</div>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <h2 id="remote-screen">Remote control màn hình Mac mini (screen sharing)</h2>
+      <p>
+        Khi cần &ldquo;nhìn&rdquo; trực tiếp màn hình Mac mini (ví dụ check Chrome ChargeFlow session,
+        click vào app), dùng VNC qua Tailscale.
+      </p>
+      <div className="not-prose my-5 grid sm:grid-cols-2 gap-3">
+        <div className="rounded-lg border bg-card p-4">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+            <Monitor className="h-4 w-4 text-foreground/70" />
+            Từ Mac
+          </div>
+          <ol className="space-y-1.5 text-[13px] leading-6 text-foreground/85 ml-4 list-decimal">
+            <li>Mở Finder → menu Go → Connect to Server (⌘K).</li>
+            <li>
+              Nhập <TerminalInline>vnc://100.94.220.128</TerminalInline>, nhấn Connect.
+            </li>
+            <li>Đăng nhập bằng user macOS của Mac mini (<TerminalInline>timcook</TerminalInline> + password).</li>
+          </ol>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+            <Monitor className="h-4 w-4 text-foreground/70" />
+            Từ Windows
+          </div>
+          <ol className="space-y-1.5 text-[13px] leading-6 text-foreground/85 ml-4 list-decimal">
+            <li>
+              Cài <a className="underline" href="https://www.realvnc.com/en/connect/download/viewer/" target="_blank" rel="noreferrer">RealVNC Viewer</a> hoặc TigerVNC.
+            </li>
+            <li>
+              Tạo connection mới: address <TerminalInline>100.94.220.128:5900</TerminalInline>.
+            </li>
+            <li>Login bằng user macOS của Mac mini.</li>
+          </ol>
+        </div>
+      </div>
+      <Callout variant="warning">
+        Khi xong, <strong>disconnect</strong> session VNC. Không tắt Tailscale (sẽ mất cron + tunnel).
+      </Callout>
+
+      <h2 id="troubleshoot">Khi không kết nối được</h2>
+      <div className="not-prose my-5 space-y-3">
+        <div className="rounded-lg border bg-card p-4">
+          <div className="font-semibold text-[14px] mb-1">App Tailscale báo &ldquo;Logged out&rdquo;</div>
+          <div className="text-[13px] text-foreground/80 leading-6">
+            Đăng nhập lại bằng email đã được mời. Nếu URL auth không mở được, copy link từ thông báo
+            paste sang browser.
           </div>
         </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="font-semibold text-[14px] mb-1">Tailscale online nhưng Mac mini hiện &ldquo;Offline&rdquo;</div>
+          <div className="text-[13px] text-foreground/80 leading-6">
+            Mac mini có thể tắt nguồn / mất mạng. Nhờ người ở văn phòng PATI kiểm tra UPS + router. Nếu
+            máy ON nhưng app Tailscale trên Mac mini chưa khởi động lại sau reboot, cần SSH vật lý
+            (qua bàn phím + màn hình) bật.
+          </div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="font-semibold text-[14px] mb-1">SSH timeout / refused</div>
+          <div className="text-[13px] text-foreground/80 leading-6">
+            Verify từ máy bạn: <TerminalInline>tailscale ping 100.94.220.128</TerminalInline>. Nếu
+            ping thông mà SSH fail → SSH key của bạn chưa được add vào{" "}
+            <TerminalInline>~timcook/.ssh/authorized_keys</TerminalInline> trên Mac mini → báo dev.
+          </div>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="font-semibold text-[14px] mb-1">VNC connect được nhưng màn hình đen</div>
+          <div className="text-[13px] text-foreground/80 leading-6">
+            Mac mini có thể đang ngủ. SSH vào trước, chạy{" "}
+            <TerminalInline>caffeinate -u -t 5</TerminalInline> để đánh thức, rồi connect VNC lại.
+          </div>
+        </div>
+      </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
+      <h2 id="claude-access">2.6 — Cách Claude truy cập Mac mini + mutate Supabase</h2>
+      <p>
+        Có 3 đường để Claude (CLI hoặc Claude Desktop) thao tác trên Mac mini, không phải cái nào
+        cũng cần Claude CLI cài trên Mac mini:
+      </p>
+      <div className="not-prose my-5 space-y-3">
+        <div className="rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.04] p-4">
+          <div className="font-semibold text-[14.5px] mb-1.5 text-emerald-700 dark:text-emerald-300">
+            A. MCP server <TerminalInline>pati-supabase</TerminalInline> (đường ưu tiên — không cần Claude CLI trên Mac mini)
+          </div>
+          <ul className="ml-4 list-disc text-[13px] leading-6 text-foreground/85 space-y-1">
+            <li>
+              MCP server đã host sẵn. Claude Desktop / Code config nó qua <TerminalInline>~/.claude/mcp-servers.json</TerminalInline> hoặc
+              equivalent. Nó nói SQL trực tiếp tới Supabase qua tunnel cloudflared.
+            </li>
+            <li>
+              Phép Claude: query, DDL, RPC call, mọi thứ SQL. <strong>Cẩn thận</strong> — bypass UI.
+            </li>
+            <li>
+              Yêu cầu: máy của bạn (đang chạy Claude) chỉ cần mạng internet — không cần Tailscale.
+              Quyền dựa trên service-role key MCP đã được provision.
+            </li>
+          </ul>
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <div className="font-semibold text-[14.5px] mb-1.5">
+            B. Claude CLI chạy trên Mac mini (qua SSH session)
+          </div>
+          <ul className="ml-4 list-disc text-[13px] leading-6 text-foreground/85 space-y-1">
+            <li>
+              SSH vào Mac mini trước (qua Tailscale), rồi chạy <TerminalInline>claude</TerminalInline> bên trong session đó.
+            </li>
+            <li>
+              Claude CLI <strong>đã cài sẵn</strong> trên Mac mini ở <TerminalInline>/Users/timcook/.claude</TerminalInline>.
+              Có thể đọc file local, chạy shell, mutate DB qua psql/docker exec.
+            </li>
+            <li>
+              Yêu cầu: phải có Tailscale + SSH key. Token Claude CLI riêng đã setup cho user timcook.
+            </li>
+          </ul>
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <div className="font-semibold text-[14.5px] mb-1.5">
+            C. Claude từ máy bạn → SSH bridge → Mac mini
+          </div>
+          <ul className="ml-4 list-disc text-[13px] leading-6 text-foreground/85 space-y-1">
+            <li>
+              Chạy Claude CLI/Desktop trên máy bạn. Khi cần lệnh trên Mac mini, nó dùng SSH như tool —
+              ví dụ <TerminalInline>ssh timcook@100.94.220.128 'docker ps'</TerminalInline>.
+            </li>
+            <li>Không cần cài Claude CLI trên Mac mini. Cần Tailscale + SSH key.</li>
+          </ul>
+        </div>
+      </div>
+      <Callout variant="warning">
+        Đường A là default cho mutate Supabase vì MCP có schema-aware suggestion. Đường B/C dùng khi
+        cần đụng file system Mac mini, restart Colima/cloudflared, hoặc thao tác Docker.
+      </Callout>
+
+      <h2 id="dev-verify">Verify path — cho dev</h2>
+      <section data-dev-detail>
+        <p>
+          Sau khi cài + login Tailscale, verify từng layer:
+        </p>
+        <Terminal
+          host="you@laptop"
+          cwd="~"
+          title="Verify private path"
+          lines={[
+            { prompt: "$", cmd: "tailscale status | grep 100.94.220.128" },
+            { prompt: "$", cmd: "tailscale ping 100.94.220.128" },
+            { prompt: "$", cmd: "nc -vz 100.94.220.128 22" },
+            { prompt: "$", cmd: "nc -vz 100.94.220.128 5900" },
+          ]}
+        />
+        <Terminal
+          host="you@laptop"
+          cwd="~"
+          title="Connect"
+          lines={[
+            { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
+            { prompt: "$", cmd: "open vnc://100.94.220.128" },
+          ]}
+        />
+
+        <div className="not-prose my-5 grid gap-3 md:grid-cols-2">
           <div className="rounded-lg border bg-card p-4">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
               <Laptop className="h-4 w-4 text-foreground/70" />
@@ -128,7 +266,6 @@ export default function Page() {
               <li>Login đúng account được invite vào PATI tailnet.</li>
             </ul>
           </div>
-
           <div className="rounded-lg border bg-card p-4">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
               <ShieldCheck className="h-4 w-4 text-foreground/70" />
@@ -141,28 +278,6 @@ export default function Page() {
             </ul>
           </div>
         </div>
-
-        <Terminal
-          host="you@laptop"
-          cwd="~"
-          title="Verify private path"
-          lines={[
-            { prompt: "$", cmd: "tailscale status | grep 100.94.220.128" },
-            { prompt: "$", cmd: "tailscale ping 100.94.220.128" },
-            { prompt: "$", cmd: "nc -vz 100.94.220.128 22" },
-            { prompt: "$", cmd: "nc -vz 100.94.220.128 5900" },
-          ]}
-        />
-
-        <Terminal
-          host="you@laptop"
-          cwd="~"
-          title="Connect"
-          lines={[
-            { prompt: "$", cmd: "ssh timcook@100.94.220.128" },
-            { prompt: "$", cmd: "open vnc://100.94.220.128" },
-          ]}
-        />
 
         <div className="rounded-lg border bg-card p-4 text-sm leading-6 text-foreground/85">
           <div className="mb-2 flex items-center gap-2 font-semibold">
@@ -182,7 +297,7 @@ export default function Page() {
             </li>
           </ol>
         </div>
-      </div>
+      </section>
 
       <Callout variant="warning" title="Security rule">
         Không mở port SSH/VNC trên router. Nếu người mới cần vào Mac mini, cấp quyền bằng
@@ -212,8 +327,6 @@ export default function Page() {
           Install on Windows
         </a>
       </p>
-
-      </section>
 
       <PageNav href="/docs/tailscale" />
     </>

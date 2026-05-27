@@ -2,6 +2,7 @@ import {
   Cloud,
   Container,
   Database,
+  ExternalLink,
   Globe,
   KeyRound,
   Lock,
@@ -32,33 +33,207 @@ export default function Page() {
         description="Database tự host trên Mac mini. Mọi số liệu dashboard đọc đều từ đây."
       />
 
-      {/* ─────────── USER MODE ─────────── */}
-      <section data-user-detail>
-        <h2 id="user-what">Supabase là gì trong dashboard này</h2>
-        <p>
-          Supabase là <strong>database trung tâm</strong>. Mọi số trên dashboard (đơn, refund,
-          ads, lợi nhuận, kho, ticket CS) đều được đọc từ đây. Các cron job đồng bộ thì ghi mới
-          vào đây.
-        </p>
-        <p>
-          Database được host trên Mac mini ở nhà — không phải cloud bên ngoài. Khi tunnel
-          (đường ra internet) rớt thì dashboard mất kết nối; xem trang Cloudflared để xử.
-        </p>
+      <div className="not-prose my-6 grid gap-3 sm:grid-cols-2">
+        <a
+          href="https://supabase.patiagency.com"
+          target="_blank"
+          rel="noreferrer"
+          className="group rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.04] p-4 hover:bg-emerald-500/[0.08] transition-colors"
+        >
+          <div className="flex items-start gap-3">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+              <Database className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 font-semibold text-[14.5px] leading-tight mb-1">
+                Mở Supabase Studio
+                <ExternalLink className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-300" />
+              </div>
+              <div className="font-mono text-[12px] text-emerald-700 dark:text-emerald-300 break-all">
+                supabase.patiagency.com
+              </div>
+              <div className="text-[12px] text-muted-foreground leading-5 mt-1.5">
+                UI để xem bảng + chạy SQL. Cần đăng nhập tài khoản admin trước.
+              </div>
+            </div>
+          </div>
+        </a>
+        <a
+          href="https://pnl.patigroup.com"
+          target="_blank"
+          rel="noreferrer"
+          className="group rounded-xl border-2 border-sky-500/40 bg-sky-500/[0.04] p-4 hover:bg-sky-500/[0.08] transition-colors"
+        >
+          <div className="flex items-start gap-3">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-sky-500/15 text-sky-700 dark:text-sky-300">
+              <Globe className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 font-semibold text-[14.5px] leading-tight mb-1">
+                Mở Dashboard (PROD)
+                <ExternalLink className="h-3.5 w-3.5 text-sky-700 dark:text-sky-300" />
+              </div>
+              <div className="font-mono text-[12px] text-sky-700 dark:text-sky-300 break-all">
+                pnl.patigroup.com
+              </div>
+              <div className="text-[12px] text-muted-foreground leading-5 mt-1.5">
+                Dashboard chính cho mọi báo cáo và thao tác hằng ngày.
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
 
-        <h2 id="user-when-call">Khi nào cần báo dev</h2>
-        <ul>
-          <li>Dashboard trống một cách bất thường mặc dù cron đã chạy.</li>
-          <li>Một bảng/số lượt từ chối liên tục với mã <code>403</code> hoặc <code>401</code>.</li>
-          <li>Sửa số trực tiếp trên database — đừng tự làm.</li>
-        </ul>
-      </section>
+      <h2 id="user-what">Supabase là gì trong dashboard này</h2>
+      <p>
+        Supabase là <strong>database trung tâm</strong>. Mọi số trên dashboard (đơn, refund,
+        ads, lợi nhuận, kho, ticket CS) đều được đọc từ đây. Các cron job đồng bộ thì ghi mới
+        vào đây.
+      </p>
+      <p>
+        Database được host trên Mac mini đặt tại văn phòng PATI — không phải cloud bên ngoài. Khi tunnel
+        (đường ra internet) rớt thì dashboard mất kết nối; xem trang Cloudflared để xử.
+      </p>
+
+      <h2 id="login">Cách truy cập Supabase Studio</h2>
+      <p>
+        Supabase Studio là UI web để xem bảng, sửa từng dòng, hoặc chạy SQL. Mở ở{" "}
+        <a href="https://supabase.patiagency.com" target="_blank" rel="noreferrer" className="underline">
+          supabase.patiagency.com
+        </a>.
+      </p>
+      <Callout variant="warning" title="Cần HTTP Basic Auth (locked 2026-05-27)">
+        Studio + postgres-meta đã từng <strong>mở public</strong> ai cũng vào được. Đã lock bằng
+        Caddy basic auth. Khi mở link sẽ có browser popup yêu cầu credentials:
+        <div className="not-prose mt-2 rounded-md border bg-background/50 p-2.5 font-mono text-[12.5px]">
+          <div>Username: <strong>admin</strong></div>
+          <div>Password: <strong>Admin@2025</strong></div>
+        </div>
+        Cùng credential với dashboard PATI. Browser sẽ remember session sau 1 lần nhập.
+        <em>App code (PostgREST <code>/rest/v1/*</code>) KHÔNG bị basic auth — vẫn dùng anon JWT
+        + RLS như cũ, không gãy production.</em>
+      </Callout>
+      <div className="not-prose my-5 grid sm:grid-cols-2 gap-3">
+        <div className="rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.04] p-4">
+          <div className="flex items-center gap-2 font-semibold text-[14px] mb-2">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold">U</span>
+            Cho User (non-tech)
+          </div>
+          <ol className="ml-4 list-decimal space-y-1.5 text-[13px] leading-6 text-foreground/85">
+            <li>Mở link <TerminalInline>supabase.patiagency.com</TerminalInline>.</li>
+            <li>Form login hiện ra — nhập email + password được admin cấp.</li>
+            <li>
+              Nếu chưa có account: xin admin (Phong/dev) tạo. KHÔNG tự đăng ký — self-host này
+              không mở public sign-up.
+            </li>
+            <li>
+              Vào rồi: bên trái có icon <em>Table editor</em> (xem bảng), <em>SQL editor</em> (chạy
+              SQL), <em>Database</em> (schema), <em>Logs</em>.
+            </li>
+          </ol>
+        </div>
+        <div className="rounded-xl border-2 border-violet-500/40 bg-violet-500/[0.04] p-4">
+          <div className="flex items-center gap-2 font-semibold text-[14px] mb-2">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-violet-500/20 text-violet-700 dark:text-violet-300 text-xs font-bold">D</span>
+            Cho Dev
+          </div>
+          <ol className="ml-4 list-decimal space-y-1.5 text-[13px] leading-6 text-foreground/85">
+            <li>Studio container đang chạy: <TerminalInline>pati-supabase-studio-1</TerminalInline>.</li>
+            <li>
+              Bypass UI: <TerminalInline>NEXT_PUBLIC_SUPABASE_ANON_KEY</TerminalInline> +{" "}
+              <TerminalInline>SUPABASE_SERVICE_KEY</TerminalInline> trong <code>.env</code> — đừng share.
+            </li>
+            <li>
+              Đi direct: <TerminalInline>ssh timcook@100.94.220.128</TerminalInline> →{" "}
+              <TerminalInline>docker exec -it pati-supabase-db-1 psql -U postgres</TerminalInline>.
+            </li>
+            <li>
+              MCP server <TerminalInline>pati-supabase</TerminalInline> cho Claude — xem
+              {" "}<a href="/docs/tailscale#claude-access" className="underline">Tailscale § Claude access</a>.
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <h2 id="crud">CRUD — thao tác dữ liệu</h2>
+      <p>
+        4 thao tác CRUD (Create / Read / Update / Delete) đều có thể làm qua Studio UI. Dev có
+        thêm SQL editor, psql, hoặc supabase-js từ code.
+      </p>
+      <div className="not-prose my-5 space-y-3">
+        <div className="rounded-lg border bg-card p-4">
+          <div className="font-semibold text-[14px] mb-1">📖 Read (xem dữ liệu)</div>
+          <ul className="ml-4 list-disc text-[13px] leading-6 text-foreground/85 space-y-1">
+            <li>
+              <strong>User</strong>: Table editor → chọn schema <TerminalInline>master_app</TerminalInline> ở dropdown trên cùng → click bảng → filter/sort bằng nút trên cùng.
+            </li>
+            <li>
+              <strong>Dev</strong>: SQL editor →{" "}
+              <TerminalInline>SELECT * FROM master_app.shopify_orders LIMIT 50;</TerminalInline>
+            </li>
+          </ul>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="font-semibold text-[14px] mb-1">✏️ Update (sửa 1 dòng)</div>
+          <ul className="ml-4 list-disc text-[13px] leading-6 text-foreground/85 space-y-1">
+            <li>
+              <strong>User</strong>: Table editor → double-click ô cần sửa → gõ giá trị mới → Save.
+              Studio sẽ commit ngay.
+            </li>
+            <li>
+              <strong>Dev</strong>: SQL editor → <TerminalInline>UPDATE ... WHERE ...</TerminalInline>{" "}
+              (luôn có WHERE — không update toàn bảng).
+            </li>
+            <li className="text-amber-700 dark:text-amber-300">
+              ⚠ Sửa <TerminalInline>customer_profiles</TerminalInline>, <TerminalInline>shopify_orders</TerminalInline> hoặc các bảng matview-source sẽ ảnh hưởng dashboard ngay — báo dev trước nếu không chắc.
+            </li>
+          </ul>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="font-semibold text-[14px] mb-1">➕ Create (thêm dòng mới)</div>
+          <ul className="ml-4 list-disc text-[13px] leading-6 text-foreground/85 space-y-1">
+            <li>
+              <strong>User</strong>: Table editor → nút <em>+ Insert row</em> trên cùng phải → điền field bắt buộc (đỏ) → Save.
+            </li>
+            <li>
+              <strong>Dev</strong>: <TerminalInline>INSERT INTO master_app.&lt;table&gt; (...) VALUES (...);</TerminalInline>{" "}
+              hoặc <TerminalInline>supabase.from(&apos;...&apos;).insert(...)</TerminalInline> qua API.
+            </li>
+          </ul>
+        </div>
+        <div className="rounded-lg border bg-card p-4">
+          <div className="font-semibold text-[14px] mb-1">🗑 Delete (xoá dòng)</div>
+          <ul className="ml-4 list-disc text-[13px] leading-6 text-foreground/85 space-y-1">
+            <li>
+              <strong>User</strong>: Table editor → check vào dòng cần xoá → nút <em>Delete</em>{" "}
+              trên cùng → confirm.
+            </li>
+            <li>
+              <strong>Dev</strong>: <TerminalInline>DELETE FROM master_app.&lt;table&gt; WHERE ...;</TerminalInline>{" "}
+              — BẮT BUỘC có WHERE.
+            </li>
+            <li className="text-red-700 dark:text-red-300">
+              ⚠ Xoá hầu như không bao giờ undo được. Backup bằng{" "}
+              <TerminalInline>SELECT ... INTO TEMP backup_xxx</TerminalInline> trước khi DELETE nếu không chắc.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 id="user-when-call">Khi nào cần báo dev</h2>
+      <ul>
+        <li>Dashboard trống một cách bất thường mặc dù cron đã chạy.</li>
+        <li>Một bảng/số lượt từ chối liên tục với mã <code>403</code> hoặc <code>401</code> — thường là RLS / API key.</li>
+        <li>Sửa số trên Studio xong dashboard không cập nhật → dev kiểm tra PostgREST cache.</li>
+        <li>Cần migration / DDL — luôn qua dev (không tự ALTER bảng trên Studio).</li>
+      </ul>
 
       {/* ─────────── DEV MODE ─────────── */}
       <section data-dev-detail>
       <h2 id="what">Production Supabase = self-host</h2>
       <p>
         <strong>Không phải Supabase Cloud.</strong> Stack chạy bằng Docker Compose trên Mac mini
-        ở nhà (M4/16GB, từ 2026-05-10), expose ra internet qua Cloudflared tunnel.
+        ở văn phòng PATI (M4/16GB, từ 2026-05-10), expose ra internet qua Cloudflared tunnel.
       </p>
 
       <div className="not-prose my-6 rounded-xl border bg-card p-4 sm:p-5">
@@ -117,11 +292,15 @@ export default function Page() {
         <FactRow label="Migration date" value="2026-05-10 (Cloud → self-host)" mono={false} />
       </div>
 
-      <Callout variant="warning" title="Colima KHÔNG auto-start sau reboot">
-        Nếu Mac mini bị restart, Colima VM phải khởi động bằng tay (
-        <TerminalInline>colima start</TerminalInline>). Triệu chứng: 502 tunnel,{" "}
-        <TerminalInline>supabase.patiagency.com</TerminalInline> unreachable. Xem{" "}
-        <a href="/docs/mac-mini" className="underline">Mac mini</a> để hardening (launchd plist pending).
+      <Callout variant="success" title="Colima auto-start ĐÃ được setup">
+        LaunchAgent <TerminalInline>com.user.colima</TerminalInline> tự gọi{" "}
+        <TerminalInline>colima start</TerminalInline> khi Mac mini boot lên (xác minh{" "}
+        2026-05-27). Log ở <TerminalInline>~/Library/Logs/colima-autostart.{`{out,err}`}.log</TerminalInline>.{" "}
+        <strong>Caveat hiện tại</strong>: <TerminalInline>limactl</TerminalInline> symlink trong{" "}
+        Homebrew bị broken — VM đang chạy vẫn ổn, nhưng <TerminalInline>colima status</TerminalInline>{" "}
+        báo lỗi &ldquo;lima not found&rdquo; và lần restart tiếp theo có thể fail. Fix triệt để:{" "}
+        <TerminalInline>brew reinstall lima</TerminalInline>. Xem{" "}
+        <a href="/docs/mac-mini" className="underline">Mac mini</a>.
       </Callout>
 
       <h2 id="schema">Schema layout — master_app</h2>

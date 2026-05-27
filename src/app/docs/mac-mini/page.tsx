@@ -34,7 +34,7 @@ export default function Page() {
       <PageHeader
         eyebrow="Deployment"
         title="Mac mini Self-Host"
-        description="Máy tại nhà Phong chạy hầu hết hệ thống: dashboard, database, cron jobs, và session ChargeFlow."
+        description="Máy đặt tại văn phòng PATI chạy hầu hết hệ thống: dashboard, database, cron jobs, và session ChargeFlow."
       />
 
       {/* ─────────── USER MODE ─────────── */}
@@ -50,14 +50,14 @@ export default function Page() {
         <ul>
           <li>Dashboard có load không (502 = tunnel / Mac mini có vấn đề).</li>
           <li>Cron trên trang Cron Jobs có chạy gần đây không (mỗi 30 phút phải có 1 job).</li>
-          <li>Khi nhà Phong cúp điện hoặc Mac mini phải reboot, dev cần check Colima &amp; tunnel.</li>
+          <li>Khi văn phòng cúp điện hoặc Mac mini phải reboot, dev cần check Colima &amp; tunnel.</li>
         </ul>
 
         <h2 id="user-when-call">Khi nào báo dev</h2>
         <ul>
           <li>Dashboard 502 hoặc trắng trang trong &gt; 5 phút.</li>
           <li>Số liệu cũ &gt; 24 h.</li>
-          <li>Nhà mất điện hoặc Mac mini bị reboot — báo để dev khởi động lại Colima.</li>
+          <li>Văn phòng mất điện hoặc Mac mini bị reboot — báo để dev khởi động lại Colima.</li>
         </ul>
       </section>
 
@@ -66,7 +66,7 @@ export default function Page() {
       <h2 id="topology">Topology — cái gì ở đâu</h2>
 
       <div className="not-prose my-6 grid lg:grid-cols-2 gap-4">
-        <ZoneCard zone="Mac mini @ home" location="100.94.220.128 (Tailscale)" tone="emerald">
+        <ZoneCard zone="Mac mini @ PATI office" location="100.94.220.128 (Tailscale)" tone="emerald">
           <Service
             icon={Monitor}
             name="Next.js web"
@@ -124,7 +124,7 @@ export default function Page() {
           <Service
             icon={Power}
             name="Physical access"
-            detail="Tại nhà Phong (Q.1, HCMC) — phải hẹn trước"
+            detail="Tại văn phòng PATI — vào giờ làm việc"
           />
         </ZoneCard>
       </div>
@@ -139,7 +139,7 @@ export default function Page() {
         <FactRow label="Public tunnel" value="cloudflared → pnl.patigroup.com + supabase.patiagency.com" />
         <FactRow label="DB lên prod" value="2026-05-10 (migrate khỏi Supabase Cloud)" mono={false} />
         <FactRow label="Web deploy" value="GitHub Actions deploy-macmini.yml → deploy-web.sh" mono={false} />
-        <FactRow label="Vị trí" value="Nhà Phong — Quận 1, HCMC" mono={false} />
+        <FactRow label="Vị trí" value="Văn phòng PATI" mono={false} />
       </div>
 
       <Callout variant="info" title="Tại sao tự host?">
@@ -370,10 +370,16 @@ export default function Page() {
               { prompt: "$", cmd: "sleep 30 && colima status" },
             ]}
           />
-          <StepWarn title="Vẫn phải verify sau reboot">
-            <TerminalInline>com.user.colima</TerminalInline> đã được install để auto-start Colima khi
-            user session <TerminalInline>timcook</TerminalInline> live lại. Nếu Mac mini boot xong mà
-            Docker chưa chạy, dùng fallback <TerminalInline>launchctl kickstart</TerminalInline> ở trên.
+          <StepWarn title="Caveat: limactl symlink có thể broken sau brew update">
+            <TerminalInline>com.user.colima</TerminalInline> đã được install + đã fire nhiều lần
+            sau reboot (xác minh 2026-05-27, log{" "}
+            <TerminalInline>~/Library/Logs/colima-autostart.err.log</TerminalInline>). VM hiện đang
+            chạy. <strong>Nhưng</strong>: <TerminalInline>colima status</TerminalInline> có thể báo{" "}
+            <em>&ldquo;lima not found&rdquo;</em> do <TerminalInline>limactl</TerminalInline>{" "}
+            symlink Homebrew bị broken sau update lima 2.x. Fix triệt để:{" "}
+            <TerminalInline>brew reinstall lima</TerminalInline>. Nếu reboot xong Docker chưa chạy:
+            dùng fallback <TerminalInline>launchctl kickstart</TerminalInline> hoặc{" "}
+            <TerminalInline>colima start</TerminalInline>.
           </StepWarn>
         </Step>
 

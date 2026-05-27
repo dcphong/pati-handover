@@ -2,12 +2,27 @@ import {
   AlertOctagon,
   AlertTriangle,
   Bot,
+  Brain,
+  ChartBar,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  FileSearch,
   GitFork,
+  Inbox,
   Layers,
+  Mail,
   MessageSquareText,
+  PackageSearch,
+  Receipt,
   Scale,
+  Send,
+  Shield,
   Siren,
   Target,
+  Timer,
+  TrendingUp,
+  UserX,
   VolumeX,
   Wand2,
 } from "lucide-react";
@@ -16,6 +31,8 @@ import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import {
   Canvas,
+  FlowNode,
+  FlowRow,
   Step,
   Steps,
   StepCheck,
@@ -250,6 +267,306 @@ export default function Page() {
             </li>
           </ol>
         </PersonaCard>
+      </div>
+
+      {/* ─── WORKFLOWS ─────────────────────────────────────────── */}
+      <h2 id="workflows">Workflows — skills hoạt động ra sao</h2>
+      <p>
+        Mỗi customer message hoặc cron tick đều đi qua một workflow xác định. 4 luồng chính dưới
+        đây bao quát ~95 % các turn — phần còn lại do skill cụ thể xử lý (refund, address, dispute, …).
+      </p>
+
+      <div className="not-prose my-6 space-y-6">
+        <WorkflowCard
+          id="wf-inbound"
+          title="A. Customer email / DM tới"
+          subtitle="Default flow — tin từ khách qua Lark Mail hoặc Feishu group"
+          tone="blue"
+        >
+          <FlowRow arrows="right">
+            {[
+              <FlowNode
+                key="inbox"
+                icon={Inbox}
+                label="Lark Mail / Feishu"
+                sub="email-bridge ingest, queue"
+                tone="violet"
+              />,
+              <FlowNode
+                key="meta"
+                icon={Brain}
+                label="context-discipline"
+                sub="meta · verify trước khi nói"
+                tone="amber"
+              />,
+              <FlowNode
+                key="sentiment"
+                icon={AlertOctagon}
+                label="sentiment-handling"
+                sub="emotional gate · FIRST"
+                tone="pink"
+              />,
+              <FlowNode
+                key="router"
+                icon={GitFork}
+                label="SKILL_INDEX router"
+                sub="match keyword → skill"
+                tone="sky"
+              />,
+              <FlowNode
+                key="reply"
+                icon={Send}
+                label="message tool"
+                sub="channel:feishu + body"
+                tone="emerald"
+              />,
+            ]}
+          </FlowRow>
+        </WorkflowCard>
+
+        <WorkflowCard
+          id="wf-refund"
+          title="B. Refund / cancel request"
+          subtitle="Hard stops: < 120-day sub không cancel, > $50 outside policy → escalate"
+          tone="amber"
+        >
+          <FlowRow arrows="right">
+            {[
+              <FlowNode
+                key="trig"
+                icon={Receipt}
+                label="Trigger"
+                sub="keyword: refund / kündig / cancel"
+                tone="violet"
+              />,
+              <FlowNode
+                key="check"
+                icon={Shield}
+                label="Policy check"
+                sub="sub age + amount + authority"
+                tone="amber"
+              />,
+              <FlowNode
+                key="api"
+                icon={CreditCard}
+                label="API call"
+                sub="Shopify / Recharge"
+                tone="sky"
+              />,
+              <FlowNode
+                key="verify"
+                icon={CheckCircle2}
+                label="Verify success"
+                sub="cùng turn — đừng claim chưa confirm"
+                tone="emerald"
+              />,
+              <FlowNode
+                key="reply"
+                icon={Send}
+                label="Reply + log"
+                sub="message tool + memory/YYYY-MM-DD.md"
+                tone="emerald"
+              />,
+            ]}
+          </FlowRow>
+          <p className="text-[12.5px] text-muted-foreground mt-3 leading-5">
+            Nếu policy fail (sub &lt; 120 ngày hoặc &gt; $50): jump sang{" "}
+            <strong>escalation-protocol</strong> → ping Lark <code>#openclaw-alerts</code> + tag supervisor.
+          </p>
+        </WorkflowCard>
+
+        <WorkflowCard
+          id="wf-cron"
+          title="C. Cron tick (hourly / daily)"
+          subtitle="20 cron pipeline tự động — đa số phải im lặng nếu không có việc mới"
+          tone="emerald"
+        >
+          <FlowRow arrows="right">
+            {[
+              <FlowNode
+                key="cron"
+                icon={Clock}
+                label="launchd / crontab"
+                sub="vd: */15 frt_tracker.py"
+                tone="violet"
+              />,
+              <FlowNode
+                key="silence"
+                icon={VolumeX}
+                label="Stay-silent check"
+                sub="Không có actionable task → kết turn rỗng"
+                tone="amber"
+              />,
+              <FlowNode
+                key="work"
+                icon={PackageSearch}
+                label="Pipeline body"
+                sub="FRT / OTIF / NS / Amazon / address sync"
+                tone="sky"
+              />,
+              <FlowNode
+                key="log"
+                icon={FileSearch}
+                label="Log result"
+                sub="logs/north_star_daily.jsonl"
+                tone="emerald"
+              />,
+              <FlowNode
+                key="report"
+                icon={Mail}
+                label="Report (nếu có)"
+                sub="#daily-report chat"
+                tone="pink"
+              />,
+            ]}
+          </FlowRow>
+          <p className="text-[12.5px] text-muted-foreground mt-3 leading-5">
+            Báo cáo định kỳ dùng <strong>format chuẩn</strong>: title line + counts + entries
+            + outcome. Cấm filler kiểu &quot;checking in&quot; / &quot;monitoring&quot; — đã từng
+            spam 4 tin trong 5 phút.
+          </p>
+        </WorkflowCard>
+
+        <WorkflowCard
+          id="wf-dispute"
+          title="D. Chargeback / dispute mới"
+          subtitle="5-min cron + UI scrape qua Chrome CDP trên Mac mini"
+          tone="red"
+        >
+          <FlowRow arrows="right">
+            {[
+              <FlowNode
+                key="poll"
+                icon={Timer}
+                label="sync-chargeflow-ui"
+                sub="every 300s · Chrome :9222"
+                tone="violet"
+              />,
+              <FlowNode
+                key="detect"
+                icon={AlertTriangle}
+                label="Detect new dispute"
+                sub="chargeflow_disputes table delta"
+                tone="amber"
+              />,
+              <FlowNode
+                key="collect"
+                icon={FileSearch}
+                label="chargeflow-collect-evidence"
+                sub="screenshots + tracking + order"
+                tone="sky"
+              />,
+              <FlowNode
+                key="upload"
+                icon={Send}
+                label="Upload to ChargeFlow"
+                sub="evidence package"
+                tone="emerald"
+              />,
+              <FlowNode
+                key="alert"
+                icon={Siren}
+                label="Alert if win-rate < target"
+                sub="Lark #openclaw-alerts"
+                tone="pink"
+              />,
+            ]}
+          </FlowRow>
+        </WorkflowCard>
+
+        <WorkflowCard
+          id="wf-cs"
+          title="E. CS metrics tracking (mỗi 15 phút)"
+          subtitle="6 North Stars — agent phải ngầm giám sát, không tự gửi tin trừ khi drift"
+          tone="violet"
+        >
+          <FlowRow arrows="right">
+            {[
+              <FlowNode
+                key="frt"
+                icon={ChartBar}
+                label="frt_tracker.py"
+                sub="NS#1 first-response time"
+                tone="sky"
+              />,
+              <FlowNode
+                key="otif"
+                icon={TrendingUp}
+                label="otif_tracker.py"
+                sub="NS#2 on-time-in-full"
+                tone="sky"
+              />,
+              <FlowNode
+                key="agg"
+                icon={Layers}
+                label="north_star_daily 08:30"
+                sub="snapshot NS#1–#6"
+                tone="violet"
+              />,
+              <FlowNode
+                key="check"
+                icon={Shield}
+                label="Drift > 5 % / 24 h?"
+                sub="threshold check"
+                tone="amber"
+              />,
+              <FlowNode
+                key="alert"
+                icon={Siren}
+                label="Alert supervisor"
+                sub="#openclaw-alerts"
+                tone="pink"
+              />,
+            ]}
+          </FlowRow>
+        </WorkflowCard>
+
+        <WorkflowCard
+          id="wf-cancel"
+          title="F. Cancellation retention"
+          subtitle="Orchestrator — bend trong policy thay vì straight cancel"
+          tone="pink"
+        >
+          <FlowRow arrows="right">
+            {[
+              <FlowNode
+                key="trig"
+                icon={UserX}
+                label="Trigger"
+                sub="cancel / kündig / stornier"
+                tone="violet"
+              />,
+              <FlowNode
+                key="age"
+                icon={Clock}
+                label="Sub age check"
+                sub="< 120 ngày → policy_decline"
+                tone="amber"
+              />,
+              <FlowNode
+                key="offer"
+                icon={MessageSquareText}
+                label="Offer alternatives"
+                sub="pause · skip · 15% off"
+                tone="sky"
+              />,
+              <FlowNode
+                key="accept"
+                icon={CheckCircle2}
+                label="Customer chọn"
+                sub="execute via Recharge API"
+                tone="emerald"
+              />,
+              <FlowNode
+                key="log"
+                icon={Receipt}
+                label="Log + csat-collection"
+                sub="hậu xử lý"
+                tone="pink"
+              />,
+            ]}
+          </FlowRow>
+        </WorkflowCard>
       </div>
 
       {/* ─── SKILLS ─────────────────────────────────────────── */}
@@ -493,7 +810,7 @@ export default function Page() {
       <Callout variant="danger" title="Bẫy 502 — luôn probe tunnel TRƯỚC">
         Triệu chứng: card hiện $0, section trống, 502 thỉnh thoảng nhảy ra.{" "}
         <strong>Đào nhầm chỗ</strong>: schema cache, RLS, matview gãy.{" "}
-        <strong>Nguyên nhân thật</strong>: NAT ISP ở nhà drop kết nối idle của cloudflared edge
+        <strong>Nguyên nhân thật</strong>: NAT ISP văn phòng PATI drop kết nối idle của cloudflared edge
         sau vài phút (111 disconnects → 0 sau khi hardening). Cấu hình hardening nằm trong{" "}
         <code>~/.cloudflared/config.yml</code>: <code>protocol: http2</code>,{" "}
         <code>edge-ip-version: &quot;4&quot;</code>, <code>tcpKeepAlive: 30s</code>,{" "}
@@ -571,6 +888,38 @@ export default function Page() {
 }
 
 // ─── small helpers ───────────────────────────────────────────────────────
+
+function WorkflowCard({
+  id,
+  title,
+  subtitle,
+  tone,
+  children,
+}: {
+  id: string;
+  title: string;
+  subtitle: string;
+  tone: "blue" | "amber" | "emerald" | "red" | "violet" | "pink";
+  children: React.ReactNode;
+}) {
+  const ring: Record<typeof tone, string> = {
+    blue:    "border-blue-500/40 bg-blue-500/[0.04]",
+    amber:   "border-amber-500/40 bg-amber-500/[0.04]",
+    emerald: "border-emerald-500/40 bg-emerald-500/[0.04]",
+    red:     "border-red-500/40 bg-red-500/[0.04]",
+    violet:  "border-violet-500/40 bg-violet-500/[0.04]",
+    pink:    "border-pink-500/40 bg-pink-500/[0.04]",
+  };
+  return (
+    <div id={id} className={cn("rounded-2xl border-2 p-4 sm:p-5", ring[tone])}>
+      <div className="mb-3">
+        <div className="font-semibold text-[15px] tracking-tight">{title}</div>
+        <div className="text-[12.5px] text-muted-foreground mt-0.5">{subtitle}</div>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function KpiCard({
   icon: Icon,
