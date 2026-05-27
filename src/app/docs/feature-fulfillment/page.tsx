@@ -1,6 +1,7 @@
 import {
   Boxes,
   Cable,
+  Database,
   Package,
   RefreshCw,
   Truck,
@@ -9,7 +10,9 @@ import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import { CodeBlock } from "@/components/docs/code-block";
+import { ExternalLinkRow } from "@/components/docs/external-link-card";
 import { Terminal, TerminalInline } from "@/components/docs/visuals";
+import { EXTERNAL, LARK } from "@/lib/external-links";
 
 export const metadata = { title: "VNH / NS3 Fulfillment — PATI Handover" };
 
@@ -20,6 +23,27 @@ export default function Page() {
         eyebrow="Operations"
         title="VNH / NS3 Fulfillment"
         description="Tự đẩy đơn Shopify sang kho phù hợp (VNH ở Hà Nội hoặc Flexport ở Mỹ). Theo dõi tồn kho và phục vụ NS#3."
+      />
+
+      <ExternalLinkRow
+        links={[
+          {
+            href: LARK.fulfillmentRouting,
+            title: "Warehouse routing (Lark Base — 14k rows)",
+            pathHint: "wiki/.../table=tblNQrmGRQFDkkPu",
+            desc: "Authoritative routing: customer email pattern + SKU → warehouse choice. Daily sync → master_app.warehouse_routing.",
+            icon: Database,
+            tone: "emerald",
+          },
+          {
+            href: EXTERNAL.flexport,
+            title: "Flexport portal",
+            pathHint: "app.flexport.com",
+            desc: "3PL portal cho VNH + US warehouses. Logistics API tokens issue từ đây.",
+            icon: Truck,
+            tone: "sky",
+          },
+        ]}
       />
 
       {/* ─────────── USER MODE ─────────── */}
@@ -103,8 +127,10 @@ const mutation = \`
       <div className="not-prose my-3 rounded-lg border bg-muted/30 px-4 py-3 text-[13px] leading-6">
         <strong>Age gate:</strong> 30 ngày — FO older sẽ không auto-submit nữa (đề phòng
         runaway).<br />
-        <strong>Cron:</strong> <TerminalInline>shopify_fulfillment_sync.yml</TerminalInline>{" "}
-        hoặc Mac mini crontab entry tương ứng (hourly).
+        <strong>Cron:</strong> Mac mini launchd plist{" "}
+        <TerminalInline>com.pati.submit-stuck-fulfillments</TerminalInline> (StartInterval 3600s).
+        GH Actions <TerminalInline>shopify_fulfillment_sync.yml</TerminalInline> hiện chỉ còn
+        workflow_dispatch (cron commented).
       </div>
 
       <h2 id="routing">Lark warehouse routing (14k rows)</h2>

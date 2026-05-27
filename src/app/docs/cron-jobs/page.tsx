@@ -26,14 +26,14 @@ const macMiniJobs: CronJob[] = [
     hours: Array.from({ length: 24 }, (_, i) => i),
     every: 15,
     runner: "macmini",
-    what: "Shopify orders → shopify_orders (every 15 min, :00/:15/:30/:45)",
+    what: "/api/analytics/sync/shopify/v2 (Bulk Op) → raw_orders + 5 raw_* tables",
   },
   {
     name: "sync-shopify-legacy",
     hours: Array.from({ length: 24 }, (_, i) => i),
     every: 15,
     runner: "macmini",
-    what: "Date-window Shopify backfill (every 15 min)",
+    what: "Python date-window → shopify_orders (line-item-flat)",
   },
   {
     name: "sync-providers",
@@ -341,10 +341,19 @@ export default function Page() {
             chỉ 1 plist tên <TerminalInline>chargeflow-sync-ui</TerminalInline>.
           </li>
           <li>
-            Shopify TS sync (<TerminalInline>/api/analytics/sync/shopify</TerminalInline>) ghi vào{" "}
-            <TerminalInline>shopify_orders</TerminalInline> chứ KHÔNG phải{" "}
-            <TerminalInline>raw_orders</TerminalInline>. Không có route nào write trực tiếp{" "}
-            <TerminalInline>raw_orders</TerminalInline> trong repo.
+            <TerminalInline>com.pati.sync-shopify</TerminalInline> thật ra gọi{" "}
+            <TerminalInline>/api/analytics/sync/shopify/v2</TerminalInline> (Bulk Operations) →
+            ghi 6 raw_* table: <TerminalInline>raw_orders</TerminalInline>,{" "}
+            <TerminalInline>raw_order_line_items</TerminalInline>,{" "}
+            <TerminalInline>raw_payment_transactions</TerminalInline>,{" "}
+            <TerminalInline>raw_fulfillments</TerminalInline>,{" "}
+            <TerminalInline>raw_refunds</TerminalInline>,{" "}
+            <TerminalInline>raw_refund_line_items</TerminalInline>. Pipeline legacy Python
+            (<TerminalInline>sync-shopify-legacy</TerminalInline>) mới là cái ghi{" "}
+            <TerminalInline>shopify_orders</TerminalInline>. Xem{" "}
+            <a href="/docs/feature-shopify-sync#dual-pipeline" className="underline">
+              feature-shopify-sync
+            </a>.
           </li>
         </ul>
       </Callout>

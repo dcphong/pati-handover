@@ -198,7 +198,8 @@ export default function Page() {
               <TerminalInline>--schema master_app</TerminalInline>). Muốn dùng schema khác phải start
               instance MCP thứ 2 với tên khác. <strong>Không chạy DDL được</strong> — REST chỉ thao tác
               table/view/RPC, không có <TerminalInline>CREATE TABLE</TerminalInline> hay arbitrary SQL.
-              Cần DDL → dùng <TerminalInline>/pg/query</TerminalInline> endpoint (xem Supabase doc) hoặc
+              Cần DDL → dùng <TerminalInline>/pg/query</TerminalInline> endpoint (basic_auth{" "}
+              <TerminalInline>admin/Admin@2025</TerminalInline>, xem Supabase doc) hoặc
               <TerminalInline>pati-pg-direct</TerminalInline> MCP với SSH tunnel.
             </li>
             <li>

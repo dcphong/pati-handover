@@ -13,6 +13,7 @@ import {
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
+import { ExternalLinkRow } from "@/components/docs/external-link-card";
 import {
   FactRow,
   HealthCheckGrid,
@@ -25,6 +26,7 @@ import {
   TerminalInline,
   ZoneCard,
 } from "@/components/docs/visuals";
+import { INFRA } from "@/lib/external-links";
 
 export const metadata = { title: "Mac mini Self-Host — PATI Handover" };
 
@@ -35,6 +37,27 @@ export default function Page() {
         eyebrow="Deployment"
         title="Mac mini Self-Host"
         description="Máy đặt tại văn phòng PATI chạy hầu hết hệ thống: dashboard, database, cron jobs, và session ChargeFlow."
+      />
+
+      <ExternalLinkRow
+        links={[
+          {
+            href: INFRA.tailscaleAdmin,
+            title: "Tailscale admin — tailnet members",
+            pathHint: "login.tailscale.com/admin/machines",
+            desc: "Mời người mới vào tailnet, xem ACL, xem device list.",
+            icon: Network,
+            tone: "blue",
+          },
+          {
+            href: INFRA.supabaseStudio,
+            title: "Supabase Studio (Mac mini host)",
+            pathHint: "supabase.patiagency.com",
+            desc: "Database UI — cần basic_auth admin/Admin@2025.",
+            icon: Database,
+            tone: "emerald",
+          },
+        ]}
       />
 
       {/* ─────────── USER MODE ─────────── */}
@@ -99,8 +122,8 @@ export default function Page() {
           />
           <Service
             icon={TerminalIcon}
-            name="crontab"
-            detail="16 jobs (xem trang Cron Jobs)"
+            name="launchd"
+            detail="33 plist com.pati.* (xem trang Cron Jobs)"
             status="up"
           />
         </ZoneCard>
@@ -505,15 +528,28 @@ export default function Page() {
         ]}
       />
 
-      <h2 id="cron">Crontab — 16 jobs đang chạy</h2>
+      <h2 id="cron">launchd — 33 plist <code className="text-[12px]">com.pati.*</code></h2>
+      <Callout variant="warning" title="PATI dùng launchd, không phải crontab">
+        Mac mini PATI là macOS — pipeline production chạy bằng <strong>launchd</strong>{" "}
+        (file <TerminalInline>~/Library/LaunchAgents/com.pati.*.plist</TerminalInline>) với{" "}
+        <TerminalInline>StartInterval</TerminalInline> /{" "}
+        <TerminalInline>StartCalendarInterval</TerminalInline>. <TerminalInline>crontab -l</TerminalInline>{" "}
+        trên Mac mini chỉ chứa job của <strong>openclaw agent timcook</strong> (~20 entry độc lập),
+        không phải PATI. Xem agent's crontab ở{" "}
+        <a href="/docs/timcook-agent" className="underline">Timcook Agent</a>.
+      </Callout>
       <p>
-        SSH vào và <TerminalInline>crontab -l</TerminalInline> để xem full. 5 entries quan trọng:
+        SSH vào Mac mini rồi <TerminalInline>launchctl list | grep com.pati</TerminalInline> sẽ
+        thấy 33 dòng. 5 ví dụ tiêu biểu:
       </p>
       <div className="not-prose my-5 rounded-xl border bg-card overflow-hidden">
         <table className="w-full text-[13px]">
           <thead className="bg-muted/40 border-b">
             <tr>
-              <th className="text-left px-3 py-2 font-semibold text-[11px] uppercase tracking-wider w-[140px]">
+              <th className="text-left px-3 py-2 font-semibold text-[11px] uppercase tracking-wider w-[220px]">
+                Plist
+              </th>
+              <th className="text-left px-3 py-2 font-semibold text-[11px] uppercase tracking-wider w-[160px]">
                 Lịch
               </th>
               <th className="text-left px-3 py-2 font-semibold text-[11px] uppercase tracking-wider">
@@ -523,30 +559,36 @@ export default function Page() {
           </thead>
           <tbody>
             <tr className="border-t">
-              <td className="px-3 py-2 font-mono text-[12px]">0 5,13 * * *</td>
-              <td className="px-3 py-2">Shopify Lark Base sync (2× ngày — 05h + 13h VN)</td>
+              <td className="px-3 py-2 font-mono text-[12px]">com.pati.sync-shopify-larkbase</td>
+              <td className="px-3 py-2 text-muted-foreground">05:00 + 13:00 VN</td>
+              <td className="px-3 py-2">Shopify orders → Lark Base (APPEND only)</td>
             </tr>
             <tr className="border-t">
-              <td className="px-3 py-2 font-mono text-[12px]">*/5 * * * *</td>
-              <td className="px-3 py-2">ChargeFlow UI sync (mỗi 5 phút)</td>
+              <td className="px-3 py-2 font-mono text-[12px]">com.pati.sync-chargeflow-ui</td>
+              <td className="px-3 py-2 text-muted-foreground">300s (5 phút)</td>
+              <td className="px-3 py-2">ChargeFlow UI parity via Chrome CDP</td>
             </tr>
             <tr className="border-t">
-              <td className="px-3 py-2 font-mono text-[12px]">0 6,18 * * *</td>
-              <td className="px-3 py-2">Lark Mail sync (2× ngày)</td>
+              <td className="px-3 py-2 font-mono text-[12px]">com.pati.sync-lark-mail</td>
+              <td className="px-3 py-2 text-muted-foreground">300s (5 phút)</td>
+              <td className="px-3 py-2">Lark Mail messages reconcile</td>
             </tr>
             <tr className="border-t">
-              <td className="px-3 py-2 font-mono text-[12px]">0 * * * *</td>
-              <td className="px-3 py-2">Shopify fulfillment auto-submit (mỗi giờ)</td>
+              <td className="px-3 py-2 font-mono text-[12px]">com.pati.submit-stuck-fulfillments</td>
+              <td className="px-3 py-2 text-muted-foreground">3600s (hourly)</td>
+              <td className="px-3 py-2">Auto-submit Shopify FOs UNSUBMITTED</td>
             </tr>
             <tr className="border-t">
-              <td className="px-3 py-2 font-mono text-[12px]">30 23 * * *</td>
-              <td className="px-3 py-2">North Stars matview refresh (nightly)</td>
+              <td className="px-3 py-2 font-mono text-[12px]">com.pati.sync-shopify</td>
+              <td className="px-3 py-2 text-muted-foreground">*/15 phút</td>
+              <td className="px-3 py-2">/api/analytics/sync/shopify/v2 → raw_orders + 5 raw_* khác</td>
             </tr>
           </tbody>
         </table>
       </div>
       <p>
-        Full visual schedule grid ở <a href="/docs/cron-jobs">Cron Jobs</a>.
+        Full visual schedule grid của cả 33 plist + GH Actions ở{" "}
+        <a href="/docs/cron-jobs">Cron Jobs</a>.
       </p>
 
       <h2 id="vps2">VPS2 — host phụ</h2>

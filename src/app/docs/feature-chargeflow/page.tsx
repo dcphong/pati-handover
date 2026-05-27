@@ -1,6 +1,7 @@
 import {
   Cookie,
   Database,
+  Mail,
   Network,
   Shield,
   Workflow,
@@ -9,6 +10,7 @@ import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import { CodeBlock } from "@/components/docs/code-block";
+import { ExternalLinkRow } from "@/components/docs/external-link-card";
 import {
   FlowNode,
   FlowRow,
@@ -17,6 +19,7 @@ import {
   Terminal,
   TerminalInline,
 } from "@/components/docs/visuals";
+import { EXTERNAL, INFRA, LARK } from "@/lib/external-links";
 
 export const metadata = { title: "ChargeFlow Disputes — PATI Handover" };
 
@@ -27,6 +30,35 @@ export default function Page() {
         eyebrow="Operations"
         title="ChargeFlow Disputes"
         description="Tự gom + nộp evidence cho dispute mỗi 5 phút. Bộ máy chính nằm trên Mac mini."
+      />
+
+      <ExternalLinkRow
+        links={[
+          {
+            href: EXTERNAL.chargeflow,
+            title: "ChargeFlow dashboard",
+            pathHint: "app.chargeflowapp.com",
+            desc: "Đăng nhập bằng email PATI để xem dispute list, evidence package, cookie session.",
+            icon: Shield,
+            tone: "amber",
+          },
+          {
+            href: LARK.mail,
+            title: "Lark Mail (evidence source)",
+            pathHint: "paticreativeagency.sg.larksuite.com/mail",
+            desc: "Screenshot email khách + tracking confirmations vào evidence package.",
+            icon: Mail,
+            tone: "violet",
+          },
+          {
+            href: `${INFRA.dashboardProd}/chargeflow/disputes`,
+            title: "PATI dashboard — disputes",
+            pathHint: "pnl.patigroup.com/chargeflow/disputes",
+            desc: "View dispute list ở PATI, trigger 'Sync now' button.",
+            icon: Database,
+            tone: "emerald",
+          },
+        ]}
       />
 
       {/* ─────────── USER MODE ─────────── */}
@@ -78,8 +110,8 @@ export default function Page() {
             <FlowNode
               key="cron"
               icon={Workflow}
-              label="Mac mini crontab"
-              sub="*/5 * * * *"
+              label="Mac mini launchd"
+              sub="com.pati.sync-chargeflow-ui · StartInterval 300s"
               tone="orange"
             />,
             <FlowNode

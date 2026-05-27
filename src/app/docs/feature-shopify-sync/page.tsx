@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
 import { CodeBlock } from "@/components/docs/code-block";
+import { ExternalLinkRow } from "@/components/docs/external-link-card";
 import {
   FlowNode,
   FlowRow,
@@ -19,6 +20,7 @@ import {
   Terminal,
   TerminalInline,
 } from "@/components/docs/visuals";
+import { SHOPIFY } from "@/lib/external-links";
 
 export const metadata = { title: "Shopify Sync — PATI Handover" };
 
@@ -29,6 +31,27 @@ export default function Page() {
         eyebrow="Core Features"
         title="Shopify Sync"
         description="Đơn hàng, refund và sản phẩm từ Shopify được đồng bộ về dashboard nhiều lần mỗi ngày."
+      />
+
+      <ExternalLinkRow
+        links={[
+          {
+            href: SHOPIFY.wnAdmin,
+            title: "WellnessNest Shopify Admin",
+            pathHint: "admin.shopify.com/store/e49d78-3",
+            desc: "Store chính (e49d78-3). Orders / refunds / fulfillments / webhooks setup ở đây.",
+            icon: ShoppingBag,
+            tone: "emerald",
+          },
+          {
+            href: SHOPIFY.wnCustomAppLark,
+            title: "Custom App 'Lark Integration'",
+            pathHint: "admin.shopify.com/.../apps/development",
+            desc: "App sở hữu webhook chính + read tokens. SHOPIFY_API_SECRET trỏ về đây. Reveal token một lần khi rotate.",
+            icon: KeyRound,
+            tone: "violet",
+          },
+        ]}
       />
 
       {/* ─────────── USER MODE ─────────── */}
@@ -65,7 +88,7 @@ export default function Page() {
             <div className="font-mono text-[12px]">gid:286968840193</div>
             <div className="font-mono text-[12px]">api_key 9a7886…1a6c</div>
             <div className="text-foreground/85 mt-2">
-              <strong>ÔWN</strong> tất cả webhook chính + read tokens. Đây là app{" "}
+              <strong>Sở hữu</strong> tất cả webhook chính + read tokens. Đây là app{" "}
               <TerminalInline>SHOPIFY_API_SECRET</TerminalInline> trỏ về.
             </div>
           </div>
@@ -95,37 +118,70 @@ export default function Page() {
         <TerminalInline>reference_shopify_api_secret_lark_integration</TerminalInline>.
       </Callout>
 
-      <h2 id="dual-pipeline">2 pipeline song song — đừng nhầm</h2>
+      <h2 id="dual-pipeline">3+ pipeline song song — đừng nhầm</h2>
       <p>
-        Cả 2 cùng đọc Shopify và <strong>cùng upsert vào </strong>
-        <TerminalInline>master_app.shopify_orders</TerminalInline> (SoT duy nhất). Khác biệt
-        nằm ở filter, log table, và lúc nào được fire.
+        Có nhiều route đồng thời pull Shopify, ghi vào <strong>các table khác nhau</strong>{" "}
+        tuỳ pipeline. Khi debug &ldquo;đơn không thấy trong DB&rdquo; phải xác định pipeline
+        nào chạy gần nhất.
       </p>
       <div className="not-prose my-6 grid sm:grid-cols-2 gap-3">
         <PipelineCard
           tone="emerald"
-          name="/api/sync (Python)"
-          runtime="Python 3.12 — sync/run.py + sync/modules/pipeline.py"
+          name="Python — legacy line-item-flat"
+          runtime="sync/run.py + sync/modules/pipeline.py"
           strategy="created_at_min/max (date-window) — re-fetch ranges"
-          cron="Mac mini com.pati.sync-shopify 4×/h (:00/:15/:30/:45)"
-          target="shopify_orders · log → sync_logs (số nhiều)"
+          cron="Mac mini com.pati.sync-shopify-legacy 4×/h (:00/:15/:30/:45)"
+          target="shopify_orders (1 row / line item) · log → sync_logs"
         />
         <PipelineCard
           tone="violet"
-          name="/api/analytics/sync/shopify (TS)"
-          runtime="TypeScript native fetch — Mac mini Next.js API"
-          strategy="updated_at_min cursor — incremental from latest DB row − 1h"
-          cron="On-demand: user click 'Refresh' trên /v2 analytics"
-          target="shopify_orders + raw_refunds · log → sync_log (số ít)"
+          name="TS v2 — Bulk Operations"
+          runtime="/api/analytics/sync/shopify/v2 — Shopify bulkOperationRunQuery"
+          strategy="updated_at:>=<since> qua bulk op (1 GraphQL call cho toàn bộ orders + line_items + transactions + fulfillments + refunds)"
+          cron="Mac mini com.pati.sync-shopify 4×/h (:00/:15/:30/:45) + on-demand Refresh"
+          target="raw_orders, raw_order_line_items, raw_payment_transactions, raw_fulfillments, raw_refunds, raw_refund_line_items · log → sync_log"
+        />
+        <PipelineCard
+          tone="sky"
+          name="Webhooks (instant)"
+          runtime="/api/webhooks/shopify/orders — HMAC-verified"
+          strategy="Real-time push từ Shopify mỗi khi order create/update/cancel/refund"
+          cron="KHÔNG cron — fire khi Shopify gọi (cần Lark Integration app secret)"
+          target="raw_orders + related raw_* tables"
+        />
+        <PipelineCard
+          tone="orange"
+          name="Lark Base APPEND (Python)"
+          runtime="sync/modules/lark_pusher chain"
+          strategy="2× ngày VN, APPEND-only (re-run = duplicate)"
+          cron="Mac mini com.pati.sync-shopify-larkbase 05:00 + 13:00 VN"
+          target="Lark Base — DTC table (không phải Postgres)"
         />
       </div>
-      <Callout variant="info" title="Sai lệch bảng cũ">
-        Phiên bản cũ vẽ TS sync → <TerminalInline>raw_orders</TerminalInline>. Không có route
-        nào trong repo write trực tiếp <TerminalInline>raw_orders</TerminalInline>. TS sync
-        ghi <TerminalInline>shopify_orders</TerminalInline> (conflict trên{" "}
-        <TerminalInline>(order_number, variant_sku)</TerminalInline>) +{" "}
-        <TerminalInline>raw_refunds</TerminalInline>. Memory{" "}
-        <TerminalInline>project_dual_shopify_syncs</TerminalInline> là source of truth.
+      <Callout variant="warning" title="raw_orders vs shopify_orders — bảng nào là SoT?">
+        <p className="mt-1">
+          <strong>Cùng tồn tại, mục đích khác nhau:</strong>
+        </p>
+        <ul className="ml-5 mt-1 list-disc space-y-1">
+          <li>
+            <TerminalInline>raw_orders</TerminalInline> (~86k row 2026-05-28) — TW-parity-friendly
+            shape, 1 row / order, các <TerminalInline>raw_*</TerminalInline> table khác chứa
+            line_items / transactions / fulfillments / refunds tách riêng. Đây là SoT cho{" "}
+            <strong>analytics summary cards</strong> (qua <TerminalInline>v_stvf</TerminalInline>{" "}
+            +{" "}
+            <TerminalInline>summary_metrics</TerminalInline> RPC).
+          </li>
+          <li>
+            <TerminalInline>shopify_orders</TerminalInline> (~169k row) — legacy line-item-flat
+            (1 row / line item, nhiều row hơn). SoT cho <strong>orders dashboard /
+              shopify-orders</strong>, CS customer panel, Lark Mail reconcile join.
+          </li>
+        </ul>
+        <p className="mt-2">
+          2 bảng KHÔNG sync nhau tự động — nếu 1 pipeline lỗi → bảng đó stale, bảng khác vẫn
+          fresh. <TerminalInline>health/cron-watchdog</TerminalInline> đọc{" "}
+          <TerminalInline>raw_orders.synced_at</TerminalInline> để alert.
+        </p>
       </Callout>
 
       <h2 id="orders-flow">Order sync — đường data đi</h2>
@@ -320,7 +376,7 @@ function PipelineCard({
   cron,
   target,
 }: {
-  tone: "emerald" | "violet";
+  tone: "emerald" | "violet" | "sky" | "orange";
   name: string;
   runtime: string;
   strategy: string;
@@ -330,10 +386,14 @@ function PipelineCard({
   const styles = {
     emerald: "border-emerald-500/40 bg-emerald-500/[0.04]",
     violet: "border-violet-500/40 bg-violet-500/[0.04]",
+    sky:     "border-sky-500/40 bg-sky-500/[0.04]",
+    orange:  "border-orange-500/40 bg-orange-500/[0.04]",
   } as const;
   const text = {
     emerald: "text-emerald-700 dark:text-emerald-300",
-    violet: "text-violet-700 dark:text-violet-300",
+    violet:  "text-violet-700 dark:text-violet-300",
+    sky:     "text-sky-700 dark:text-sky-300",
+    orange:  "text-orange-700 dark:text-orange-300",
   } as const;
   return (
     <div className={`rounded-xl border-2 p-4 ${styles[tone]}`}>

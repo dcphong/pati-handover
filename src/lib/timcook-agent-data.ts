@@ -352,7 +352,7 @@ export type ContainerRow = { name: string; status: string; role: string; warn?: 
 export const supabaseContainers: ContainerRow[] = [
   { name: "pati-supabase-db-1", status: "Up 2 weeks (healthy)", role: "Postgres 15" },
   { name: "pati-supabase-pooler-1", status: "Up 2 weeks (healthy)", role: "Pool Supavisor trên :6543" },
-  { name: "pati-supabase-meta-1", status: "Up 2 weeks (healthy)", role: "postgres-meta · /pg/query KHÔNG auth", warn: true },
+  { name: "pati-supabase-meta-1", status: "Up 2 weeks (healthy)", role: "postgres-meta · /pg/query (lock Caddy basic_auth admin/Admin@2025 từ 2026-05-27)" },
   { name: "pati-supabase-imgproxy-1", status: "Up 12 days (healthy)", role: "Image proxy" },
   { name: "pati-supabase-rest-1", status: "Up 9 days", role: "PostgREST" },
   { name: "pati-supabase-caddy-1", status: "Up 9 days", role: "TLS + routing — đứng trước Kong ở :8000" },
