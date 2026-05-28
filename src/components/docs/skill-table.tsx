@@ -1,6 +1,20 @@
 "use client";
 
-import { ChevronDown, ChevronRight, FileText } from "lucide-react";
+import {
+  AlertOctagon,
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  GitFork,
+  Link2,
+  ListChecks,
+  MessageSquareText,
+  Play,
+  Shield,
+  Target,
+  ZapOff,
+  type LucideIcon,
+} from "lucide-react";
 import { Fragment, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { SkillAudience, SkillRow } from "@/lib/timcook-agent-data";
@@ -100,14 +114,45 @@ export function SkillTable({ skills }: { skills: SkillRow[] }) {
   );
 }
 
-// ─── Minimal markdown renderer cho SKILL.md content ──────────────────────
+// ─── Workflow visualizer cho SKILL.md ────────────────────────────────────
+// Tách content theo `## heading`, mỗi section → step card với icon + tone.
+// Dev-only sections (Execution/Cross-refs/code blocks) gắn data-dev-detail
+// để CSS audience-mode tự ẩn ở User mode.
 
-function SkillDetail({ content }: { content: string }) {
-  return (
-    <div className="rounded-md border bg-background/60 p-4 text-[12.5px] leading-6 max-h-[600px] overflow-auto">
-      <Markdown source={content} />
-    </div>
-  );
+type SectionKind =
+  | "trigger"
+  | "authority"
+  | "decision"
+  | "guardrail"
+  | "example"
+  | "mandatory"
+  | "execution"  // dev only
+  | "reference"  // dev only
+  | "default";
+
+const kindStyle: Record<SectionKind, { icon: LucideIcon; tone: string; pill: string; label: string }> = {
+  trigger:    { icon: Target,            tone: "border-blue-500/40 bg-blue-500/5",       pill: "bg-blue-500/15 text-blue-700 dark:text-blue-300",       label: "Khi nào kích hoạt" },
+  authority:  { icon: Shield,            tone: "border-amber-500/40 bg-amber-500/5",     pill: "bg-amber-500/15 text-amber-700 dark:text-amber-300",     label: "Quyền hành" },
+  decision:   { icon: GitFork,           tone: "border-violet-500/40 bg-violet-500/5",   pill: "bg-violet-500/15 text-violet-700 dark:text-violet-300", label: "Quyết định" },
+  guardrail:  { icon: AlertOctagon,      tone: "border-red-500/40 bg-red-500/5",         pill: "bg-red-500/15 text-red-700 dark:text-red-300",           label: "Cấm / phải tránh" },
+  example:    { icon: MessageSquareText, tone: "border-emerald-500/40 bg-emerald-500/5", pill: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300", label: "Ví dụ phản hồi" },
+  mandatory:  { icon: ZapOff,            tone: "border-orange-500/50 bg-orange-500/10",  pill: "bg-orange-500/20 text-orange-700 dark:text-orange-300",   label: "Bắt buộc" },
+  execution:  { icon: Play,              tone: "border-red-500/30 bg-red-500/[0.03]",    pill: "bg-red-500/10 text-red-700 dark:text-red-300",           label: "Code / script (dev)" },
+  reference:  { icon: Link2,             tone: "border-zinc-500/30 bg-zinc-500/5",       pill: "bg-zinc-500/15 text-zinc-700 dark:text-zinc-300",         label: "Tham chiếu (dev)" },
+  default:    { icon: ListChecks,        tone: "border-border bg-card",                  pill: "bg-muted text-muted-foreground",                          label: "Nội dung" },
+};
+
+function classify(heading: string): SectionKind {
+  const h = heading.toLowerCase();
+  if (h.includes("⛔") || h.includes("mandatory") || h.includes("bắt buộc") || h.includes("must")) return "mandatory";
+  if (h.includes("anti-hallucin") || h.includes("forbidden") || h.includes("never") || h.includes("do not") || h.includes("don't")) return "guardrail";
+  if (h.includes("execution") || h.includes("script") || h.includes("implementation") || h.includes("run ") || h.includes("invoke ") && h.includes("python")) return "execution";
+  if (h.includes("cross-ref") || h.includes("reference") || h.includes("see also") || h.includes("related")) return "reference";
+  if (h.includes("example") || h.includes("template") || h.includes("reply") || h.includes("response")) return "example";
+  if (h.includes("decision") || h.includes("tree") || /^r\d+/.test(h)) return "decision";
+  if (h.includes("authority") || h.includes("policy") || h.includes("can ") || h.includes("cannot") || h.includes("scope")) return "authority";
+  if (h.includes("when ") || h.includes("invoke") || h.includes("trigger") || h.includes("fire")) return "trigger";
+  return "default";
 }
 
 function stripFrontmatter(src: string): string {
@@ -115,6 +160,114 @@ function stripFrontmatter(src: string): string {
   const end = src.indexOf("\n---\n", 4);
   if (end === -1) return src;
   return src.slice(end + 5).replace(/^\n+/, "");
+}
+
+type Section = {
+  heading: string | null;  // null = preamble (between H1 and first H2)
+  level: 1 | 2;            // H1 = title block; H2 = phase
+  body: string;
+  kind: SectionKind;
+  devOnly: boolean;
+};
+
+function splitSections(src: string): { title: string | null; sections: Section[] } {
+  const lines = stripFrontmatter(src).split("\n");
+  let title: string | null = null;
+  const sections: Section[] = [];
+  let cur: Section | null = null;
+  const flush = () => {
+    if (cur) {
+      cur.body = cur.body.replace(/^\n+|\n+$/g, "");
+      sections.push(cur);
+    }
+    cur = null;
+  };
+
+  for (const line of lines) {
+    if (line.startsWith("# ") && title == null) {
+      title = line.slice(2).trim();
+      continue;
+    }
+    if (line.startsWith("## ")) {
+      flush();
+      const heading = line.slice(3).trim();
+      const kind = classify(heading);
+      cur = {
+        heading,
+        level: 2,
+        body: "",
+        kind,
+        devOnly: kind === "execution" || kind === "reference",
+      };
+      continue;
+    }
+    if (cur == null) {
+      cur = { heading: null, level: 2, body: "", kind: "default", devOnly: false };
+    }
+    cur.body += line + "\n";
+  }
+  flush();
+
+  // Drop empty preamble section
+  return {
+    title,
+    sections: sections.filter((s) => s.body.trim() || s.heading),
+  };
+}
+
+function SkillDetail({ content }: { content: string }) {
+  const { title, sections } = splitSections(content);
+
+  return (
+    <div className="rounded-md border bg-background/60 p-4 max-h-[700px] overflow-auto">
+      {title && (
+        <div className="mb-3 pb-2 border-b">
+          <div className="text-[15px] font-bold text-foreground">{title}</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
+            Workflow visualize từ <span className="font-mono">SKILL.md</span> trên Mac mini ·
+            {" "}<span data-dev-detail>dev mode hiển thị thêm code + cross-refs</span>
+            <span data-user-detail>user mode chỉ xem hành vi, ẩn code script</span>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2.5">
+        {sections.map((s, idx) => (
+          <SectionCard key={idx} section={s} index={idx + 1} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({ section, index }: { section: Section; index: number }) {
+  const style = kindStyle[section.kind];
+  const Icon = style.icon;
+  const wrapperProps = section.devOnly ? { "data-dev-detail": true as const } : {};
+
+  return (
+    <div {...wrapperProps} className={cn("rounded-lg border p-3", style.tone)}>
+      <div className="flex items-start gap-2.5 mb-2">
+        <div className={cn("flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-bold", style.pill)}>
+          {index}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Icon className="h-3.5 w-3.5 text-foreground/70 shrink-0" />
+            <div className="text-[13px] font-semibold text-foreground leading-tight">
+              {section.heading ?? "Tổng quan"}
+            </div>
+            <span className={cn("rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wider", style.pill)}>
+              {style.label}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div className="pl-9 text-[12.5px] leading-6">
+        <Markdown source={section.body} />
+      </div>
+    </div>
+  );
 }
 
 function Markdown({ source }: { source: string }) {
@@ -155,7 +308,7 @@ function Markdown({ source }: { source: string }) {
       continue;
     }
 
-    // Code block
+    // Code block — dev-only (user mode hides via CSS)
     if (line.startsWith("```")) {
       flushList();
       const lang = line.slice(3).trim();
@@ -169,6 +322,7 @@ function Markdown({ source }: { source: string }) {
       out.push(
         <pre
           key={key++}
+          data-dev-detail
           className="my-2 rounded-md border bg-muted/40 p-2.5 overflow-x-auto font-mono text-[11.5px] leading-5"
         >
           {lang && (
