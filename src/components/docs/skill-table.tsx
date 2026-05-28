@@ -97,7 +97,7 @@ export function SkillTable({ skills }: { skills: SkillRow[] }) {
                   {isOpen && hasDetail && (
                     <tr className="border-t-0 bg-muted/[0.15]">
                       <td colSpan={6} className="px-6 py-4">
-                        <SkillDetail content={skillDetails[s.name]!} />
+                        <SkillDetail skill={s} content={skillDetails[s.name]!} />
                       </td>
                     </tr>
                   )}
@@ -215,7 +215,7 @@ function splitSections(src: string): { title: string | null; sections: Section[]
   };
 }
 
-function SkillDetail({ content }: { content: string }) {
+function SkillDetail({ skill, content }: { skill: SkillRow; content: string }) {
   const { title, sections } = splitSections(content);
 
   return (
@@ -231,12 +231,89 @@ function SkillDetail({ content }: { content: string }) {
         </div>
       )}
 
-      <div className="space-y-2.5">
+      {/* ─── USER MODE: Vietnamese summary từ data có sẵn ───────────── */}
+      <div data-user-detail className="space-y-3">
+        <UserModeSummary skill={skill} sections={sections} />
+      </div>
+
+      {/* ─── DEV MODE: full markdown cards ──────────────────────────── */}
+      <div data-dev-detail className="space-y-2.5">
         {sections.map((s, idx) => (
           <SectionCard key={idx} section={s} index={idx + 1} />
         ))}
       </div>
     </div>
+  );
+}
+
+function UserModeSummary({ skill, sections }: { skill: SkillRow; sections: Section[] }) {
+  const phaseList = sections
+    .filter((s) => !s.devOnly && s.heading)
+    .map((s) => ({ heading: s.heading!, kind: s.kind }));
+
+  return (
+    <>
+      <div className="rounded-lg border border-blue-500/40 bg-blue-500/5 p-3">
+        <div className="flex items-center gap-2 mb-1.5">
+          <Target className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300">
+            Khi nào kích hoạt
+          </span>
+        </div>
+        <div className="text-[13px] leading-6 text-foreground/90">
+          {skill.triggers}
+        </div>
+      </div>
+
+      {skill.notes && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Shield className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+              Lưu ý / luật chính
+            </span>
+          </div>
+          <div className="text-[13px] leading-6 text-foreground/90">
+            {skill.notes}
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-lg border bg-card p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <ListChecks className="h-3.5 w-3.5 text-foreground/70" />
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
+            Các phase của skill ({phaseList.length})
+          </span>
+        </div>
+        <ol className="space-y-1.5">
+          {phaseList.map((p, i) => {
+            const style = kindStyle[p.kind];
+            const Icon = style.icon;
+            return (
+              <li key={i} className="flex items-start gap-2 text-[12.5px]">
+                <span className={cn("flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold shrink-0 mt-0.5", style.pill)}>
+                  {i + 1}
+                </span>
+                <Icon className="h-3.5 w-3.5 text-foreground/60 shrink-0 mt-1" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-foreground/90 font-medium">{style.label}</div>
+                  <div className="text-[11.5px] text-muted-foreground leading-5 truncate">
+                    {p.heading}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      <div className="rounded-md border border-dashed border-border bg-muted/20 p-2.5 text-[11.5px] text-muted-foreground">
+        Cần xem chi tiết hành vi (Authority/Examples/Anti-hallucination …) bằng tiếng Anh
+        từ chính file <span className="font-mono">SKILL.md</span> mà agent đọc? Bật{" "}
+        <span className="font-semibold text-foreground">Dev mode</span> ở góc phải header.
+      </div>
+    </>
   );
 }
 

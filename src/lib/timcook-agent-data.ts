@@ -91,10 +91,10 @@ export const canvasNodes: CanvasNode[] = [
   {
     id: "n_skills_d", type: "text", x: -1140, y: -790, width: 1920, height: 200,
     text:
-      "### 🛠 19 skill (MECE — SKILL_INDEX.md tự route)\n" +
+      "### 🛠 22 skill (MECE — SKILL_INDEX.md tự route)\n" +
       "**Tin từ khách (agent)**: refund-flow · cancellation-retention · wismo · failed-deliveries · address-email-protocol · sentiment-handling · escalation-protocol · chargeflow-collect-evidence · csat-collection · best-3pl × 3 · held-order-release · amazon-orders\n" +
-      "**Runbook cho operator**: bridge-crash-recovery · stuck-case-reprocess · report-verification\n" +
-      "**Meta (self-discipline)**: context-discipline (luôn chạy — chống hallucination)\n" +
+      "**Runbook cho operator**: bridge-crash-recovery · stuck-case-reprocess · report-verification · flexport-invalid-address\n" +
+      "**Meta (self-discipline)**: context-discipline · semantic-recall · flexport-self-learn\n" +
       "**Bridge JS (chỉ docs)**: spam-classification",
   },
 
@@ -215,6 +215,9 @@ export const skills: SkillRow[] = [
   { n: 17, name: "report-verification", audience: "operator", triggers: "'verify report real or fake' · audit claim batch vs ground truth" },
   { n: 18, name: "held-order-release", audience: "agent", triggers: "đơn bị hold · on_hold fulfillment · chargeflow hold · force release", notes: "Cron chạy thêm 06/12/18 hàng ngày" },
   { n: 19, name: "amazon-orders", audience: "agent", triggers: "đơn Amazon · Shockwave · fulfillment Amazon · tracking Amazon" },
+  { n: 20, name: "flexport-invalid-address", audience: "operator", triggers: "đơn Flexport bị 'Invalid address' · cleanup địa chỉ sai", notes: "Cron quét portal + tự fix + báo PATI group" },
+  { n: 21, name: "flexport-self-learn", audience: "meta", triggers: "Flexport trả lỗi mới chưa rõ · tự học pattern address", notes: "Học từ lịch sử fix để mở rộng luật" },
+  { n: 22, name: "semantic-recall", audience: "meta", triggers: "đầu mỗi turn · truy hồi ngữ cảnh khách hàng cũ", notes: "Vector search memory/ — chống hỏi lại khách thông tin đã có" },
 ];
 
 // ─── CRON PIPELINES (agent's own crontab) ────────────────────────────────

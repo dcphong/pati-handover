@@ -579,7 +579,7 @@ export default function Page() {
       </div>
 
       {/* ─── SKILLS ─────────────────────────────────────────── */}
-      <h2 id="skills">Skill catalog (19)</h2>
+      <h2 id="skills">Skill catalog (22)</h2>
       <p>
         Routing tự động qua <code>~/.openclaw/workspace/agents/timcook/skills/SKILL_INDEX.md</code>{" "}
         mỗi khi có tin vào. Audience = ai là người hành động:{" "}

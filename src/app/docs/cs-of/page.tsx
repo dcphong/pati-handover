@@ -35,7 +35,7 @@ const subpages: Subpage[] = [
   {
     href: "/docs/timcook-agent",
     title: "Timcook Agent — Skill + Workflow",
-    desc: "AI agent timcook (Openclaw) đang chạy thay CS hằng ngày trên Mac mini: persona, 19 skill, 20 cron pipeline, 33 LaunchAgent, canvas + workflow visual. Train Openclaw = thêm/sửa skill ở đây.",
+    desc: "AI agent timcook (Openclaw) đang chạy thay CS hằng ngày trên Mac mini: persona, 22 skill, 20 cron pipeline, 33 LaunchAgent, canvas + workflow visual. Train Openclaw = thêm/sửa skill ở đây.",
     icon: Bot,
     status: "ready",
     badge: "new",

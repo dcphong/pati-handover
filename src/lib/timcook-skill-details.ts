@@ -4302,4 +4302,377 @@ tail -100 ~/.openclaw/workspace/agents/timcook/logs/cron_amazon_orders.log
   (\`recviJgSVJU0Kb\`) — correctly classified DONE (already has tracking). Live
   inventory check shows all Shockwave variants out-of-stock; pipeline blocks
   and alerts until restocked.`,
+  "flexport-invalid-address": `---
+title: Flexport Invalid Address
+description: Scan Flexport portal for orders with "Invalid address" status, fix them automatically by cleaning address fields, and report results to the PATI group.
+---
+
+# Flexport Invalid Address — Skill
+
+**Triggers:** flexport invalid address, flexport address fix, flexport portal scan, flexport cron, flexport address validation
+
+**Purpose:** Scan Flexport portal for orders with "Invalid address" status, fix them automatically by cleaning address fields, and report results to the PATI group.
+
+---
+
+## Workflow
+
+### Phase 1: Scan
+
+Run the scanner to check current invalid address orders on Flexport portal:
+
+\`\`\`bash
+cd ~/.openclaw/workspace/agents/timcook
+python3 scripts/flexport_portal_scanner.py
+\`\`\`
+
+**Output:** JSON with:
+- \`orders\`: list of order numbers (e.g. \`["#WN204825"]\`)
+- \`invalidAddressCount\`: count of flagged orders
+
+### Phase 2: Fix
+
+If orders are found, run the fixer in batch mode:
+
+\`\`\`bash
+cd ~/.openclaw/workspace/agents/timcook
+python3 scripts/flexport_portal_fixer_v4.py --batch
+\`\`\`
+
+**What the fixer does for each order:**
+1. Logs into Flexport portal (chanphong@patigroup.com)
+2. Navigates to the order detail page by clicking the order row (Playwright locator)
+3. Clicks "Update or Confirm Address" button
+4. **Cleans commas** from street/city fields (e.g. "123 Main St, Apt 4" → "123 Main St")
+5. **Clears Address 2** field (company names often trigger validation)
+6. **Adds province** if missing (EU province map: DE→Hesse, FR→Île-de-France, etc.)
+7. **Checks "Confirm address to skip validation"** checkbox
+8. Clicks Update
+9. Verifies the fix by re-checking the detail page
+
+### Phase 3: Verify
+
+After fixing, re-scan to confirm all orders are cleared:
+
+\`\`\`bash
+cd ~/.openclaw/workspace/agents/timcook
+python3 scripts/flexport_portal_scanner.py
+\`\`\`
+
+### Phase 4: Report
+
+Post results to PATI group:
+- How many orders were found with invalid address
+- Which ones were fixed successfully
+- Any that couldn't be fixed (need manual intervention)
+
+---
+
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| \`scripts/flexport_portal_scanner.py\` | Scans Flexport /orders page, finds orders with "INVALID ADDRESS" status |
+| \`scripts/flexport_portal_fixer_v4.py\` | Fixes invalid address orders by cleaning fields and skipping validation |
+
+### Scanner details
+
+The scanner:
+1. Logs into Flexport portal via Playwright
+2. Navigates to \`/orders\`
+3. Reads the page HTML to find all order rows with "INVALID ADDRESS" status
+4. Extracts order numbers (#WNXXXXXX)
+5. Outputs JSON results
+
+### Fixer details
+
+The fixer (\`flexport_portal_fixer_v4.py\`):
+- **Dynamic navigation:** Uses Playwright \`locator(text=...).click()\` to navigate to order detail pages (Flexport uses JS-rendered links — static HTML parsing doesn't work)
+- **Address cleaning:** Removes commas from street/city, clears Address 2
+- **Province mapping:** Adds default province for EU countries when missing
+- **Skip validation:** Checks the "Confirm address to skip validation" checkbox
+- **Verification:** Re-checks the order detail page after update
+- **Logging:** Writes results to \`logs/address_validator.jsonl\`
+
+---
+
+## Cron Job
+
+Schedule: Every 6 hours (00:00, 06:00, 12:00, 18:00 ICT)
+
+\`\`\`json
+{
+  "name": "flexport-invalid-address",
+  "schedule": { "kind": "cron", "expr": "0 0,6,12,18 * * *", "tz": "Asia/Saigon" },
+  "sessionTarget": "isolated",
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Run the Flexport invalid address workflow: scan Flexport portal for invalid address orders using scripts/flexport_portal_scanner.py. If orders found, fix them using scripts/flexport_portal_fixer_v4.py --batch. Report results to the PATI group."
+  },
+  "delivery": { "mode": "announce", "channel": "telegram", "to": "-5295288516" }
+}
+\`\`\`
+
+**Current cron status:** ✅ Active, runs at 00:00, 06:00, 12:00, 18:00 ICT daily.
+
+---
+
+## Credentials
+
+Stored in both scanner and fixer scripts:
+- **Email:** chanphong@patigroup.com
+- **Password:** phong0610Aa@
+- **Portal URL:** https://login.portal.flexport.com
+- **Orders URL:** https://portal.flexport.com/orders
+
+---
+
+## Error Handling
+
+| Problem | Fix |
+|---------|-----|
+| Scanner fails to login | Credentials may have changed or MFA enabled — alert supervisor |
+| Fixer can't find order row | The Flexport UI may have changed — update the locator selector |
+| Fixer clicks Update but still flagged | Flexport re-validated after update — may need manual intervention |
+| Playwright not installed | \`pip3 install playwright && playwright install chromium\` |
+| No invalid address orders | Report "✅ Flexport queue clear" — no action needed |
+
+---
+
+## Key Learning (2026-05-07)
+
+**Flexport portal renders order links via JavaScript** — they don't appear in static HTML. The original fixer tried to pre-extract Flexport order IDs from \`inner_html\`, which returned empty results. 
+
+**Fix:** Use Playwright \`locator(text=...).click()\` to navigate to detail pages, then extract the Flexport order ID from the URL after navigation.
+
+---
+
+## North Star Alignment
+
+- **NS#2: OTIF >98%** — Unblocking invalid address orders prevents delivery delays
+- **NS#3: Refund rate <3%** — Fixing addresses prevents cancelled orders and refunds
+- **NS#4: Churn 5–7%** — Customers get their orders on time instead of being refunded
+
+---
+
+## Related Skills
+
+- \`skills/address-email-protocol/SKILL.md\` — Sends address confirmation emails to customers via Lark Base
+- \`skills/best-3pl-protocol/SKILL.md\` — Best 3PL tracking number lifecycle
+- \`skills/best-unfulfilled/SKILL.md\` — Best cannot ship → Flexport fulfillment workflow`,
+  "flexport-self-learn": `---
+name: flexport-self-learn
+description: Diagnose Flexport portal scanner failures and propose selector/flow patches. Triggered ONLY by human after orchestrator alerts UI breakage. Uses browser MCP to inspect live portal vs scanner expectations. Output is a proposed patch — human reviews + applies. Read after receiving a Telegram alert from \`flexport_self_learn_orchestrator.py\`.
+---
+
+# Flexport Self-Learn
+
+## When to invoke
+- Operator (Phong / Bảo) explicitly asks: *"investigate flexport scan failure"* OR *"@timcookpatibot read flexport-self-learn skill"*
+- Right after a Telegram alert from \`flexport_self_learn_orchestrator.py\` reporting consecutive scan failures
+- When \`state/flexport_self_learn.json\` shows \`auto_disabled: true\`
+
+## When NOT to invoke
+- Routine successful scans (orchestrator handles silently)
+- First-time alert on a transient error (e.g. timeout) — wait for second occurrence
+- Without operator explicit instruction (anti-loop guard)
+
+## Why this skill exists
+
+Flexport portal UI changes occasionally (selector renames, new flows, MFA additions). Hard-coded selectors in \`flexport_portal_scanner.py\` and \`flexport_portal_fixer_v4.py\` break silently. This skill captures the diagnose → propose fix loop so the operator gets a concrete patch instead of just an alert.
+
+**Loop safety**: this skill ONLY proposes patches. Application requires human "ship" reply. Never auto-apply.
+
+## Procedure (6 steps)
+
+### Step 1 — Read alert + diagnostics
+
+The orchestrator drops artifacts to \`logs/flexport-debug/<TIMESTAMP>/\`:
+- \`error.txt\` — exit code + stderr from scanner
+
+Optionally (if scanner enhanced):
+- \`screenshot.png\` — full-page capture at failure point
+- \`page.html\` — DOM at failure point
+- \`url.txt\` — current URL when fail happened
+
+\`\`\`bash
+read /Users/timcook/.openclaw/workspace/agents/timcook/logs/flexport-debug/<TIMESTAMP>/error.txt
+read /Users/timcook/.openclaw/workspace/agents/timcook/state/flexport_self_learn.json
+\`\`\`
+
+### Step 2 — Classify failure class
+
+The orchestrator already classifies. Check \`state.last_outcome\`:
+- \`fail:credentials_invalid\` → password rotation needed (operator must update \`.api-credentials.json\`)
+- \`fail:mfa_required\` → portal added 2FA (need app password or MFA-aware login)
+- \`fail:selector_missing\` → UI element renamed (this skill's main use case)
+- \`fail:page_timeout\` → portal slow / network issue (transient — wait, don't patch)
+- \`fail:navigation_fail\` → URL structure changed
+- \`fail:captcha_detected\` → portal added bot detection (cannot self-fix)
+- \`fail:unclassified:*\` → novel error, read stderr carefully
+
+### Step 3 — Use browser MCP to inspect live portal
+
+Open browser via MCP (NOT Playwright in script — use interactive browser to compare):
+
+\`\`\`
+1. Navigate to https://login.portal.flexport.com/
+2. Locate the email input — note current selector (name, id, placeholder)
+3. Click Next/Continue button — note current selector
+4. Locate password input — note current selector
+5. Submit form — observe URL after login
+6. Navigate to /orders — observe table structure
+7. Click Invalid Address tab — note tab selector + URL change
+8. Read order rows — note row selector + status column
+\`\`\`
+
+For each step, capture: current selector vs scanner's expected selector.
+
+### Step 4 — Compare scanner code vs live UI
+
+Read scanner script:
+\`\`\`bash
+read /Users/timcook/.openclaw/workspace/agents/timcook/scripts/flexport_portal_scanner.py
+\`\`\`
+
+Identify differences:
+- Selector mismatch: scanner uses \`input[name="email"]\` but UI now has \`input[name="username"]\`
+- Flow change: scanner expects "Next" button but UI now has direct password field
+- New step needed: MFA prompt that scanner doesn't handle
+
+### Step 5 — Propose patch (DO NOT APPLY)
+
+Output a structured patch suggestion to Telegram:
+
+\`\`\`
+🔧 Flexport scanner patch proposal
+
+Failure: selector_missing on password input
+Old (line 26): await page.fill('input[type="password"]', FLEXPORT_PASSWORD)
+New: await page.fill('input[name="passwd"]', FLEXPORT_PASSWORD)
+
+Reason: Flexport renamed input from type=password to name=passwd (verified via browser MCP).
+
+To apply: reply "ship flexport patch" — I'll write to scanner + run --dry-run before
+re-enabling cron.
+
+DO NOT auto-apply.
+\`\`\`
+
+### Step 6 — Apply ONLY after human "ship"
+
+If operator replies "ship flexport patch":
+1. Write patch to scanner script (preserve \`.bak\` of current)
+2. Run scanner manually to verify
+3. If scanner exits 0 → run orchestrator \`--reset\` → re-enable cron in jobs.json
+4. If scanner still fails → revert .bak → escalate to human (do NOT propose another patch in same session — anti-loop)
+
+If operator does NOT reply within 24h: do nothing. State stays auto-disabled. Telegram alert remains as record.
+
+## Anti-loop guards (MANDATORY)
+
+- ❌ NEVER auto-apply patches without explicit "ship X" reply from operator
+- ❌ NEVER propose more than 1 patch attempt per failure session — if first patch fails, escalate human, do NOT retry
+- ❌ NEVER re-enable cron automatically — operator runs \`--reset\` after verifying fix
+- ❌ NEVER run scanner more than 3 times in one investigation session (rate limit on browser MCP costs)
+- ✅ ALWAYS preserve \`.bak\` of script before any edit
+- ✅ ALWAYS run \`--dry-run\` (or single test invocation) before declaring patch successful
+
+## Reference paths
+
+- Orchestrator: \`/Users/timcook/.openclaw/workspace/agents/timcook/scripts/flexport_self_learn_orchestrator.py\`
+- State: \`/Users/timcook/.openclaw/workspace/agents/timcook/state/flexport_self_learn.json\`
+- Audit log: \`/Users/timcook/.openclaw/workspace/agents/timcook/logs/flexport_self_learn_audit.jsonl\`
+- Debug artifacts: \`/Users/timcook/.openclaw/workspace/agents/timcook/logs/flexport-debug/<TS>/\`
+- Scanner: \`/Users/timcook/.openclaw/workspace/agents/timcook/scripts/flexport_portal_scanner.py\`
+- Fixer: \`/Users/timcook/.openclaw/workspace/agents/timcook/scripts/flexport_portal_fixer_v4.py\`
+- Cron job: id \`41ecddb0-e3a6-405c-a22f-28f3e9e8a35e\` in \`/Users/timcook/.openclaw/cron/jobs.json\`
+- Sister skill: \`skills/spam-classification/SKILL.md\` (anti-loop pattern reference)`,
+  "semantic-recall": `---
+name: semantic-recall
+description: |
+  Recall past notes / past disputes via semantic search.
+  Backed by CocoIndex incremental indexes (sentence-transformers + SQLite-vec).
+trigger:
+  - User asks "have we seen this before?", "what did we do last time?", "any similar past case?"
+  - Agent is about to handle a new customer issue and wants prior-art lookup
+  - Building defense narrative for a new ChargeFlow dispute
+---
+
+# Semantic recall — Skill v1 (POC 2026-05-11)
+
+Two callable indexes, both local SQLite + sqlite-vec:
+
+| Index | Source | Use case |
+|---|---|---|
+| memory_index.sqlite | \`~/.openclaw/workspace/agents/timcook/memory/*.md\` (50+ daily ops logs) | "what did we do for X last time" |
+| disputes_index.sqlite | \`~/.openclaw/workspace/agents/timcook/dispute-evidences/<id>/00-manifest.json\` | "find similar past disputes for narrative reuse" |
+
+## Quick usage
+
+\`\`\`bash
+# from anywhere on macmini:
+~/.openclaw/workspace/cocoindex-poc/bin/cocoindex-poc query-memory "bridge crash auto-restart"
+~/.openclaw/workspace/cocoindex-poc/bin/cocoindex-poc query-disputes "Not Received subscription repeat customer" --k 3
+~/.openclaw/workspace/cocoindex-poc/bin/cocoindex-poc stats
+\`\`\`
+
+## When you (timcook) should call this
+
+- Before composing a reply to a customer email — query the memory index with
+  the customer's question. If a top result has distance < 1.0, read it and
+  cite the prior context in your reply.
+- Before building a dispute defense narrative — query disputes index with
+  "<reason> <customer profile>". If top result is the same reason and is in
+  "Won" status, reuse the narrative structure.
+- When a user (Phong/Bao) asks "have we seen X" or "any similar past Y",
+  query and surface top 3 results.
+
+## Distance interpretation (MiniLM, cosine-similarity-derived)
+
+- **< 0.85** — strong match, content is directly relevant
+- **0.85–1.0** — moderate match, partial topical overlap
+- **1.0–1.2** — weak match, may share keywords only
+- **> 1.2** — likely unrelated, don't cite
+
+## Refresh policy
+
+- Memory index: refreshed nightly via cron (recommended 4:00 ICT).
+  Memoization means unchanged files skip work, so daily refresh is cheap.
+- Dispute index: refresh after each new dispute manifest is written
+  (i.e. after \`chargeflow-collect-evidence\` finishes uploading).
+  Add to that skill's Phase 6: \`bin/cocoindex-poc update-disputes\`.
+
+## Anti-patterns
+
+- ❌ **Don't paste raw retrieval results into customer reply.** Use them
+  as context to inform tone/facts; rewrite in current voice.
+- ❌ **Don't query with the customer's literal email body** — it's full of
+  noise. Distill to a 6-12 word topic phrase first.
+- ❌ **Don't trust ranks blindly for proper-noun queries.** MiniLM is weak
+  at exact names. If user asks for "customer X", grep the memory dir for
+  the literal name and merge with semantic top-K.
+- ❌ **Don't re-run \`cocoindex update\` in a loop** — memoization handles
+  incremental. Run it once per change cycle (nightly cron or post-write hook).
+
+## Drift / recovery
+
+If the index gets corrupted or the schema needs to change:
+\`\`\`bash
+cd ~/.openclaw/workspace/cocoindex-poc
+source venv/bin/activate
+export COCOINDEX_DB=$PWD/cocoindex_state
+cocoindex drop main.py -f      # nukes state + tables
+cocoindex update main.py       # rebuild
+\`\`\`
+
+## Stack pinned
+
+- Python 3.12 venv at \`~/.openclaw/workspace/cocoindex-poc/venv\`
+- cocoindex 1.0.3, sqlite-vec 0.1.9, sentence-transformers 5.4.1
+- Model: sentence-transformers/all-MiniLM-L6-v2 (384-dim, ~80MB)
+- COCOINDEX_DB: \`~/.openclaw/workspace/cocoindex-poc/cocoindex_state\` (LMDB)
+
+See \`~/.openclaw/workspace/cocoindex-poc/RUNBOOK.md\` for full architecture
+and the 5 use-case roadmap (only 2 deployed so far: memory + disputes).`,
 };
