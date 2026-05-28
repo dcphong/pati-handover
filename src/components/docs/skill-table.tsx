@@ -110,8 +110,15 @@ function SkillDetail({ content }: { content: string }) {
   );
 }
 
+function stripFrontmatter(src: string): string {
+  if (!src.startsWith("---\n")) return src;
+  const end = src.indexOf("\n---\n", 4);
+  if (end === -1) return src;
+  return src.slice(end + 5).replace(/^\n+/, "");
+}
+
 function Markdown({ source }: { source: string }) {
-  const lines = source.split("\n");
+  const lines = stripFrontmatter(source).split("\n");
   const out: ReactNode[] = [];
   let i = 0;
   let key = 0;
