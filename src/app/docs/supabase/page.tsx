@@ -113,6 +113,16 @@ export default function Page() {
         <em>App code (PostgREST <code>/rest/v1/*</code>) KHÔNG bị basic auth — vẫn dùng anon JWT
         + RLS như cũ, không gãy production.</em>
       </Callout>
+
+      <Callout variant="info" title="Quản lý credentials qua IAM UI">
+        Thêm / xoá account ở{" "}
+        <a href="https://pnl.patigroup.com/iam/studio-credentials" target="_blank" rel="noreferrer" className="underline">
+          /iam/studio-credentials
+        </a>{" "}
+        — cần permission <TerminalInline>iam:ManageStudioAccess</TerminalInline>. Restart Caddy
+        ~3 s, không ảnh hưởng app PATI. User <TerminalInline>admin</TerminalInline> protected,
+        không xoá được qua UI.
+      </Callout>
       <div className="not-prose my-5 grid sm:grid-cols-2 gap-3">
         <div className="rounded-xl border-2 border-emerald-500/40 bg-emerald-500/[0.04] p-4">
           <div className="flex items-center gap-2 font-semibold text-[14px] mb-2">
