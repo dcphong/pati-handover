@@ -28,6 +28,7 @@ import {
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
+import { SkillTable } from "@/components/docs/skill-table";
 import {
   Canvas,
   FlowNode,
@@ -587,34 +588,7 @@ export default function Page() {
         <Tag className={audienceClass.operator}>operator</Tag> người chạy script,{" "}
         <Tag className={audienceClass.code}>code</Tag> bridge JS embed luật (chỉ docs).
       </p>
-      <div className="not-prose my-6 rounded-xl border bg-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-[13px] border-collapse">
-            <thead className="bg-muted/40 text-[11px] uppercase tracking-widest">
-              <tr className="border-b">
-                <th className="px-3 py-2 text-left w-10">#</th>
-                <th className="px-3 py-2 text-left w-[220px]">Skill</th>
-                <th className="px-3 py-2 text-left w-[110px]">Audience</th>
-                <th className="px-3 py-2 text-left">Trigger</th>
-                <th className="px-3 py-2 text-left">Ghi chú</th>
-              </tr>
-            </thead>
-            <tbody>
-              {skills.map((s) => (
-                <tr key={s.n} className="border-t hover:bg-muted/20 align-top">
-                  <td className="px-3 py-2 text-muted-foreground">{s.n}</td>
-                  <td className="px-3 py-2 font-mono text-[12.5px] font-semibold">{s.name}</td>
-                  <td className="px-3 py-2">
-                    <Tag className={audienceClass[s.audience]}>{audienceLabel[s.audience]}</Tag>
-                  </td>
-                  <td className="px-3 py-2 text-foreground/85">{s.triggers}</td>
-                  <td className="px-3 py-2 text-muted-foreground text-[12px]">{s.notes ?? "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <SkillTable skills={skills} />
 
       {/* ─── CRONS ─────────────────────────────────────────── */}
       <h2 id="crons">Cron pipeline (crontab riêng của agent)</h2>
