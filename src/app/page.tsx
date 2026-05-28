@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HomeGuideTour, HomeGuideTourButton } from "@/components/docs/home-guide-tour";
+import { ExportFullContextButton, ExportMdButton } from "@/components/docs/export-md-button";
 import {
   detectIntegrations,
   IntegrationBadges,
@@ -248,6 +249,8 @@ export default function Home() {
                 Deploy guide
               </Link>
               <HomeGuideTourButton />
+              <ExportFullContextButton />
+              <ExportMdButton variant="subtle" label="Export trang này" />
             </div>
             <div
               data-user-detail
