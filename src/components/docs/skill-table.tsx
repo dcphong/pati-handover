@@ -2,6 +2,7 @@
 
 import {
   AlertOctagon,
+  ArrowDown,
   ChevronDown,
   ChevronRight,
   FileText,
@@ -10,6 +11,7 @@ import {
   ListChecks,
   MessageSquareText,
   Play,
+  Search,
   Shield,
   Target,
   ZapOff,
@@ -19,6 +21,7 @@ import { Fragment, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { SkillAudience, SkillRow } from "@/lib/timcook-agent-data";
 import { skillDetails } from "@/lib/timcook-skill-details";
+import { skillFlows, type FlowStage } from "@/lib/timcook-skill-flows";
 
 const audienceClass: Record<SkillAudience, string> = {
   agent:    "bg-blue-500/15 border-blue-500/40 text-blue-700 dark:text-blue-300",
@@ -231,9 +234,9 @@ function SkillDetail({ skill, content }: { skill: SkillRow; content: string }) {
         </div>
       )}
 
-      {/* ─── USER MODE: Vietnamese summary từ data có sẵn ───────────── */}
+      {/* ─── USER MODE: Vietnamese workflow tay viết ───────────────── */}
       <div data-user-detail className="space-y-3">
-        <UserModeSummary skill={skill} sections={sections} />
+        <UserModeSummary skill={skill} />
       </div>
 
       {/* ─── DEV MODE: full markdown cards ──────────────────────────── */}
@@ -246,71 +249,79 @@ function SkillDetail({ skill, content }: { skill: SkillRow; content: string }) {
   );
 }
 
-function UserModeSummary({ skill, sections }: { skill: SkillRow; sections: Section[] }) {
-  const phaseList = sections
-    .filter((s) => !s.devOnly && s.heading)
-    .map((s) => ({ heading: s.heading!, kind: s.kind }));
+const stageStyle: Record<FlowStage, { icon: LucideIcon; tone: string; pill: string; label: string }> = {
+  trigger:  { icon: Target,            tone: "border-blue-500/40 bg-blue-500/5",       pill: "bg-blue-500/15 text-blue-700 dark:text-blue-300",       label: "Khi nào" },
+  check:    { icon: Search,            tone: "border-cyan-500/40 bg-cyan-500/5",       pill: "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300",       label: "Kiểm tra" },
+  decide:   { icon: GitFork,           tone: "border-violet-500/40 bg-violet-500/5",   pill: "bg-violet-500/15 text-violet-700 dark:text-violet-300", label: "Quyết định" },
+  act:      { icon: Play,              tone: "border-emerald-500/40 bg-emerald-500/5", pill: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300", label: "Thực hiện" },
+  reply:    { icon: MessageSquareText, tone: "border-green-500/40 bg-green-500/5",     pill: "bg-green-500/15 text-green-700 dark:text-green-300",   label: "Trả lời khách" },
+  log:      { icon: FileText,          tone: "border-zinc-500/30 bg-zinc-500/5",       pill: "bg-zinc-500/15 text-zinc-700 dark:text-zinc-300",       label: "Ghi log" },
+  limit:    { icon: Shield,            tone: "border-amber-500/40 bg-amber-500/5",     pill: "bg-amber-500/15 text-amber-700 dark:text-amber-300",   label: "Giới hạn" },
+  fallback: { icon: AlertOctagon,      tone: "border-red-500/40 bg-red-500/5",         pill: "bg-red-500/15 text-red-700 dark:text-red-300",         label: "Khi lỗi" },
+};
+
+function UserModeSummary({ skill }: { skill: SkillRow }) {
+  const flow = skillFlows[skill.name];
+
+  if (!flow) {
+    return (
+      <div className="rounded-md border border-dashed bg-muted/20 p-3 text-[12.5px] text-muted-foreground">
+        Workflow tiếng Việt cho skill này chưa được viết. Bật{" "}
+        <span className="font-semibold text-foreground">Dev mode</span> để xem nguyên gốc SKILL.md.
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="rounded-lg border border-blue-500/40 bg-blue-500/5 p-3">
-        <div className="flex items-center gap-2 mb-1.5">
-          <Target className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-300">
-            Khi nào kích hoạt
-          </span>
+      <div className="rounded-lg border bg-card p-3">
+        <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+          Skill này dùng để
         </div>
-        <div className="text-[13px] leading-6 text-foreground/90">
-          {skill.triggers}
-        </div>
+        <div className="text-[13.5px] leading-6 text-foreground/95">{flow.oneLiner}</div>
       </div>
 
-      {skill.notes && (
-        <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3">
-          <div className="flex items-center gap-2 mb-1.5">
-            <Shield className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">
-              Lưu ý / luật chính
-            </span>
-          </div>
-          <div className="text-[13px] leading-6 text-foreground/90">
-            {skill.notes}
-          </div>
-        </div>
-      )}
+      <div className="rounded-md border border-dashed border-border bg-muted/20 px-3 py-2 text-[11.5px] text-muted-foreground">
+        Flow {flow.steps.length} bước — đọc từ trên xuống. Mỗi bước có nhãn loại
+        (Khi nào / Kiểm tra / Quyết định / Thực hiện …) để dễ nhận diện.
+      </div>
 
-      <div className="rounded-lg border bg-card p-3">
-        <div className="flex items-center gap-2 mb-2">
-          <ListChecks className="h-3.5 w-3.5 text-foreground/70" />
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
-            Các phase của skill ({phaseList.length})
-          </span>
-        </div>
-        <ol className="space-y-1.5">
-          {phaseList.map((p, i) => {
-            const style = kindStyle[p.kind];
-            const Icon = style.icon;
-            return (
-              <li key={i} className="flex items-start gap-2 text-[12.5px]">
-                <span className={cn("flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold shrink-0 mt-0.5", style.pill)}>
-                  {i + 1}
-                </span>
-                <Icon className="h-3.5 w-3.5 text-foreground/60 shrink-0 mt-1" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-foreground/90 font-medium">{style.label}</div>
-                  <div className="text-[11.5px] text-muted-foreground leading-5 truncate">
-                    {p.heading}
+      <ol className="relative space-y-2 pt-1">
+        {flow.steps.map((step, i) => {
+          const style = stageStyle[step.stage];
+          const Icon = style.icon;
+          const isLast = i === flow.steps.length - 1;
+          return (
+            <li key={i} className="relative">
+              <div className={cn("rounded-lg border p-3", style.tone)}>
+                <div className="flex items-start gap-2.5">
+                  <div className={cn("flex h-7 w-7 items-center justify-center rounded-md text-[11px] font-bold shrink-0", style.pill)}>
+                    {i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <Icon className="h-3.5 w-3.5 text-foreground/70 shrink-0" />
+                      <span className={cn("rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wider", style.pill)}>
+                        {style.label}
+                      </span>
+                    </div>
+                    <div className="text-[13px] leading-6 text-foreground/90">{step.text}</div>
                   </div>
                 </div>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
+              </div>
+              {!isLast && (
+                <div className="flex justify-start pl-5 py-0.5">
+                  <ArrowDown className="h-3 w-3 text-muted-foreground/60" strokeWidth={2.5} />
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
 
       <div className="rounded-md border border-dashed border-border bg-muted/20 p-2.5 text-[11.5px] text-muted-foreground">
-        Cần xem chi tiết hành vi (Authority/Examples/Anti-hallucination …) bằng tiếng Anh
-        từ chính file <span className="font-mono">SKILL.md</span> mà agent đọc? Bật{" "}
+        Cần xem nguyên gốc tiếng Anh từ <span className="font-mono">SKILL.md</span> mà agent
+        đang đọc (code Python, cross-refs, Anti-hallucination prose …)? Bật{" "}
         <span className="font-semibold text-foreground">Dev mode</span> ở góc phải header.
       </div>
     </>
