@@ -182,16 +182,17 @@ export const skillFlows: Record<string, SkillFlow> = {
 
   "best-cannot-ship": {
     oneLiner:
-      "Best báo cannot_ship → reroute Flexport. Scan 2 bảng Lark (Unfulfilled + Wrong Address), substitute SKU OOS bằng WNPSGS2024 Gold Grade.",
+      "Best báo cannot_ship → reroute Flexport. Cron openclaw 09:00 + 16:00 ICT scan Lark 'OF - BEST cannot ship' (tbloYzPvpIRSE4it), tạo Flexport order, sau 12–16h check tracking thật. Wrong-address là cron khác.",
     steps: [
-      { stage: "trigger", text: "Cron — Best báo trạng thái cannot_ship cho đơn pending" },
-      { stage: "check",   text: "Step 1 — scan Best Unfulfilled table" },
-      { stage: "check",   text: "Step 2 — scan Wrong Address table" },
-      { stage: "decide",  text: "SKU đang OOS? → substitute bằng WNPSGS2024 Gold Grade" },
-      { stage: "act",     text: "Step 3 — tạo Flexport order cho từng Best Unfulfilled" },
-      { stage: "act",     text: "Step 4 — tạo Flexport order cho Wrong Address sau khi đã có địa chỉ mới" },
-      { stage: "limit",   text: "KHÔNG refund đơn OOS nếu chưa offer substitute cho khách chọn trước" },
-      { stage: "fallback", text: "Error recovery script — rollback partial state" },
+      { stage: "trigger", text: "Cron openclaw 0 9,16 * * * Asia/Saigon — chỉ table best-cannot-ship, KHÔNG xử lý wrong-address" },
+      { stage: "check",   text: "Step 1 — scan tbloYzPvpIRSE4it lấy record Fulfillment status rỗng hoặc 'In progress'" },
+      { stage: "decide",  text: "SKU OOS (vd WNSJRS2023)? → substitute bằng WNPSGS2024 Gold Grade và log substitution" },
+      { stage: "act",     text: "Step 2 — tạo Flexport order qua Playwright portal (multi-step wizard: address → product → shipping service → Review → Confirm)" },
+      { stage: "act",     text: "Step 3 — tạo Shopify fulfillment qua GraphQL fulfillmentCreateV2 (KHÔNG kèm FLEX-* vì là internal ID, không phải tracking)" },
+      { stage: "act",     text: "Step 4 — update Lark Fulfillment=Fulfilled + ghi Shopify order note có link Flexport" },
+      { stage: "check",   text: "Part 2 (cùng cron) — record Fulfilled mà Tracking trống: vào portal lấy carrier tracking, update Shopify fulfillmentTrackingInfoUpdateV2 + Lark Tracking field" },
+      { stage: "limit",   text: "KHÔNG refund đơn OOS nếu chưa offer substitute cho khách. KHÔNG upload FLEX-* lên Shopify như tracking" },
+      { stage: "fallback", text: "Invalid Address sau create → click 'Update or Confirm Address' → tick 'Confirm address to skip validation' → Update" },
     ],
   },
 
@@ -308,14 +309,16 @@ export const skillFlows: Record<string, SkillFlow> = {
 
   "flexport-self-learn": {
     oneLiner:
-      "Meta — khi Flexport báo lỗi pattern mới chưa có trong luật, học từ lịch sử fix manual để mở rộng cleanup rules.",
+      "Diagnose Flexport portal scanner failure. Operator-trigger ONLY (sau Telegram alert). Đọc artifact → so sánh UI live qua browser MCP → propose patch. KHÔNG auto-apply.",
     steps: [
-      { stage: "trigger", text: "Flexport trả lỗi không match luật cleanup hiện tại" },
-      { stage: "act",     text: "Đọc lịch sử fix manual cùng dạng (operator đã sửa tay)" },
-      { stage: "check",   text: "Trích xuất pattern chung (regex / dictionary mapping)" },
-      { stage: "act",     text: "Đề xuất luật cleanup mới — operator review confirm" },
-      { stage: "log",     text: "Append vào rule catalog + ghi nguồn (case ID dùng để học)" },
-      { stage: "limit",   text: "KHÔNG auto-apply luật mới — phải operator approve trước khi production dùng" },
+      { stage: "trigger", text: "Operator gọi tay sau Telegram alert từ flexport_self_learn_orchestrator.py (không tự chạy theo cron)" },
+      { stage: "check",   text: "Step 1 — đọc logs/flexport-debug/<TS>/error.txt + state/flexport_self_learn.json" },
+      { stage: "decide",  text: "Step 2 — classify failure: credentials_invalid · mfa_required · selector_missing · page_timeout · navigation_fail · captcha_detected" },
+      { stage: "act",     text: "Step 3 — dùng browser MCP mở portal so sánh selector live vs scanner expected" },
+      { stage: "check",   text: "Step 4 — đọc scripts/flexport_portal_scanner.py, xác định chỗ lệch" },
+      { stage: "log",     text: "Step 5 — propose patch ra Telegram, format có Old/New selector + lý do" },
+      { stage: "act",     text: "Step 6 — chỉ apply khi operator reply 'ship X': preserve .bak → --dry-run → re-enable cron" },
+      { stage: "limit",   text: "Anti-loop: max 1 patch/session, max 3 scanner run, KHÔNG auto re-enable cron, KHÔNG auto-apply" },
     ],
   },
 

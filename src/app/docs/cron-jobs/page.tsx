@@ -12,12 +12,12 @@ import {
 
 export const metadata = { title: "Cron Jobs — PATI Handover" };
 
-// ── Ground truth pulled from Mac mini 2026-05-27 ─────────────────────────────
+// ── Ground truth pulled from Mac mini 2026-05-28 ─────────────────────────────
 // Source: `bash scripts/dump-cron-schedules.sh` on Mac mini reads each
 // `~/Library/LaunchAgents/com.pati.*.plist` and prints StartInterval /
 // StartCalendarInterval. 31 cron-like agents + 2 KeepAlive persistent services
-// (chargeflow-trigger-server, web) — the persistent ones are listed separately
-// since the schedule grid only makes sense for things that fire on a clock.
+// (web, studio-auth) — the persistent ones are listed separately since the
+// schedule grid only makes sense for things that fire on a clock.
 
 const macMiniJobs: CronJob[] = [
   // ── Frequent — interval-based ──────────────────────────────────────────────
@@ -278,8 +278,8 @@ const persistentServices = [
     what: "Next.js production server (KeepAlive, port 3000 → cloudflared tunnel → pnl.patigroup.com)",
   },
   {
-    name: "com.pati.chargeflow-trigger-server",
-    what: "HTTP server for 'Sync now' button (KeepAlive, port 9876 → chargeflow-trigger.patiagency.com)",
+    name: "com.pati.studio-auth",
+    what: "Caddy forward_auth + Lark OAuth middleware đứng trước Supabase Studio + /pg/query (KeepAlive, listen 127.0.0.1:9877, Caddy reach qua host.docker.internal:9877)",
   },
 ];
 
@@ -291,7 +291,7 @@ export default function Page() {
       <PageHeader
         eyebrow="Deployment"
         title="Cron Jobs"
-        description="Lịch chạy thực tế của hệ thống — pulled từ Mac mini launchd plists + GitHub Actions ngày 2026-05-27. 31 cron Mac mini + 3 GH Actions cron + 2 persistent services."
+        description="Lịch chạy thực tế của hệ thống — pulled từ Mac mini launchd plists + GitHub Actions ngày 2026-05-28. 31 cron Mac mini + 3 GH Actions cron + 2 persistent services (web, studio-auth)."
       />
 
       {/* ─────────── USER MODE ─────────── */}

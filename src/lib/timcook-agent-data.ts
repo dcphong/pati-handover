@@ -216,7 +216,7 @@ export const skills: SkillRow[] = [
   { n: 18, name: "held-order-release", audience: "agent", triggers: "đơn bị hold · on_hold fulfillment · chargeflow hold · force release", notes: "Cron chạy thêm 06/12/18 hàng ngày" },
   { n: 19, name: "amazon-orders", audience: "agent", triggers: "đơn Amazon · Shockwave · fulfillment Amazon · tracking Amazon" },
   { n: 20, name: "flexport-invalid-address", audience: "operator", triggers: "đơn Flexport bị 'Invalid address' · cleanup địa chỉ sai", notes: "Cron quét portal + tự fix + báo PATI group" },
-  { n: 21, name: "flexport-self-learn", audience: "meta", triggers: "Flexport trả lỗi mới chưa rõ · tự học pattern address", notes: "Học từ lịch sử fix để mở rộng luật" },
+  { n: 21, name: "flexport-self-learn", audience: "meta", triggers: "Flexport portal scanner fail · UI selector đổi · alert orchestrator", notes: "Operator-trigger ONLY sau Telegram alert. Diagnose qua browser MCP, propose patch — KHÔNG auto-apply" },
   { n: 22, name: "semantic-recall", audience: "meta", triggers: "đầu mỗi turn · truy hồi ngữ cảnh khách hàng cũ", notes: "Vector search memory/ — chống hỏi lại khách thông tin đã có" },
 ];
 
@@ -239,11 +239,14 @@ export const cronPipelines: CronRow[] = [
   { cron: "0 */2 * * *", when: "mỗi 2 giờ", pipeline: "Health probe", script: "health_probe.py", desc: "Smoke-test agent + hạ tầng", tag: "interval" },
   { cron: "0 */6 * * *", when: "mỗi 6 giờ", pipeline: "Obsidian vault monitor", script: "obsidian_vault_monitor.py sync", desc: "Đồng bộ note curated ↔ vault", tag: "interval" },
   { cron: "0 */6 * * *", when: "mỗi 6 giờ", pipeline: "OTIF tracker", script: "otif_tracker.py", desc: "NS#2 — tỉ lệ on-time-in-full", tag: "interval" },
+  { cron: "0 0,6,12,18 * * *", when: "00 / 06 / 12 / 18", pipeline: "Flexport invalid-address", script: "flexport_portal_scanner.py → flexport_portal_fixer_v4.py --batch", desc: "Skill #20 — openclaw cron 41ecddb0… (HIỆN DISABLED). Khi enable: quét đơn Flexport 'Invalid address' tự fix + báo PATI group", tag: "daily" },
   { cron: "0 6,12,18 * * *", when: "06 / 12 / 18", pipeline: "Held-order release", script: "held_order_release.js", desc: "Tự release đơn Shopify bị ChargeFlow hold khi đã an toàn", tag: "daily" },
   { cron: "0 8 * * *", when: "08:00", pipeline: "Unfulfilled-order follow-up", script: "unfulfilled_orders_followup.py", desc: "Email chủ động cho đơn chưa fulfilled > 48 h", tag: "daily" },
   { cron: "30 8 * * *", when: "08:30", pipeline: "North-Star tracker", script: "north_star_tracker.py", desc: "Snapshot NS#1–#6 hàng ngày → logs/north_star_daily.jsonl", tag: "daily" },
   { cron: "0 9 * * *", when: "09:00", pipeline: "Failed deliveries pipeline", script: "failed_deliveries_pipeline.py", desc: "Chạy hàng ngày của skill #4", tag: "daily" },
+  { cron: "0 9 * * *", when: "09:00", pipeline: "Best 3PL Tracking Monitor", script: "best_3pl_tracking_fixer.py --fix", desc: "Skill #11 — openclaw cron 3e889664…, refresh tracking đơn Best 3PL còn active, report Lark #openclaw-alerts", tag: "daily" },
   { cron: "0 9,15 * * *", when: "09:00 + 15:00", pipeline: "Amazon orders", script: "amazon_orders_pipeline.py", desc: "Skill #19 — chạy 2× / ngày (sáng + chiều)", tag: "daily" },
+  { cron: "0 9,16 * * *", when: "09:00 + 16:00", pipeline: "Best cannot ship scan + tracking", script: "agent turn — skill best-cannot-ship", desc: "Skill #12 — openclaw cron f3f86b9b…, scan tbloYzPvpIRSE4it tạo Flexport order + check carrier tracking, report Lark #openclaw-alerts. KHÔNG phải launchd com.pati.sync-flexport (cron đó pull Flexport API lúc 06:30)", tag: "daily" },
   { cron: "30 9 * * *", when: "09:30", pipeline: "Stuck-transit follow-up", script: "stuck_transit_followup.py", desc: "Outreach khách cho transit bất thường", tag: "daily" },
   { cron: "0 3 * * *", when: "03:00", pipeline: "Auto-archive sessions", script: "auto_archive_sessions.py", desc: "Roll log session cũ", tag: "daily" },
   { cron: "0 3 * * *", when: "03:00", pipeline: "openclaw patch reapply", script: "openclaw_apply_all_patches.sh", desc: "Apply lại patch local lên framework", tag: "daily" },

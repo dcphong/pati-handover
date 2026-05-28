@@ -1,12 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Banknote,
-  Bot,
-  Headphones,
-  Mail,
-  ShieldAlert,
-} from "lucide-react";
+import { ArrowRight, Banknote, Bot } from "lucide-react";
 import { PageHeader } from "@/components/docs/page-header";
 import { PageNav } from "@/components/docs/page-nav";
 import { Callout } from "@/components/docs/callout";
@@ -42,24 +35,6 @@ const subpages: Subpage[] = [
   },
 ];
 
-const upcoming = [
-  {
-    icon: Mail,
-    title: "Inbox triage & SLA",
-    desc: "Quy trình xử inbox CS hàng ngày: phân loại, SLA, escalate. (chưa viết)",
-  },
-  {
-    icon: ShieldAlert,
-    title: "Dispute / chargeback playbook",
-    desc: "Cách chuẩn bị evidence khi ChargeFlow báo dispute mới. (chưa viết)",
-  },
-  {
-    icon: Headphones,
-    title: "Customer escalation runbook",
-    desc: "Khi nào leo lên sếp / legal, template phản hồi cho khách phẫn nộ. (chưa viết)",
-  },
-];
-
 export default function Page() {
   return (
     <>
@@ -80,24 +55,6 @@ export default function Page() {
       <div className="not-prose my-5 grid gap-3 md:grid-cols-2">
         {subpages.map((p) => (
           <SubpageCard key={p.href} {...p} />
-        ))}
-      </div>
-
-      <h2 id="upcoming">Còn thiếu / để dành sau</h2>
-      <p>
-        Những workflow CS &amp; OF khác chưa được tài liệu hoá. Khi rảnh thì viết tiếp vào section
-        này, đặt theo URL <code>/docs/cs-of/&lt;slug&gt;</code> và thêm entry vào{" "}
-        <code>src/lib/nav.ts</code>.
-      </p>
-      <div className="not-prose my-5 grid gap-3 md:grid-cols-3">
-        {upcoming.map((u) => (
-          <div key={u.title} className="rounded-xl border border-dashed bg-card/40 p-4">
-            <div className="flex items-center gap-2 mb-1.5">
-              <u.icon className="h-4 w-4 text-muted-foreground" />
-              <div className="font-semibold text-[14px] text-foreground/80">{u.title}</div>
-            </div>
-            <div className="text-[13px] leading-6 text-muted-foreground">{u.desc}</div>
-          </div>
         ))}
       </div>
 
