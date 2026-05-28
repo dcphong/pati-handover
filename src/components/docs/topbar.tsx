@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { AudienceModeSwitch } from "@/components/docs/audience-mode";
+import { DocsSearchDialog } from "@/components/docs/search-dialog";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -68,6 +69,8 @@ export function Topbar() {
             >
               Timcook
             </Link>
+            <span className="mx-2 h-5 w-px bg-border" />
+            <DocsSearchDialog />
             <span className="mx-2 h-5 w-px bg-border" />
             <AudienceModeSwitch />
             <span className="mx-2 h-5 w-px bg-border" />
