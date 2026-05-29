@@ -440,7 +440,7 @@ export default function Page() {
           { divider: true, label: "expected" },
           { out: "300", tone: "ok" },
           { prompt: "timcook@mini $", cmd: "# Dump toàn bộ schedule:" },
-          { prompt: "timcook@mini $", cmd: "bash ~/Coding_workspace/PATI/shopify-lark-sync/scripts/dump-cron-schedules.sh" },
+          { prompt: "timcook@mini $", cmd: "bash ~/Coding_workspace/PATI/pati-master-app/scripts/dump-cron-schedules.sh" },
         ]}
       />
       <Callout variant="warning" title="Job daily_sync đã move (2026-05-20)">

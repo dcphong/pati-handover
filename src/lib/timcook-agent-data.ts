@@ -107,7 +107,7 @@ export const canvasNodes: CanvasNode[] = [
   {
     id: "n_web", type: "text", x: -1140, y: -220, width: 360, height: 130,
     text:
-      "### com.pati.web\n**:3000** → Next.js\nKeepAlive · pnl.patigroup.com\nworking dir = ~/Coding_workspace/PATI/shopify-lark-sync",
+      "### com.pati.web\n**:3000** → Next.js\nKeepAlive · pnl.patigroup.com\nworking dir = ~/Coding_workspace/PATI/pati-master-app",
   },
   {
     id: "n_cf_trig", type: "text", x: -750, y: -220, width: 360, height: 130,

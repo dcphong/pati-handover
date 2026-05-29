@@ -692,7 +692,7 @@ export default function Page() {
 ├─ pati-supabase/                   self-host stack + wrapper shell cho cron
 │  ├─ docker-compose.yml
 │  └─ cron/                         (sync-web.sh, sync-shopify-larkbase.sh, …) + cron/logs/
-├─ Coding_workspace/PATI/shopify-lark-sync/   ← REPO này (web serve từ đây)
+├─ Coding_workspace/PATI/pati-master-app/   ← REPO này (web serve từ đây)
 └─ Library/LaunchAgents/com.pati.*.plist + ai.openclaw.* + …`}
       </pre>
 

@@ -182,7 +182,7 @@ export default function Page() {
           <ul className="ml-4 list-disc text-[13px] leading-6 text-foreground/85 space-y-1">
             <li>
               Config <strong>project-level</strong> ở <TerminalInline>.mcp.json</TerminalInline>{" "}
-              ngay root repo <TerminalInline>shopify-lark-sync</TerminalInline> (KHÔNG phải{" "}
+              ngay root repo <TerminalInline>pati-master-app</TerminalInline> (KHÔNG phải{" "}
               <TerminalInline>~/.claude/mcp-servers.json</TerminalInline>). Khi mở repo bằng Claude
               Code, MCP tự load. Với Claude Desktop, copy vào{" "}
               <TerminalInline>%APPDATA%/Claude/claude_desktop_config.json</TerminalInline>.
