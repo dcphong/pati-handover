@@ -118,6 +118,38 @@ pati auth status                 # show config + token preview
 pati auth logout                 # xoá token khỏi config`}
         </CodeBlock>
 
+        <h3 id="cmd-analytics">
+          <code>pati analytics</code> — doanh thu / PnL / ROAS
+        </h3>
+        <p>
+          Xem số business từ terminal — cùng data mà <code>/analytics/summary</code> và
+          dashboard web hiển thị, không cần mở browser. Window-aware (default 7 ngày, có
+          thể <code>--from / --to / --days</code>), Δ vs period trước được tính tự động.
+        </p>
+        <CodeBlock language="bash">
+{`pati analytics summary                          # 7 ngày: sales, orders, AOV, profit, ROAS, MER…
+pati analytics summary --days 30
+pati analytics summary --from 2026-05-01 --to 2026-05-28
+pati analytics summary --json | jq '.metrics.total_sales'
+
+pati analytics pnl                              # PnL line items + summary
+pati analytics pnl --days 1                     # hôm nay
+pati analytics pnl --from 2026-05-01 --to 2026-05-28
+pati analytics pnl --json`}
+        </CodeBlock>
+        <Callout variant="info" title="Δ vs prev — so sánh window-vs-window">
+          CLI tự tính period trước cùng độ dài rồi gửi <code>prevStart/prevEnd</code> tới
+          backend. <code>--days 7</code> ⇒ so 7 ngày này vs 7 ngày trước đó. Cột Δ%
+          xanh nếu metric tốt lên (vd ad spend giảm = xanh; sales tăng = xanh).
+        </Callout>
+        <p>
+          Top metrics show: <strong>Total sales</strong>, <strong>Orders</strong>,{" "}
+          <strong>AOV</strong>, <strong>Net profit</strong>, <strong>Net margin</strong>,{" "}
+          <strong>Ad spend</strong>, <strong>ROAS</strong>, <strong>MER</strong>,{" "}
+          <strong>COGS</strong>, <strong>nCPA</strong>. Kèm bảng{" "}
+          <em>Ad spend by platform</em> (Meta / Google / TikTok / Amazon).
+        </p>
+
         <h3 id="cmd-shop">
           <code>pati shop</code> — chọn active store
         </h3>
@@ -138,20 +170,29 @@ pati shop clear                  # bỏ pin, để backend chọn default`}
           <code>pati dispute</code> — disputes 3 cổng
         </h3>
         <CodeBlock language="bash">
-{`pati dispute list                          # 15 dispute mới nhất gộp PayPal + Shopify + Stripe
+{`pati dispute stats                         # tổng + per-gateway + win rate + dispute rate
+pati dispute stats --days 30
+pati dispute stats --from 2026-05-01 --to 2026-05-28
+pati dispute stats --json
+
+pati dispute list                          # 15 dispute mới nhất gộp PayPal + Shopify + Stripe
 pati dispute list --status needs_response  # filter theo status
 pati dispute list --gateway paypal         # filter theo gateway
-pati dispute list --limit 30
+pati dispute list --days 90 --limit 50
 pati dispute list --json | jq '.[].id'     # pipe vào jq
 
 pati dispute show <id>                     # chi tiết 1 dispute
 pati dispute show <id> --json`}
         </CodeBlock>
         <p>
-          Backend: <TerminalInline>GET /api/disputes</TerminalInline> — gộp{" "}
-          <code>sections[].recent</code> client-side và sort theo{" "}
-          <code>opened_at</code> desc. Response payload có thể 5-10 MB cho window 30 ngày,
-          spinner sẽ in elapsed time để biết đang chạy.
+          <code>stats</code> show 4 nhóm số: aggregate (total · awaiting · cần upload · đã
+          nộp · won · lost · win rate · dispute rate), per-gateway breakdown, và đánh giá
+          dispute rate so với Visa threshold (healthy &lt; 0.65%, high-risk &gt; 0.9%).
+        </p>
+        <p>
+          Backend: <TerminalInline>GET /api/disputes?from=&amp;to=</TerminalInline>. Không
+          pass window → all-time. Response payload có thể 5-10 MB cho window lớn — spinner
+          in elapsed time để biết đang chạy.
         </p>
 
         <h3 id="cmd-cs">
@@ -338,8 +379,10 @@ pati sync-logs --status error --type paypal_transactions --json`}
         <h2 id="roadmap">Roadmap</h2>
         <ul>
           <li>
-            <strong>v0.2 — current</strong>: auth, shop, dispute list/show, cs metrics +
-            overdue, cron status, sync-logs.
+            <strong>v0.3 — current</strong>: auth, shop, <strong>analytics summary + pnl</strong>,
+            dispute list/show/<strong>stats</strong>, cs metrics + overdue, cron status,
+            sync-logs. Window flags <code>--from / --to / --days</code> trên các command
+            chính.
           </li>
           <li>
             <strong>v0.3 (planned)</strong>:{" "}
