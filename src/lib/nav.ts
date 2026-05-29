@@ -81,6 +81,7 @@ export const navigation: NavSection[] = [
   {
     title: "Reference",
     items: [
+      { title: "CLI (pati-cli)", href: "/docs/cli", badge: "new" },
       { title: "API Routes", href: "/docs/api-routes" },
       { title: "Python Workers", href: "/docs/python-workers" },
       { title: "Troubleshooting", href: "/docs/troubleshooting" },
